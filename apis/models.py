@@ -22,3 +22,22 @@ class TietKhi(models.Model):
 
     class Meta:
         db_table = "tiet_khi"
+
+
+class HourInDay(models.Model):
+    lunar_day = models.CharField(max_length=255)
+    hour_1 = models.TextField(blank=True, null=True)
+    hour_2 = models.TextField(blank=True, null=True)
+    hour_3 = models.TextField(blank=True, null=True)
+    hour_4 = models.TextField(blank=True, null=True)
+    hour_5 = models.TextField(blank=True, null=True)
+    hour_6 = models.TextField(blank=True, null=True)
+    hour_7 = models.TextField(blank=True, null=True)
+    hour_8 = models.TextField(blank=True, null=True)
+    hour_9 = models.TextField(blank=True, null=True)
+    hour_10 = models.TextField(blank=True, null=True)
+    hour_11 = models.TextField(blank=True, null=True)
+    hour_12 = models.TextField(blank=True, null=True)
+
+    class Meta:
+        db_table = "hour_in_days"
