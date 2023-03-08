@@ -41,3 +41,32 @@ class HourInDay(models.Model):
 
     class Meta:
         db_table = "hour_in_days"
+
+
+class QuyNhan(models.Model):
+    can_ngay = models.CharField(max_length=255)
+    tiet_khi = models.CharField(max_length=255)
+    hour = models.CharField(max_length=255)
+    am_duong = models.CharField(max_length=255, null=True)
+    quy_nhan = models.CharField(max_length=255, null=True)
+
+    class Meta:
+        db_table = "quy_nhan"
+
+
+class TuDaiCatThoi(models.Model):
+    hour = models.CharField(max_length=255)
+    can_ngay_1 = models.CharField(max_length=255, null=True)
+    can_ngay_2 = models.CharField(max_length=255, null=True)
+    can_ngay_3 = models.CharField(max_length=255, null=True)
+    can_ngay_4 = models.CharField(max_length=255, null=True)
+    can_ngay_5 = models.CharField(max_length=255, null=True)
+    can_ngay_6 = models.CharField(max_length=255, null=True)
+    can_ngay_7 = models.CharField(max_length=255, null=True)
+    can_ngay_8 = models.CharField(max_length=255, null=True)
+    can_ngay_9 = models.CharField(max_length=255, null=True)
+    can_ngay_10 = models.CharField(max_length=255, null=True)
+    tiet_khi = models.CharField(max_length=255)
+
+    class Meta:
+        db_table = "tu_dai_cat_thoi"
