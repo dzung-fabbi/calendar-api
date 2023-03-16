@@ -13,17 +13,11 @@ from operator import attrgetter
 class TietkhiAPIView(APIView):
     def get(self, request):
         try:
-            tiet_khi_less = TietKhi.objects.filter(
+            tiet_khi = TietKhi.objects.filter(
                 tiet_khi=request.GET.get('tiet_khi'),
-                start_time__lt=datetime.now()
-            ).order_by('-start_time')[:5]
-            tiet_khi_great = TietKhi.objects.filter(
-                tiet_khi=request.GET.get('tiet_khi'),
-                start_time__gte=datetime.now()
-            ).order_by('start_time')[:5]
-            serializer = TietKhiSerializer(sorted(
-                chain(tiet_khi_less, tiet_khi_great), key=attrgetter('start_time')
-            ), many=True)
+                start_time__year=datetime.now().year
+            ).order_by('start_time').first()
+            serializer = TietKhiSerializer(tiet_khi, allow_null=True)
             return Response({'data': serializer.data})
         except Exception:
             raise BadRequestException()

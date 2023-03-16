@@ -110,6 +110,7 @@ class CaiSonHoangDao(ItemBase):
 class ThongThienKhieu(ItemBase):
     truoc_phuong_tam_hop = models.CharField(max_length=255, blank=True, null=True)
     sau_phuong_tam_hop = models.CharField(max_length=255, blank=True, null=True)
+    note = models.TextField(blank=True, null=True)
 
     class Meta:
         db_table = "thong_thien_khieu"
@@ -122,6 +123,11 @@ class TauMaLucNham(ItemBase):
     thang_quang = models.CharField(max_length=255, blank=True, null=True)
     truyen_tong = models.CharField(max_length=255, blank=True, null=True)
     ha_khoi = models.CharField(max_length=255, blank=True, null=True)
+    thai_duong = models.CharField(max_length=255, blank=True, null=True)
+    thai_am = models.CharField(max_length=255, blank=True, null=True)
+    long_duc = models.CharField(max_length=255, blank=True, null=True)
+    phuc_duc = models.CharField(max_length=255, blank=True, null=True)
+    note = models.TextField(blank=True, null=True)
 
     class Meta:
         db_table = "tau_ma_luc_nham"
@@ -180,3 +186,79 @@ class TuPhuongHung(ItemBase):
 
     class Meta:
         db_table = "tu_phuong_hung"
+
+
+class TuPhuongHungThang(ItemBase):
+    star_name = models.CharField(max_length=255, blank=True, null=True)
+    month_1 = models.CharField(max_length=255, blank=True, null=True)
+    month_2 = models.CharField(max_length=255, blank=True, null=True)
+    month_3 = models.CharField(max_length=255, blank=True, null=True)
+    month_4 = models.CharField(max_length=255, blank=True, null=True)
+    month_5 = models.CharField(max_length=255, blank=True, null=True)
+    month_6 = models.CharField(max_length=255, blank=True, null=True)
+    month_7 = models.CharField(max_length=255, blank=True, null=True)
+    month_8 = models.CharField(max_length=255, blank=True, null=True)
+    month_9 = models.CharField(max_length=255, blank=True, null=True)
+    month_10 = models.CharField(max_length=255, blank=True, null=True)
+    month_11 = models.CharField(max_length=255, blank=True, null=True)
+    month_12 = models.CharField(max_length=255, blank=True, null=True)
+
+    class Meta:
+        db_table = "tu_phuong_hung_thang"
+
+
+class KhaiSonHungThang(ItemBase):
+    star_name = models.CharField(max_length=255, blank=True, null=True)
+    month_1 = models.CharField(max_length=255, blank=True, null=True)
+    month_2 = models.CharField(max_length=255, blank=True, null=True)
+    month_3 = models.CharField(max_length=255, blank=True, null=True)
+    month_4 = models.CharField(max_length=255, blank=True, null=True)
+    month_5 = models.CharField(max_length=255, blank=True, null=True)
+    month_6 = models.CharField(max_length=255, blank=True, null=True)
+    month_7 = models.CharField(max_length=255, blank=True, null=True)
+    month_8 = models.CharField(max_length=255, blank=True, null=True)
+    month_9 = models.CharField(max_length=255, blank=True, null=True)
+    month_10 = models.CharField(max_length=255, blank=True, null=True)
+    month_11 = models.CharField(max_length=255, blank=True, null=True)
+    month_12 = models.CharField(max_length=255, blank=True, null=True)
+
+    class Meta:
+        db_table = "khai_son_hung_thang"
+
+
+class LapHuongHungThang(ItemBase):
+    star_name = models.CharField(max_length=255, blank=True, null=True)
+    month_1 = models.CharField(max_length=255, blank=True, null=True)
+    month_2 = models.CharField(max_length=255, blank=True, null=True)
+    month_3 = models.CharField(max_length=255, blank=True, null=True)
+    month_4 = models.CharField(max_length=255, blank=True, null=True)
+    month_5 = models.CharField(max_length=255, blank=True, null=True)
+    month_6 = models.CharField(max_length=255, blank=True, null=True)
+    month_7 = models.CharField(max_length=255, blank=True, null=True)
+    month_8 = models.CharField(max_length=255, blank=True, null=True)
+    month_9 = models.CharField(max_length=255, blank=True, null=True)
+    month_10 = models.CharField(max_length=255, blank=True, null=True)
+    month_11 = models.CharField(max_length=255, blank=True, null=True)
+    month_12 = models.CharField(max_length=255, blank=True, null=True)
+
+    class Meta:
+        db_table = "lap_huong_hung_thang"
+
+
+class TamKyThang(ItemBase):
+    tam_ky = models.CharField(max_length=255, blank=True, null=True)
+    month_1 = models.CharField(max_length=255, blank=True, null=True)
+    month_2 = models.CharField(max_length=255, blank=True, null=True)
+    month_3 = models.CharField(max_length=255, blank=True, null=True)
+    month_4 = models.CharField(max_length=255, blank=True, null=True)
+    month_5 = models.CharField(max_length=255, blank=True, null=True)
+    month_6 = models.CharField(max_length=255, blank=True, null=True)
+    month_7 = models.CharField(max_length=255, blank=True, null=True)
+    month_8 = models.CharField(max_length=255, blank=True, null=True)
+    month_9 = models.CharField(max_length=255, blank=True, null=True)
+    month_10 = models.CharField(max_length=255, blank=True, null=True)
+    month_11 = models.CharField(max_length=255, blank=True, null=True)
+    month_12 = models.CharField(max_length=255, blank=True, null=True)
+
+    class Meta:
+        db_table = "tam_ky_thang"
