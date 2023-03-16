@@ -1,4 +1,4 @@
-from .models import HiepKy, TietKhi, HourInDay, QuyNhan, TuDaiCatThoi
+from .models import *
 from rest_framework import serializers
 
 
@@ -32,3 +32,57 @@ class TuDaiCatThoiSerializer(serializers.HyperlinkedModelSerializer):
         model = TuDaiCatThoi
         fields = ['hour', 'can_ngay_1', 'can_ngay_2', 'can_ngay_3', 'can_ngay_4', 'can_ngay_5',
                   'can_ngay_6', 'can_ngay_7', 'can_ngay_8', 'can_ngay_9', 'can_ngay_10', 'tiet_khi']
+
+
+class KhaiSonTuPhuongCatSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = KhaiSonTuPhuongCat
+        fields = '__all__'
+
+
+class TamNguyenTuBachSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TamNguyenTuBach
+        fields = '__all__'
+
+
+class CaiSonHoangDaoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CaiSonHoangDao
+        fields = '__all__'
+
+
+class ThongThienKhieuSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ThongThienKhieu
+        fields = '__all__'
+
+
+class TauMaLucNhamSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TauMaLucNham
+        fields = '__all__'
+
+
+class KhaiSonTuPhuongHungSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = KhaiSonTuPhuongHung
+        fields = '__all__'
+
+
+class KhaiSonHungSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = KhaiSonHung
+        fields = '__all__'
+
+
+class LapHuongHungSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LapHuongHung
+        fields = '__all__'
+
+
+class TuPhuongHungSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TuPhuongHung
+        fields = '__all__'

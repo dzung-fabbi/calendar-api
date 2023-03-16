@@ -1,14 +1,32 @@
-from .models import HiepKy, TietKhi, HourInDay, QuyNhan, TuDaiCatThoi
+from .models import *
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .serializers import HiepKySerializer, TietKhiSerializer, HourInDaySerializer, TuDaiCatThoiSerializer, \
-    QuyNhanSerializer
+from rest_framework import status
+
+from .serializers import *
 from .exceptions import BadRequestException
 from datetime import datetime
 from itertools import chain
+
 from operator import attrgetter
 
-
+class TietkhiAPIView(APIView):
+    def get(self, request):
+        try:
+            tiet_khi_less = TietKhi.objects.filter(
+                tiet_khi=request.GET.get('tiet_khi'),
+                start_time__lt=datetime.now()
+            ).order_by('-start_time')[:5]
+            tiet_khi_great = TietKhi.objects.filter(
+                tiet_khi=request.GET.get('tiet_khi'),
+                start_time__gte=datetime.now()
+            ).order_by('start_time')[:5]
+            serializer = TietKhiSerializer(sorted(
+                chain(tiet_khi_less, tiet_khi_great), key=attrgetter('start_time')
+            ), many=True)
+            return Response({'data': serializer.data})
+        except Exception:
+            raise BadRequestException()
 class HomeAPIView(APIView):
     def get(self, request):
         tiet_khi = None
@@ -40,20 +58,29 @@ class HomeAPIView(APIView):
             raise BadRequestException()
 
 
-class TietkhiAPIView(APIView):
+class ThanSatAPIView(APIView):
     def get(self, request):
-        try:
-            tiet_khi_less = TietKhi.objects.filter(
-                tiet_khi=request.GET.get('tiet_khi'),
-                start_time__lt=datetime.now()
-            ).order_by('-start_time')[:5]
-            tiet_khi_great = TietKhi.objects.filter(
-                tiet_khi=request.GET.get('tiet_khi'),
-                start_time__gte=datetime.now()
-            ).order_by('start_time')[:5]
-            serializer = TietKhiSerializer(sorted(
-                chain(tiet_khi_less, tiet_khi_great), key=attrgetter('start_time')
-            ), many=True)
-            return Response({'data': serializer.data})
-        except Exception:
-            raise BadRequestException()
+        year = request.GET.get('thansat', None)
+        if year is not None:
+            khai_son_tu_phuong_cat = KhaiSonTuPhuongCat.objects.filter(year__iexact=year)
+            tam_nguyen_tu_bach = TamNguyenTuBach.objects.filter(is_active=True, year__iexact=year)
+            cai_son_hoang_dao = CaiSonHoangDao.objects.filter(is_active=True, year__iexact=year).first()
+            thong_thien_khieu = ThongThienKhieu.objects.filter(is_active=True, year__iexact=year).first()
+            tau_ma_luc_nham = TauMaLucNham.objects.filter(is_active=True, year__iexact=year).first()
+            khai_son_tu_phuong_hung = KhaiSonTuPhuongHung.objects.filter(is_active=True, year__iexact=year).first()
+            khai_son_hung = KhaiSonHung.objects.filter(is_active=True, year__iexact=year).first()
+            lap_huong_hung = LapHuongHung.objects.filter(is_active=True, year__iexact=year).first()
+            tu_phuong_hung = TuPhuongHung.objects.filter(is_active=True, year__iexact=year).first()
+
+            return Response(data={
+                'khai_son_tu_phuong_cat': KhaiSonTuPhuongCatSerializer(khai_son_tu_phuong_cat, many=True).data if bool(khai_son_tu_phuong_cat) else None,
+                'tam_nguyen_tu_bach': TamNguyenTuBachSerializer(tam_nguyen_tu_bach, many=True).data if bool(tam_nguyen_tu_bach) else None,
+                'cai_son_hoang_dao': CaiSonHoangDaoSerializer(cai_son_hoang_dao).data if bool(cai_son_hoang_dao) else None,
+                'thong_thien_khieu': ThongThienKhieuSerializer(thong_thien_khieu).data if bool(thong_thien_khieu) else None,
+                'tau_ma_luc_nham': TauMaLucNhamSerializer(tau_ma_luc_nham).data if bool(tau_ma_luc_nham) else None,
+                'khai_son_tu_phuong_hung': KhaiSonTuPhuongHungSerializer(khai_son_tu_phuong_hung).data if bool(khai_son_tu_phuong_hung) else None,
+                'khai_son_hung': KhaiSonHungSerializer(khai_son_hung).data if bool(khai_son_hung) else None,
+                'lap_huong_hung': LapHuongHungSerializer(lap_huong_hung).data if bool(lap_huong_hung) else None,
+                'tu_phuong_hung': TuPhuongHungSerializer(tu_phuong_hung).data if bool(tu_phuong_hung) else None,
+            },status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
