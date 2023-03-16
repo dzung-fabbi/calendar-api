@@ -54,8 +54,8 @@ class HomeAPIView(APIView):
 
 class ThanSatAPIView(APIView):
     def get(self, request):
-        year = request.GET.get('thansat', None)
-        if year is not None:
+        try:
+            year = request.GET.get('year', None)
             khai_son_tu_phuong_cat = KhaiSonTuPhuongCat.objects.filter(year__iexact=year)
             tam_nguyen_tu_bach = TamNguyenTuBach.objects.filter(is_active=True, year__iexact=year)
             cai_son_hoang_dao = CaiSonHoangDao.objects.filter(is_active=True, year__iexact=year).first()
@@ -67,8 +67,8 @@ class ThanSatAPIView(APIView):
             tu_phuong_hung = TuPhuongHung.objects.filter(is_active=True, year__iexact=year).first()
 
             return Response(data={
-                'khai_son_tu_phuong_cat': KhaiSonTuPhuongCatSerializer(khai_son_tu_phuong_cat, many=True).data if bool(khai_son_tu_phuong_cat) else None,
-                'tam_nguyen_tu_bach': TamNguyenTuBachSerializer(tam_nguyen_tu_bach, many=True).data if bool(tam_nguyen_tu_bach) else None,
+                'khai_son_tu_phuong_cat': KhaiSonTuPhuongCatSerializer(khai_son_tu_phuong_cat, many=True).data,
+                'tam_nguyen_tu_bach': TamNguyenTuBachSerializer(tam_nguyen_tu_bach, many=True).data,
                 'cai_son_hoang_dao': CaiSonHoangDaoSerializer(cai_son_hoang_dao).data if bool(cai_son_hoang_dao) else None,
                 'thong_thien_khieu': ThongThienKhieuSerializer(thong_thien_khieu).data if bool(thong_thien_khieu) else None,
                 'tau_ma_luc_nham': TauMaLucNhamSerializer(tau_ma_luc_nham).data if bool(tau_ma_luc_nham) else None,
@@ -76,5 +76,6 @@ class ThanSatAPIView(APIView):
                 'khai_son_hung': KhaiSonHungSerializer(khai_son_hung).data if bool(khai_son_hung) else None,
                 'lap_huong_hung': LapHuongHungSerializer(lap_huong_hung).data if bool(lap_huong_hung) else None,
                 'tu_phuong_hung': TuPhuongHungSerializer(tu_phuong_hung).data if bool(tu_phuong_hung) else None,
-            },status=status.HTTP_200_OK)
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+            })
+        except Exception:
+            raise BadRequestException()
