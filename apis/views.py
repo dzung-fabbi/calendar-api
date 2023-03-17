@@ -10,6 +10,7 @@ from itertools import chain
 
 from operator import attrgetter
 
+
 class TietkhiAPIView(APIView):
     def get(self, request):
         try:
@@ -21,6 +22,8 @@ class TietkhiAPIView(APIView):
             return Response({'data': serializer.data})
         except Exception:
             raise BadRequestException()
+
+
 class HomeAPIView(APIView):
     def get(self, request):
         tiet_khi = None
@@ -63,19 +66,31 @@ class ThanSatAPIView(APIView):
             tau_ma_luc_nham = TauMaLucNham.objects.filter(is_active=True, year__iexact=year).first()
             khai_son_tu_phuong_hung = KhaiSonTuPhuongHung.objects.filter(is_active=True, year__iexact=year).first()
             khai_son_hung = KhaiSonHung.objects.filter(is_active=True, year__iexact=year).first()
+            am_phu_thai_tue = AmPhuThaiTue.objects.filter(is_active=True, year__iexact=year).first()
             lap_huong_hung = LapHuongHung.objects.filter(is_active=True, year__iexact=year).first()
             tu_phuong_hung = TuPhuongHung.objects.filter(is_active=True, year__iexact=year).first()
+
+            lap_huong_hung_thang = LapHuongHungThang.objects.filter(year__iexact=year)
+            khai_son_hung_thang = KhaiSonHungThang.objects.filter(year__iexact=year)
+            tu_phuong_hung_thang = TuPhuongHung.objects.filter(year__iexact=year)
 
             return Response(data={
                 'khai_son_tu_phuong_cat': KhaiSonTuPhuongCatSerializer(khai_son_tu_phuong_cat, many=True).data,
                 'tam_nguyen_tu_bach': TamNguyenTuBachSerializer(tam_nguyen_tu_bach, many=True).data,
-                'cai_son_hoang_dao': CaiSonHoangDaoSerializer(cai_son_hoang_dao).data if bool(cai_son_hoang_dao) else None,
-                'thong_thien_khieu': ThongThienKhieuSerializer(thong_thien_khieu).data if bool(thong_thien_khieu) else None,
+                'cai_son_hoang_dao': CaiSonHoangDaoSerializer(cai_son_hoang_dao).data if bool(
+                    cai_son_hoang_dao) else None,
+                'thong_thien_khieu': ThongThienKhieuSerializer(thong_thien_khieu).data if bool(
+                    thong_thien_khieu) else None,
                 'tau_ma_luc_nham': TauMaLucNhamSerializer(tau_ma_luc_nham).data if bool(tau_ma_luc_nham) else None,
-                'khai_son_tu_phuong_hung': KhaiSonTuPhuongHungSerializer(khai_son_tu_phuong_hung).data if bool(khai_son_tu_phuong_hung) else None,
+                'khai_son_tu_phuong_hung': KhaiSonTuPhuongHungSerializer(khai_son_tu_phuong_hung).data if bool(
+                    khai_son_tu_phuong_hung) else None,
                 'khai_son_hung': KhaiSonHungSerializer(khai_son_hung).data if bool(khai_son_hung) else None,
+                'am_phu_thai_tue': AmPhuThaiTueSerializer(am_phu_thai_tue).data if bool(am_phu_thai_tue) else None,
                 'lap_huong_hung': LapHuongHungSerializer(lap_huong_hung).data if bool(lap_huong_hung) else None,
                 'tu_phuong_hung': TuPhuongHungSerializer(tu_phuong_hung).data if bool(tu_phuong_hung) else None,
+                'lap_huong_hung_thang': LapHuongHungThangSerializer(lap_huong_hung_thang, many=True).data,
+                'khai_son_hung_thang': KhaiSonHungThangSerializer(khai_son_hung_thang, many=True).data,
+                'tu_phuong_hung_thang': TuPhuongHungThangSerializer(tu_phuong_hung_thang, many=True).data,
             })
         except Exception:
             raise BadRequestException()
