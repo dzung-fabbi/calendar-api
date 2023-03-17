@@ -123,14 +123,20 @@ class TauMaLucNham(ItemBase):
     thang_quang = models.CharField(max_length=255, blank=True, null=True)
     truyen_tong = models.CharField(max_length=255, blank=True, null=True)
     ha_khoi = models.CharField(max_length=255, blank=True, null=True)
-    thai_duong = models.CharField(max_length=255, blank=True, null=True)
-    thai_am = models.CharField(max_length=255, blank=True, null=True)
-    long_duc = models.CharField(max_length=255, blank=True, null=True)
-    phuc_duc = models.CharField(max_length=255, blank=True, null=True)
     note = models.TextField(blank=True, null=True)
 
     class Meta:
         db_table = "tau_ma_luc_nham"
+
+
+class TuLoiTamNguyen(ItemBase):
+    thai_duong = models.CharField(max_length=255, blank=True, null=True)
+    thai_am = models.CharField(max_length=255, blank=True, null=True)
+    long_duc = models.CharField(max_length=255, blank=True, null=True)
+    phuc_duc = models.CharField(max_length=255, blank=True, null=True)
+
+    class Meta:
+        db_table = "tu_loi_tam_nguyen"
 
 
 class KhaiSonTuPhuongHung(ItemBase):
@@ -146,13 +152,19 @@ class KhaiSonTuPhuongHung(ItemBase):
 
 class KhaiSonHung(ItemBase):
     nien_khac_son_gia = models.CharField(max_length=255, blank=True, null=True)
+
+    class Meta:
+        db_table = "khai_son_hung"
+
+
+class AmPhuThaiTue(ItemBase):
     am_phu_thai_tue = models.CharField(max_length=255, blank=True, null=True)
     luc_hai = models.CharField(max_length=255, blank=True, null=True)
     tu_phu = models.CharField(max_length=255, blank=True, null=True)
     cuu_thoai = models.CharField(max_length=255, blank=True, null=True)
 
     class Meta:
-        db_table = "khai_son_hung"
+        db_table = "am_phu_thai_tue"
 
 
 class LapHuongHung(ItemBase):
