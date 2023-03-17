@@ -72,7 +72,7 @@ class ThanSatAPIView(APIView):
 
             lap_huong_hung_thang = LapHuongHungThang.objects.filter(year__iexact=year)
             khai_son_hung_thang = KhaiSonHungThang.objects.filter(year__iexact=year)
-            tu_phuong_hung_thang = TuPhuongHung.objects.filter(year__iexact=year)
+            tu_phuong_hung_thang = TuPhuongHungThang.objects.filter(year__iexact=year)
 
             return Response(data={
                 'khai_son_tu_phuong_cat': KhaiSonTuPhuongCatSerializer(khai_son_tu_phuong_cat, many=True).data,
