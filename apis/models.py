@@ -195,6 +195,8 @@ class TuPhuongHung(ItemBase):
     bach_ho = models.CharField(max_length=255, blank=True, null=True)
     ngu_qui = models.CharField(max_length=255, blank=True, null=True)
     cau_vi = models.CharField(max_length=255, blank=True, null=True)
+    tu_phu = models.CharField(max_length=255, blank=True, null=True)
+    phi_vien = models.CharField(max_length=255, blank=True, null=True)
 
     class Meta:
         db_table = "tu_phuong_hung"
