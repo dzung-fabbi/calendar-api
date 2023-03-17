@@ -75,6 +75,10 @@ class KhaiSonHungSerializer(serializers.ModelSerializer):
         model = KhaiSonHung
         fields = '__all__'
 
+class AmPhuThaiTueSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AmPhuThaiTue
+        fields = '__all__'
 
 class LapHuongHungSerializer(serializers.ModelSerializer):
     class Meta:
@@ -86,3 +90,23 @@ class TuPhuongHungSerializer(serializers.ModelSerializer):
     class Meta:
         model = TuPhuongHung
         fields = '__all__'
+
+class LapHuongHungThangSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LapHuongHungThang
+        fields = '__all__'
+class KhaiSonHungThangSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = KhaiSonHungThang
+        fields = '__all__'
+class TuPhuongHungThangSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TuPhuongHungThang
+        fields = '__all__'
+
+class TamKyThangSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TamKyThang
+        fields = '__all__'
+
+
