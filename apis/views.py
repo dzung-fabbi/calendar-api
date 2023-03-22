@@ -127,7 +127,16 @@ class SoHocAPIView(APIView):
             thu_thach_2 = self.get_sum(abs(so_ngay_sinh - so_nam_sinh))
             thu_thach_3 = self.get_sum(abs(so_nam_sinh - so_thang_sinh))
             thu_thach_4 = self.get_sum(abs(so_nam_sinh - so_thang_sinh))
-            so_no_nghiep = next((x for x in arr_nghiep if x.startswith(birth_day[0] + birth_day[1])), '')
+            so_no_nghiep_1 = next((x for x in arr_nghiep if x.startswith(birth_day[0] + birth_day[1])), '')
+            so_no_nghiep_2 = next((x for x in arr_nghiep if x.startswith(str(sum_birth_day))), '')
+            so_no_nghiep_3 = next((x for x in arr_nghiep if x.startswith(str(so_chu_dao))), '')
+            so_no_nghiep = []
+            if so_no_nghiep_1:
+                so_no_nghiep.append(so_no_nghiep_1)
+            if so_no_nghiep_2:
+                so_no_nghiep.append(so_no_nghiep_2)
+            if so_no_nghiep_3:
+                so_no_nghiep.append(so_no_nghiep_3)
 
             alphabet = {
                 'a': {
@@ -251,9 +260,9 @@ class SoHocAPIView(APIView):
                         sum_full_consonant += alphabet[char]['value']
                     sum_full_name += alphabet[char]['value']
                     arr_value.append(alphabet[char]['value'])
-            so_linh_hon = self.get_sum_spec(self.get_sum(sum_full_vowel))
-            so_su_menh = self.get_sum_spec(self.get_sum(sum_full_name))
-            so_nhan_cach = self.get_sum_spec(self.get_sum(sum_full_consonant))
+            so_linh_hon = self.get_sum_spec(self.get_sum_spec(sum_full_vowel))
+            so_su_menh = self.get_sum_spec(self.get_sum_spec(sum_full_name))
+            so_nhan_cach = self.get_sum_spec(self.get_sum_spec(sum_full_consonant))
 
             sum_name = 0
             sum_vowel = 0
@@ -268,9 +277,9 @@ class SoHocAPIView(APIView):
                     else:
                         sum_consonant += alphabet[char]['value']
                     sum_name += alphabet[char]['value']
-            so_linh_hon_name = self.get_sum_spec(self.get_sum(sum_vowel))
-            so_phat_trien = self.get_sum_spec(self.get_sum(sum_name))
-            so_dong_luc = self.get_sum_spec(self.get_sum(sum_consonant))
+            so_linh_hon_name = self.get_sum_spec(self.get_sum_spec(sum_vowel))
+            so_phat_trien = self.get_sum_spec(self.get_sum_spec(sum_name))
+            so_dong_luc = self.get_sum_spec(self.get_sum_spec(sum_consonant))
             so_truong_thanh = self.get_sum_spec(so_su_menh + so_chu_dao)
             so_noi_cam = mode(arr_value)
 
@@ -308,9 +317,17 @@ class SoHocAPIView(APIView):
         except Exception:
             raise BadRequestException()
 
-    def strip_accents(self, s):
-        return ''.join(c for c in unicodedata.normalize('NFD', s)
-                       if unicodedata.category(c) != 'Mn')
+    def strip_accents(self, input_str):
+        s1 = u'ÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚÝàáâãèéêìíòóôõùúýĂăĐđĨĩŨũƠơƯưẠạẢảẤấẦầẨẩẪẫẬậẮắẰằẲẳẴẵẶặẸẹẺẻẼẽẾếỀềỂểỄễỆệỈỉỊịỌọỎỏỐốỒồỔổỖỗỘộỚớỜờỞởỠỡỢợỤụỦủỨứỪừỬửỮữỰựỲỳỴỵỶỷỸỹ'
+        s0 = u'AAAAEEEIIOOOOUUYaaaaeeeiioooouuyAaDdIiUuOoUuAaAaAaAaAaAaAaAaAaAaAaAaEeEeEeEeEeEeEeEeIiIiOoOoOoOoOoOoOoOoOoOoOoOoUuUuUuUuUuUuUuYyYyYyYy'
+        s = ''
+        input_str.encode('utf-8')
+        for c in input_str:
+            if c in s1:
+                s += s0[s1.index(c)]
+            else:
+                s += c
+        return s
 
     def get_sum(self, num):
         return sum(int(digit) for digit in str(num))
