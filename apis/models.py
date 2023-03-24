@@ -276,3 +276,163 @@ class TamKyThang(ItemBase):
 
     class Meta:
         db_table = "tam_ky_thang"
+
+
+class MainNumber(models.Model):
+    code = models.IntegerField()
+    title = models.CharField(max_length=255)
+    content = models.TextField(blank=True, null=True)
+    number_page = models.IntegerField()
+
+    class Meta:
+        db_table = "main_number"
+
+
+class BirthdayChart(models.Model):
+    code = models.CharField(max_length=255)
+    title = models.CharField(max_length=255)
+    content = models.TextField(blank=True, null=True)
+    number_page = models.IntegerField()
+
+    class Meta:
+        db_table = "birthday_chart"
+
+
+class StagesOfLife(models.Model):
+    code = models.CharField(max_length=255)
+    title = models.CharField(max_length=255)
+    content = models.TextField(blank=True, null=True)
+    number_page = models.IntegerField()
+
+    class Meta:
+        db_table = "stages_of_life"
+
+
+class LifePeak(models.Model):
+    code = models.CharField(max_length=255)
+    title = models.CharField(max_length=255)
+    content = models.TextField(blank=True, null=True)
+    number_page = models.IntegerField()
+
+    class Meta:
+        db_table = "life_peak"
+
+
+class ChallengeLife(models.Model):
+    code = models.CharField(max_length=255)
+    title = models.CharField(max_length=255)
+    content = models.TextField(blank=True, null=True)
+    number_page = models.IntegerField()
+
+    class Meta:
+        db_table = "challenge_life"
+
+
+class AttitudeNumber(models.Model):
+    code = models.CharField(max_length=255)
+    title = models.CharField(max_length=255)
+    content = models.TextField(blank=True, null=True)
+    number_page = models.IntegerField()
+
+    class Meta:
+        db_table = "attitude_number"
+
+
+class BirthdayNumber(models.Model):
+    code = models.CharField(max_length=255)
+    title = models.CharField(max_length=255)
+    content = models.TextField(blank=True, null=True)
+    number_page = models.IntegerField()
+
+    class Meta:
+        db_table = "birthday_number"
+
+
+class MissionNumber(models.Model):
+    code = models.CharField(max_length=255)
+    title = models.CharField(max_length=255)
+    content = models.TextField(blank=True, null=True)
+    number_page = models.IntegerField()
+
+    class Meta:
+        db_table = "mission_number"
+
+
+class SoulsNumber(models.Model):
+    code = models.CharField(max_length=255)
+    title = models.CharField(max_length=255)
+    content = models.TextField(blank=True, null=True)
+    number_page = models.IntegerField()
+
+    class Meta:
+        db_table = "souls_number"
+
+
+class MatureNumber(models.Model):
+    code = models.CharField(max_length=255)
+    title = models.CharField(max_length=255)
+    content = models.TextField(blank=True, null=True)
+    number_page = models.IntegerField()
+
+    class Meta:
+        db_table = "mature_number"
+
+
+class DevelopmentNumber(models.Model):
+    code = models.CharField(max_length=255)
+    title = models.CharField(max_length=255)
+    content = models.TextField(blank=True, null=True)
+    number_page = models.IntegerField()
+
+    class Meta:
+        db_table = "development_number"
+
+
+class IntrospectiveNumber(models.Model):
+    code = models.CharField(max_length=255)
+    title = models.CharField(max_length=255)
+    content = models.TextField(blank=True, null=True)
+    number_page = models.IntegerField()
+
+    class Meta:
+        db_table = "introspective_number"
+
+
+class KarmicNumber(models.Model):
+    code = models.CharField(max_length=255)
+    title = models.CharField(max_length=255)
+    content = models.TextField(blank=True, null=True)
+    number_page = models.IntegerField()
+
+    class Meta:
+        db_table = "karmic_number"
+
+
+class DeficitNumber(models.Model):
+    code = models.CharField(max_length=255)
+    title = models.CharField(max_length=255)
+    content = models.TextField(blank=True, null=True)
+    number_page = models.IntegerField()
+
+    class Meta:
+        db_table = "deficit_number"
+
+
+class PhoneNumber(models.Model):
+    code = models.CharField(max_length=255)
+    title = models.CharField(max_length=255)
+    content = models.TextField(blank=True, null=True)
+    number_page = models.IntegerField()
+
+    class Meta:
+        db_table = "phone_number"
+
+
+class PersonalMonthNumber(models.Model):
+    code = models.CharField(max_length=255)
+    title = models.CharField(max_length=255)
+    content = models.TextField(blank=True, null=True)
+    number_page = models.IntegerField()
+
+    class Meta:
+        db_table = "personal month_number"

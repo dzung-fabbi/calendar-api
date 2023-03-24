@@ -1,0 +1,1959 @@
+{% load static %}
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <link
+            rel="stylesheet"
+            href="https://fonts.googleapis.com/css?family=Roboto+Serif"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link
+            href="https://fonts.googleapis.com/css2?family=Roboto+Serif:ital,wght@0,400;0,500;0,600;0,700;1,500&display=swap"
+            rel="stylesheet"
+    />
+    <style type="text/css">
+        :root {
+            --default-color: #002060;
+        }
+
+        html {
+            font-size: 62.5%;
+            box-sizing: border-box;
+        }
+
+        @page {
+            @top-left {
+                color: red;
+            }
+        }
+
+        body {
+            font-family: "Roboto Serif", serif;
+            color: #002060;
+            font-size: 1.8rem;
+            font-weight: 400;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4 {
+            line-height: 1.4;
+        }
+
+        h1 {
+            font-size: 2.8rem;
+        }
+
+        h2 {
+            font-size: 2.4rem;
+        }
+
+        h3 {
+            font-size: 2rem;
+        }
+
+        h4 {
+            font-size: 1.8rem;
+        }
+
+        h5 {
+            font-size: 1.6rem;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        p {
+            font-size: 1.8rem;
+            line-height: 2.8rem;
+            text-align: justify;
+        }
+
+        li {
+            list-style-type: none;
+        }
+
+        ol li {
+            list-style-type: decimal;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        table,
+        td,
+        th {
+            border: 1px solid;
+            text-align: center;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .mt-10px {
+            margin-top: 1rem;
+        }
+
+        .mt-30px {
+            margin-top: 3rem;
+        }
+
+        .my-30px {
+            margin: 3rem 0;
+        }
+
+        .text-sm {
+            font-size: 1.6rem;
+        }
+
+        .text-lg {
+            font-size: 2rem;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .font-bold {
+            font-weight: 700;
+        }
+
+        .italic {
+            font-style: italic;
+        }
+
+        .uppercase {
+            text-transform: uppercase;
+        }
+
+        .d-flex {
+            display: flex;
+            align-items: center;
+        }
+
+        .table-content td {
+            padding: 1rem;
+        }
+
+
+        .table-search td {
+            border: none;
+            border-bottom: 1px solid;
+            font-size: 2.4rem;
+        }
+
+        table.table-search {
+            border: none;
+        }
+
+        .table-search td:first-child {
+            text-align: left;
+        }
+
+        .title-content {
+            font-weight: 700;
+            text-transform: uppercase;
+            text-align: center;
+        }
+
+        .new-page {
+            page-break-before: always;
+        }
+    </style>
+</head>
+<body>
+<div style="position: relative; height: 100%">
+    <div>
+        <h1 class="title-content" style="font-size: 6rem">
+            THẦN SỐ HỌC PYTAGO
+        </h1>
+        <div style="text-align: center; font-size: 30px">
+            <div>HỌ TÊN &nbsp;&nbsp;&nbsp;&nbsp;{{ name }}</div>
+            <div>
+                NGÀY SINH &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ birth_day }}
+            </div>
+        </div>
+        <div class="my-30px text-center">
+            <img
+                    src="https://cdn3.dhht.vn/wp-content/uploads/2022/05/Than-so-hoc-la-gi-cach-tra-cuu-va-y-nghia-cac-con-so.jpg"
+                    alt=""
+            />
+        </div>
+    </div>
+</div>
+
+<div class="new-page">
+    <div class="content">
+        <h1
+                class="title-content"
+                style="display: inline; border-bottom: 2px solid #000"
+        >
+            MỤC LỤC
+        </h1>
+        <table class="table-search table-content my-30px">
+            <tr>
+                <td>Vài Nét Về NHÀ TOÁN HỌC – THẦN HỌC PYTAGO</td>
+                <td>3</td>
+            </tr>
+            <tr>
+                <td>Số Chủ Đạo – Số Đường Đời</td>
+                <td>12</td>
+            </tr>
+            <tr>
+                <td>Biểu Đồ Ngày Sinh</td>
+                <td>18</td>
+            </tr>
+            <tr>
+                <td>3 Giai Đoạn Cuộc Đời</td>
+                <td>30</td>
+            </tr>
+            <tr>
+                <td>4 Đỉnh Cao Cuộc Đời</td>
+                <td>30</td>
+            </tr>
+            <tr>
+                <td>Số Thái Độ</td>
+                <td>30</td>
+            </tr>
+            <tr>
+                <td>Số Ngày Sinh</td>
+                <td>40</td>
+            </tr>
+            <tr>
+                <td>Số Sứ Mệnh</td>
+                <td>40</td>
+            </tr>
+            <tr>
+                <td>Số Linh Hồn</td>
+                <td>40</td>
+            </tr>
+            <tr>
+                <td>Số Nhân Cách</td>
+                <td>50</td>
+            </tr>
+            <tr>
+                <td>Số Trưởng Thành</td>
+                <td>50</td>
+            </tr>
+            <tr>
+                <td>Số Phát Triển</td>
+                <td>50</td>
+            </tr>
+            <tr>
+                <td>Số Nội Cảm</td>
+                <td>50</td>
+            </tr>
+            <tr>
+                <td>Số Nợ Nghiệp</td>
+                <td>50</td>
+            </tr>
+            <tr>
+                <td>Số Thiếu</td>
+                <td>50</td>
+            </tr>
+            <tr>
+                <td>Thể Nhân Dạng</td>
+                <td>50</td>
+            </tr>
+            <tr>
+                <td>Số Điện Thoại</td>
+                <td>60</td>
+            </tr>
+            <tr>
+                <td>Năm Cá Nhân</td>
+                <td>60</td>
+            </tr>
+            <tr>
+                <td>Tháng Cá Nhân</td>
+                <td>60</td>
+            </tr>
+            <tr>
+                <td>Tài Liệu Tham Khảo</td>
+                <td>70</td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<div class="new-page">
+    <div class="content">
+        <h2 class="title-content">VÀI NÉT VỀ NHÀ TOÁN HỌC – THẦN HỌC PYTAGO</h2>
+        <div>
+            <div class="mt-30px">
+                <img
+                        src="https://images.unsplash.com/photo-1679831996103-4ce31b50fb3a?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1067&q=80"
+                        alt=""
+                />
+            </div>
+            <p style="font-size: 2.2rem" class="font-bold mt-30px">
+                Từ buổi bình minh của lịch sử loài người, các con số đã là nguồn gốc
+                thông tin và hiểu biết về con người và thế giới xung quanh. Thần số
+                học – Khoa học tiên đoán các thông tin về cuộc sống thông qua các
+                con số - đã có mặt ít nhất 2.500 năm. Nghĩa là, từ khi Pytago, nhà
+                toán học Hy Lạp thế kỷ thứ sáu trước Công Nguyên, tạo ra Hệ thống số
+                Pytago.
+            </p>
+            <p style="font-size: 2.2rem" class="font-bold">
+                Pytago là một nhà toán học, triết học và lý thuyết gia, với những
+                nghiên cứu về các con số đã đưa đến sự ra đời của Thần số học. Giữ
+                một ảnh hưởng lớn trong hệ tư tưởng phương Tây, ông được coi như cha
+                đẻ của hình học, đặc biệt với định lý Pytago về mối liên hệ giữa ba
+                cạnh của một tam giác. Nhưng quan trọng nhất, Pytago là người đầu
+                tiên nhận ra các con số là nền tảng của vũ trụ - điều mà các nhà vật
+                lý hiện đại đơn giản cho là hiển nhiên.
+            </p>
+        </div>
+    </div>
+</div>
+<div class="new-page">
+    <div class="content">
+        <h1 class="title-content">NHỮNG CON SỐ VỀ CUỘC ĐỜI</h1>
+        <table class="table-content">
+            <tr>
+                <td>SỐ CHỦ ĐẠO</td>
+                <td colspan="4" style="text-align: center">{{ so_chu_dao }}</td>
+            </tr>
+            <tr>
+                <td>SỐ THÁI ĐỘ</td>
+                <td colspan="4" style="text-align: center">{{ so_thai_do }}</td>
+            </tr>
+            <tr>
+                <td>SỐ NGÀY SINH</td>
+                <td colspan="4" style="text-align: center">{{ so_ngay_sinh }}</td>
+            </tr>
+            <tr>
+                <td>SỐ SỨ MỆNH NLTN</td>
+                <td colspan="4" style="text-align: center">{{ so_su_menh }}</td>
+            </tr>
+            <tr>
+                <td>SỐ LINH HỒN ĐLBT</td>
+                <td colspan="4" style="text-align: center">{{ so_linh_hon }}</td>
+            </tr>
+            <tr>
+                <td>SỐ NHÂN CÁCH</td>
+                <td colspan="4" style="text-align: center">{{ so_nhan_cach }}</td>
+            </tr>
+            <tr>
+                <td>SỐ TRƯỞNG THÀNH</td>
+                <td colspan="4" style="text-align: center">
+                    {{ so_truong_thanh }}
+                </td>
+            </tr>
+            <tr>
+                <td>SỐ PHÁT TRIỂN</td>
+                <td colspan="4" style="text-align: center">{{ so_phat_trien }}</td>
+            </tr>
+            <tr>
+                <td>SỐ NỘI CẢM</td>
+                <td colspan="4" style="text-align: center">{{ so_noi_cam }}</td>
+            </tr>
+            <tr>
+                <td>SỐ NỢ NGHIỆP</td>
+                <td colspan="4" style="text-align: center">{{ so_no_nghiep }}</td>
+            </tr>
+            <tr>
+                <td>SỐ THIẾU</td>
+                <td colspan="4" style="text-align: center">{{ so_thieu }}</td>
+            </tr>
+            <tr>
+                <td>THỂ NHÂN DẠNG</td>
+                <td colspan="4" style="text-align: center">{{ the_nhan_dang }}</td>
+            </tr>
+            <tr>
+                <td>SỐ ĐIỆN THOẠI</td>
+                <td colspan="4" style="text-align: center">{{ so_dien_thoai }}</td>
+            </tr>
+            <tr>
+                <td>SỐ NĂM CÁ NHÂN</td>
+                <td colspan="4" style="text-align: center">{{ so_nam_ca_nhan }}</td>
+            </tr>
+            <tr>
+                <td>SỐ THÁNG CÁ NHÂN</td>
+                <td colspan="4" style="text-align: center">
+                    {{ so_thang_ca_nhan }}
+                </td>
+            </tr>
+            <tr>
+                <td>TUỔI ĐỈNH CAO</td>
+                <td>{{ tuoi_dinh_cao_1 }}</td>
+                <td>{{ tuoi_dinh_cao_2 }}</td>
+                <td>{{ tuoi_dinh_cao_3 }}</td>
+                <td>{{ tuoi_dinh_cao_4 }}</td>
+            </tr>
+            <tr>
+                <td>4 ĐỈNH CAO</td>
+                <td>{{ dinh_cao_1 }}</td>
+                <td>{{ dinh_cao_2 }}</td>
+                <td>{{ dinh_cao_3 }}</td>
+                <td>{{ dinh_cao_4 }}</td>
+            </tr>
+            <tr>
+                <td>4 THỬ THÁCH</td>
+                <td>{{ thu_thach_1 }}</td>
+                <td>{{ thu_thach_2 }}</td>
+                <td>{{ thu_thach_3 }}</td>
+                <td>{{ thu_thach_4 }}</td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<div class="new-page">
+    <div class="content">
+        <h1 class="title-content">KHÁM PHÁ BẢN THÂN THÔNG QUA NHỮNG CON SỐ</h1>
+        <h3 class="title-content">NUMEROLOGY</h3>
+        <h3 class="title-content">
+            KHOA HỌC KHÁM PHÁ BẢN THÂN THÔNG QUA NHỮNG CON SỐ
+        </h3>
+        <div class="my-30px">
+            <img
+                    src="https://images.unsplash.com/photo-1568828668638-b1b4014d91a2?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1495&q=80"
+                    alt=""
+            />
+        </div>
+        <p>
+            Numerology - tên tiếng Việt là Thần số học, là một môn khoa học nghiên
+            cứu về “Self-Discovery” - Khám phá Bản thân. Và, khi nghiêm túc nghiên
+            cứu sự tồn tại và tương quan giữa các con số có mặt trong ngày tháng
+            năm sinh của một người, người ta có thể hiểu được khá nhiều về bản
+            thân mình, và những mối quan hệ của mình với những người khác.
+        </p>
+        <p>
+            Trong cuộc đời, rất nhiều người trong chúng ta thường hay phải dò dẫm
+            đường đi mà không biết chắc nó có phù hợp với mình hay không, rồi ngã
+            trái vấp phải mới rút ra được các kinh nghiệm, nhiều khi bị cuộc đời
+            vùi dập như quả bóng bàn. Nếu chúng ta có được chút khái niệm về Khoa
+            học Số, và thông qua những kiến thức nhất định về ý nghĩa và sự kết
+            hợp của các số, chúng ta có thể tự vạch ra cho mình một hướng đi tương
+            đối cụ thể, giảm thiểu các lần ‘thử và sai’, và như vậy, cuộc đời
+            chúng ta cũng sẽ an yên nhiều lắm.
+        </p>
+        <p>
+            Thần số học nhận định rằng các con số là các dạng sóng rung
+            (vibrations), và mỗi con số đều có những dạng sóng rung khác nhau phụ
+            thuộc vào số vòng xoay mỗi con số tạo ra trong một giây. Mỗi âm thanh,
+            màu sắc, mùi hương, hay ý nghĩ đều là một sóng
+            rung, mỗi sóng này sẽ rung động tương ứng với mỗi con số cụ thể, và
+            mỗi con số này sẽ được kết nối vào cuộc sống. Vì thế, không quá khó
+            mường tượng khi nhận ra cuộc sống con người có một mối liên quan mật
+            thiết với những con số, bởi chúng chính là phương tiện biểu đạt quan
+            trọng của đời sống.
+        </p>
+        <p>
+            Lấy ví dụ này cho dễ tưởng tượng. Khi đi đâu bạn thường hay nhờ sự trợ
+            giúp của Bản đồ định vị đường đi - hệ thống GPRS hay Google map trên
+            điện thoại, để tránh bạn mất quá nhiều thời giờ tìm đường hay đi lạc
+            đường. Thì Khoa học Số này cũng vậy. Nếu chúng ta hiểu được các con số
+            có thể cung cấp cho chúng ta ý nghĩa đơn giản và chính xác về cuộc
+            sống của mình, ta sẽ tự tin hơn khi bước vào những đường đời mà chúng
+            ta chưa từng được đặt chân đến.
+        </p>
+        <h3 class="title-content">NHÀ TOÁN HỌC PYTAGO</h3>
+        <h3 class="title-content">
+            VÀ NHỮNG TIẾT LỘ TUYỆT VỜI CỦA NHỮNG CON SỐ:
+        </h3>
+        <div class="mt-10px">
+            <p>
+                Ngay từ lúc còn ngồi ghế phổ thông, bạn đã được học khá nhiều về
+                Pytago. Nhà toán học kỳ tài của thời Hy Lạp cổ đại, người phát minh
+                nhiều định lý toán học then chốt vẫn còn được áp dụng cho tới thời
+                bây giờ. Tuy vậy, không phải ai cũng biết rằng không chỉ gói gọn
+                trong toán học, Pytago còn là một nhà thần học, triết gia xuất
+                chúng, cha đẻ của Trường phái Pytago, có ảnh hưởng sâu đậm nhiều nhà
+                thần học lừng danh thế giới như Aristotle, Plato…, và thông qua các
+                vị này, ảnh hưởng luôn cả nền triết học, thần học phương Tây sau
+                này.
+            </p>
+            <p>
+                Vào thời Pytago, có rất nhiều học trò tựu về muốn theo ông để được
+                học hỏi hướng về sự khám phá tự do bản thân, và để tìm hiểu ý nghĩa
+                thâm sâu của cuộc sống và tình yêu. Các phần giảng của ông tựu trung
+                vào ý tứ của câu ngạn ngữ cổ: “Man know thyself, then thou shalt
+                know the Universe and God” - “Hãy nhận thức về bản thân mình, rồi
+                người sẽ biết về vũ trụ này, và về Thượng Đế”. Vào khoảng năm 532
+                trước công nguyên, Pytago đã lập hẳn một trường đại học của riêng
+                mình, chiêu mộ cho tất cả những ai cam kết tập trung toàn tâm vào
+                việc học tập, nghiên cứu, không phân biệt giới tính, màu da, chủng
+                tộc hay tiền của. Học trình Pytago giảng dạy chủ trương phát triển
+                cá nhân, bao gồm ba phần:
+            </p>
+            <p>
+                🔰Học phần 1: được gọi là ‘Chuẩn bị’, giảng dạy tập trung mười
+                nguyên tắc toán học then chốt, để cung cấp cho sinh viên kiến thức
+                cần thiết để phát triển cá nhân một cách rực rỡ nhất.
+            </p>
+            <p>
+                🔰 Học phần 2: phần ‘Thanh lọc’, dạy chủ yếu về việc thấu hiểu cuộc
+                sống, mục đích sống và cách sống sao cho hòa hợp với mục đích sống
+                này. Những giá trị này được giảng dạy thông qua ‘khoa học về những
+                con số’, mà ngày hôm nay được biết đến rộng rãi bằng cái tên
+                Numerology.
+            </p>
+        </div>
+    </div>
+</div>
+<div class="new-page">
+    <div class="content">
+        <p>
+            🔰 Học phần cuối cùng: sinh viên được dạy về khái niệm ‘Hoàn thiện
+            hóa’, tích hợp và diễn dịch các yếu tố về thân, tâm và thức (physical,
+            mental and spiritual) của mỗi con người.
+        </p>
+        <p>
+            Nội dung của Numberology sẽ giúp được ít nhiều cho những ai từ trước
+            đến nay (có thể vô thức) tìm kiếm câu trả lời cho những vấn đề tương
+            đối bí ẩn về cuộc sống chính mình. Bạn có thể biết rõ hơn Ta là ai, và
+            một số cách thức để bạn thấu hiểu và cải thiện cuộc sống của bạn theo
+            chiều hướng tốt đẹp hơn. Thần số học còn có thể giúp bạn hòa hợp với
+            mọi người xung quanh mình hơn, an toàn hơn về cảm xúc, tinh thần và cả
+            tài chính, duy trì cuộc sống khỏe mạnh và sống một đời sống đong đầy
+            yêu thương.
+        </p>
+        <div class="text-center">
+            <img
+                    style="width: 80%"
+                    src="https://images.unsplash.com/photo-1576872381149-7847515ce5d8?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=736&q=80"
+                    alt=""
+            />
+        </div>
+    </div>
+</div>
+<div class="new-page">
+    <div class="content">
+        <h1 class="title-content">NHỮNG RUNG ĐỘNG CỦA CÁC CON SỐ</h1>
+        <div class="my-30px">
+            <img
+                    src="https://images.unsplash.com/photo-1502570149819-b2260483d302?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80"
+                    alt=""
+            />
+        </div>
+        <table class="table-content text-lg">
+            <tr>
+                <td width="20%">Rung động 1</td>
+                <td style="text-align: left">
+                    Độc lập, năng nổ, có nhu cầu chịu trách nhiệm
+                </td>
+            </tr>
+            <tr>
+                <td>Rung động 2</td>
+                <td style="text-align: left">Nhạy cảm, không thích mâu thuẫn</td>
+            </tr>
+            <tr>
+                <td>Rung động 3</td>
+                <td style="text-align: left">
+                    Coi trọng giao tiếp và năng lượng sáng tạo
+                </td>
+            </tr>
+            <tr>
+                <td>Rung động 4</td>
+                <td style="text-align: left">
+                    Chắc chắn, có tinh thần trách nhiệm, theo đuổi sự an tâm
+                </td>
+            </tr>
+            <tr>
+                <td>Rung động 5</td>
+                <td style="text-align: left">Tự do, phiêu lưu</td>
+            </tr>
+            <tr>
+                <td>Rung động 6</td>
+                <td style="text-align: left">
+                    Nuôi dưỡng, có khuynh hướng là người trông nom, quan tâm
+                </td>
+            </tr>
+            <tr>
+                <td>Rung động 7</td>
+                <td style="text-align: left">
+                    Tìm kiếm chân lý, luôn hỏi câu hỏi lớn “Tôi là ai?”
+                </td>
+            </tr>
+            <tr>
+                <td>Rung động 8</td>
+                <td style="text-align: left">
+                    Có nhu cầu tự do về tài chính và tâm linh
+                </td>
+            </tr>
+            <tr>
+                <td>Rung động 9</td>
+                <td style="text-align: left">
+                    Có tố chất lãnh đạo, bẩm sinh có khuynh hướng nhân đạo
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+<div class="new-page">
+    <div class="content">
+        <h1 class="title-content">BA THỂ CỦA BẢN THÂN</h1>
+        <h1 class="text-center font-bold">(Three Aspects Of Self)</h1>
+        <div>
+            <p class="font-bold">
+                Để có thể thâm nhập vào những Thể ý thức sâu hơn của con người, ta
+                cần hiểu bản chất ba thể của con người, và mối liên hệ mật thiết
+                giữa ba thể này.
+            </p>
+            <div class="mt-30px">
+                <img
+                        src="https://images.unsplash.com/photo-1670272498425-e13ce4fcf5f0?ixlib=rb-4.0.3&ixid=MnwxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80"
+                        alt=""
+                />
+            </div>
+            <div class="mt-30px">
+                <h4 class="font-bold">Thể Cơ bản - Basic Self:</h4>
+                <p>
+                    Những biểu đạt cơ bản của con người được thể hiện thông qua cơ
+                    thể. Tiếng khóc đầu đời của em bé sơ sinh, giọng người cất tiếng
+                    kêu cầu cứu, hơi thở hắt cuối cùng của một người trước khi qua
+                    đời…, tất cả đều được tỏa ra từ Thể Cơ bản - Basic Self. Cũng
+                    chính từ thể nhận thức này, một đứa trẻ bắt đầu dần trở nên quen
+                    thuộc với môi trường thực tế xung quanh. Những biểu đạt của năm
+                    giác quan (thị giác, thính giác, xúc giác, vị giác, khứu giác) khi
+                    tiếp xúc thực tế sẽ tích lũy lại, tạo nên những chức năng căn bản
+                    nhất của Thể Cơ bản, cùng với việc nói, cười, khóc và tất cả các
+                    hoạt động thể chất khác.
+                </p>
+                <p>
+                    Thể Cơ bản được kích hoạt để phản ứng rộng khắp khi chúng ta đủ
+                    lớn để thực hiện được tất cả các hoạt động thể chất cần thiết
+                    trong môi trường ta đang sống. Đây chính là thể tự vệ của cơ thể,
+                    một dạng cư xử mang tính bản năng (khác với cách cư xử mang tính
+                    trực giác ở Thể Cao cấp - High Self). Cảm giác thiếu an toàn, tìm
+                    kiếm các xúc cảm, cảm giác muốn kiểm soát các tình huống hay kiểm
+                    soát người khác…
+                    đều là các biểu đạt của Thể Cơ bản. Những người nặng về Thể Cơ bản là
+                    những người sống khá dựa vào ‘cái tôi’ cá nhân, và những điều họ muốn
+                    có thường vượt quá cái họ cần. Những người này có não trái hoạt động
+                    rất mạnh.
+                </p>
+                <p>
+                    Hiểu biết về Thần Số Học - Numerology sẽ giúp những người dạng này
+                    kiểm soát Thể Cơ bản tốt hơn, để trả nó về vị trí phù hợp của nó là
+                    người giúp việc cho cái tôi của ta, nhận sự sai khiến của ta, chứ
+                    không phải là ông chủ để sai khiến cái tôi của ta chạy theo bản năng.
+                    Bằng cách này, chúng ta sẽ nhận ra các bài học cuộc sống nhanh hơn, để
+                    không cần phải lặp đi lặp lại những tổn thất hay tổn thương một cách
+                    không cần thiết.
+                </p>
+                <p>
+                    Chúng ta đừng quên rằng Thể Cơ bản là vô cùng cần thiết để duy trì các
+                    hoạt động thể chất một cách cân bằng. Chỉ khi nào Thể Cơ bản hòa nhập
+                    tuyệt đối vào hai Thể kia, thì cơ thể mới thực sự ‘hoạt động’. Còn
+                    không, chỉ có thể gọi là ‘phản ứng’ của cơ thể mà thôi. Nói nôm na cho
+                    dễ hiểu, là nếu không đi kèm con tim và trí óc, thì cơ thể này chỉ là
+                    một khối bản năng mà thôi.
+                </p>
+                <p>
+                    Khi chúng ta biết cách kiểm soát Thể Cơ bản này một cách hiệu quả, nó
+                    sẽ trở thành một ‘người tớ’ đầy trung thành cho chúng ta. Lúc này cái
+                    tôi được thúc đẩy bởi tình yêu thương và trí tuệ (là hai Thể kia),
+                    cuộc sống thể chất của chúng ta được sắp xếp tốt hơn, và chúng ta trở
+                    nên kiên nhẫn hơn với bản thân và với người khác. Cuộc sống của chúng
+                    ta cũng vì thế mà bớt đi những hy sinh tổn thất, khi chúng ta trở nên
+                    sâu sắc, biết cân nhắc suy nghĩ hơn. Chúng ta tiến triển, từ vai trò
+                    ‘nạn nhân’ (victim) của ‘Bể khổ Đời’ sang những người chinh phục được
+                    (victor), đạt được những thành tựu nhất định trong cuộc sống này.
+                </p>
+                <p>
+                    Thể Cơ bản thể hiện đầy đặn nhất trong sự tồn tại và kết nối tích cực
+                    của ba con số thuộc trục ngang Thể chất: 1,4,7.
+                </p>
+                <h4 class="font-bold">Thể Ý thức - Conscious Self:</h4>
+                <p>
+                    Thể Ý thức là nơi các ý nghĩ và thái độ của chúng ta trú ngụ. Nó cũng
+                    là nơi chứa chấp niềm vui nỗi buồn của chúng ta, cùng khả năng cho
+                    chúng ta CHỌN LỰA tiếp nhận: hoặc là niềm vui, hoặc là nỗi buồn. Nó
+                    cũng là kho chứa dữ liệu về trí nhớ, sự sáng tạo và những lý tưởng của
+                    con người.
+                </p>
+                <p>
+                    Thể Ý thức là chiếc cầu nối giữa Thể Cơ bản và Thể Cao cấp, hội nhập
+                    các khía cạnh mang tính phản ứng và bản năng của chúng ta với những
+                    giá trị tinh thần. Đây chính là sự kết nối giữa não trái và não phải
+                    trong đầu chúng ta.
+                </p>
+                <p>
+                    Khi Thể Ý thức chọn hướng tiêu cực, nó trở thành ‘thể Vô thức’. Nó trở
+                    nên đầy tính dối lừa, phản ứng tiêu cực, lẩn tránh và bị stress kéo
+                    dẫn, và tiếp nhận vai trò làm một nạn nhân sống mỏi mệt, làm việc gì
+                    cũng không ổn.
+                </p>
+                <p>
+                    Tuy vậy, nếu chúng ta cho phép Thể Ý thức mình hoàn thành mục đích tối
+                    thượng của nó, Thể Ý thức là một công cụ diễn dịch vô cùng tuyệt vời.
+                    Nó chuyển ý thức tinh thần thành ý thức thể chất. Thể Ý thức giúp
+                    chúng ta diễn dịch trực giác, tình yêu thương và trí tuệ thành những
+                    ‘ngôn ngữ hiểu được’. Đó là nơi kiến thức, lòng thương và trí tuệ được
+                    chuyển dịch thành những hoạt động đầy tích cực.
+                </p>
+                <p>
+                    Thể Ý thức được giữ lại trong trí nhớ. Nó gắn các kiến thức đã lĩnh
+                    hội được trong quá khứ với các trải nghiệm hiện tại để tạo ra một kho
+                    lưu trữ những thông tin hay dữ liệu liên quan. Khi được sử dụng một
+                    cách tích cực, kho trữ liệu này trở thành nền tảng cho chúng ta có
+                    được sự tự tin và tự trân trọng những giá trị mình có, và mở rộng ra
+                    những khả năng sáng tạo mỗi ngày được nâng cao và, thậm chí, vươn đến
+                    trí thông minh ngày càng sắc sảo hơn.
+                </p>
+                <p>
+                    Ba con số thuộc Trục ngang Tâm trí là 3,6,9, và ba số này hợp lại để
+                    thúc đẩy Thể Ý thức hoạt động.
+                </p>
+                <h4 class="font-bold">Thể Ý thức - Conscious Self:</h4>
+                <p>
+                    Thể Cao cấp bao gồm các giá trị đạo đức, tư tưởng và các giá trị tinh
+                    thần. Nó chính là tố chất cần thiết cho sự nhạy cảm và cảm giác, khía
+                    cạnh nhận diện và quyết định các nhu cầu của ta. Nó được thể hiện qua
+                    trực giác, tình yêu thương và trí tuệ. Đây là thể diễn đạt cao nhất.
+                    Hoạt động của Thể Cao cấp phần lớn thuộc về não phải: sáng tạo, giàu
+                    lòng thương, và đậm tính tinh thần.
+                </p>
+                <p>
+                    Nhiều người hay nhầm lẫn tình yêu thương và cảm xúc. Tình yêu chân
+                    thật là một chức năng của Thể Cao cấp. Sự cuốn hút về thể xác (Thể Cơ
+                    bản) và điều kiện tinh thần (Thể Ý thức) thường đi kèm tình yêu, nhưng
+                    không phải lúc nào cũng cần có mặt. Tình yêu thương có một độ sâu có
+                    khả năng lan tỏa khắp mọi phương diện biểu đạt của con người. Nó thích
+                    biểu đạt thông qua cảm xúc, nhưng nó không bị cảm xúc thống trị đâu,
+                    bạn nhớ nhé.
+                </p>
+                <p>
+                    Thể Cao cấp được tạo điều kiện tốt nhất thông qua sự phát triển trực
+                    giác, dẫn đến sự phát triển tự do cá nhân thật sâu sắc. Có được sự tự
+                    do này sẽ dẫn đến chiều sâu trí tuệ mà không phải ai cũng đạt được
+                    trong đời.
+                </p>
+                <p>
+                    Trong Numerology, Thể Cao cấp được thể hiện bởi trục ngang Tâm hồn,
+                    hay Tinh thần, bao gồm chuỗi ba số 2,5,8. Những người được sinh ra
+                    trong thế kỷ 21, tức sinh ra từ năm 2000 trở đi, trong ngày sinh của
+                    mỗi người sẽ có ít nhất một con số 2. Vậy, kỷ nguyên mới sẽ chứng kiến
+                    sự thể hiện tinh thần mạnh mẽ hơn trong các hoạt động của con người
+                    các thế hệ tiếp sau này.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="new-page">
+    <div class="content">
+        <h1 class="title-content">SỐ CHỦ ĐẠO – SỐ ĐƯỜNG ĐỜI</h1>
+        <p class="font-bold">
+            Theo trường phái Pytago, không có Con số chủ đạo là 1. Vậy các Con số
+            chủ đạo của chúng ta sẽ có từ số 2, kéo dài đến số 11. Có thêm trường
+            hợp đặc biệt nữa, là số 4 được tạo thành từ số tổng 22 và con số 6
+            được tạo thành từ số tổng 33.
+        </p>
+        <p class="font-bold">Con Số Chủ Đạo Your Ruling Number</p>
+        <p class="font-bold">
+            Nhà toán học, thần học Pytago từng nói: “Sự tiến hóa là luật của cuộc
+            sống. Con số là luật của vũ trụ. Tích hợp chúng lại là luật của Đấng
+            Sáng tạo.” (trích bởi Edouard Schure - tác phẩm The Great
+            Initiatives).
+        </p>
+        <p class="font-bold">
+            Xét theo những khía cạnh nào đó, chúng ta là những người du hành bước
+            trên những Con đường tiến hóa của chính mình, với những tốc độ khác
+            nhau. Một số người đã dừng lại nghỉ ngơi một chút, một số người khác,
+            thực tế là đã ‘nghỉ ngơi’… hơi bị lâu. Một số người đang bị… lan man
+            trong những lối đi dẫn họ đi xa khỏi Con đường tiến hóa chính của họ,
+            những lối đi thoạt trông có vẻ đưa nhiều người tới một hiện tại giàu
+            có nhưng lại làm mờ mịt Con đường tiến hóa của họ, vốn chỉ có một lối
+            duy nhất. Và những ai ý thức điều này nên dịch chuyển mình dần về lại
+            lối chính, để phần thức bản thân mình có thể tiến hóa xa hơn.
+        </p>
+        <p class="font-bold">
+            Nếu chúng ta đi qua cuộc đời này mà không ít ra hoàn thiện được những
+            mục đích cơ bản của Con đường tiến hóa của mỗi người thì thật là quá
+            đáng tiếc, phải không? Nhưng trên thực tế, không phải ai cũng nhìn ra
+            những mục đích cơ bản của Con đường tiến hóa của bản thân ta là gì, và
+            việc mò mẫm dò dẫm tìm ra con đường ấy, thật giống như thả chúng ta
+            xuống nước mà cột chân chúng ta lại kêu “Bơi đi”. Quá khó, phải không?
+            Đó là do chúng ta thiếu sự hướng dẫn về tự khám phá bản thân. Trên
+            thực tế, vẫn đang có quá nhiều người đang được đưa đẩy tới những ngành
+            nghề không phát triển hoặc hiển lộ tài năng của họ, hoặc nhiều người
+            khác đang phải làm những công việc khác rất xa nghề nghiệp phù hợp với
+            họ, chẳng hạn người có năng khiếu nghệ thuật phải đi làm công việc
+            tính toán kinh doanh…
+        </p>
+        <p class="font-bold">
+            Nếu các bạn trẻ trạc tuổi học sinh trung học được dạy để biết về các
+            Con số chủ đạo của cuộc đời các bạn, các bạn sẽ tìm hướng đi nghề
+            nghiệp cho tương lai của mình dễ dàng hơn nhiều, mà cũng sẽ phù hợp và
+            gặt hái nhiều thành tựu hơn nhiều. Các bạn sẽ được hướng dẫn tới một
+            công việc phù hợp, hoặc hướng tới việc học lên cao hơn nữa phù hợp với
+            thiên chất của các bạn, hơn là lục lạo khắp các loại nghề nghiệp đang
+            có trên thị trường và rồi cuối cùng miễn cưỡng chấp nhận đại một công
+            việc nào đó lọt vào đường đi của mình. Hàng ngàn người thất nghiệp do
+            làm việc không hiệu quả hiện giờ lẽ ra cũng sẽ tìm được những công
+            việc phù hợp nhất quen thuộc với họ, cũng sẽ vui vẻ đi làm và làm hiệu
+            quả, chứ không phải chịu cảnh học sai nghề dẫn tới luôn là một người
+            thất bại trong nghề nghiệp.
+        </p>
+    </div>
+</div>
+<div class="new-page">
+    <div class="content">
+        <p class="font-bold">
+            Bắt con cá mà trèo lên cây hái trái như con khỉ, hay bắt con khỉ xuống
+            nước bơi lội như con cá, sao chúng nó làm được, phải không?
+        </p>
+        <p class="font-bold">
+            Hãy nhớ rằng, sự tiến hóa của mỗi chúng ta là một con đường dài vô tận
+            hướng về sự hoàn thiện của linh hồn mỗi người. Những gì mà Con số chủ
+            đạo của ta hướng dẫn cho mỗi người là những lối đi cơ bản tối cần
+            thiết để chúng ta phải theo, để đạt được những tiến bộ cơ bản của từng
+            giai đoạn tiến hóa trước khi chúng ta tiếp nhận những chặng đường phát
+            triển cao hơn nữa. Một số người cả đời không ra khỏi những gì mà Con
+            số chủ đạo của họ thể hiện (cả về mặt tích cực lẫn mặt hạn chế), nhưng
+            ít ra khi đã hoàn thiện những gì được thể hiện trong Con số chủ đạo
+            này, họ đã có tiến bộ rất nhiều. Nhiều người khác lại không cam chịu
+            dừng lại ở những gì bó buộc chỉ trong Con số chủ đạo của họ quy định,
+            họ nhận ra tiềm năng phát triển và cảm hứng vượt lên trên những giới
+            hạn đó, để tiến bộ còn vượt bậc hơn cả những gì con đường sự nghiệp cơ
+            bản của họ vẽ ra, thật đáng mừng.
+        </p>
+        <p class="font-bold">
+            Cây muốn ra quả trước hết phải mọc lên khỏe mạnh và trưởng thành. Đời
+            người cũng vậy. Sức mạnh và độ chín muồi, trưởng thành của chúng ta
+            chỉ có thể xuất hiện chỉ khi nào chúng ta hoàn thiện được những mục
+            đích quan trọng nhất của chúng ta trong đời, những điều này, thật đáng
+            mừng, là đều có thể hiện trong Con số chủ đạo của mỗi người chúng ta.
+        </p>
+        <p class="font-bold">
+            Vậy vấn đề lớn bây giờ là: Làm sao xác định được Con số chủ đạo của
+            bạn là số mấy?Cộng tất cả số của ngày tháng năm sinh của bạn lại cho
+            đến khi chỉ còn 1 con số từ 2 cho đến 11. Và nhớ là còn có thêm trường
+            hợp đặc biệt nữa, là số 4 được tạo thành từ số tổng 22 và con số 6
+            được tạo thành từ số tổng 33.
+        </p>
+        <div class="mt-30px">
+            <img
+                    src="https://plus.unsplash.com/premium_photo-1667857391858-a40fc91136e8?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1632&q=80"
+                    alt=""
+            />
+        </div>
+    </div>
+</div>
+<div class="new-page">
+    <div>{{ main_number_data.content |safe }}</div>
+</div>
+<div class="new-page">
+    <div class="content">
+        <h1 class="title-content">BIỂU ĐỒ NGÀY SINH</h1>
+        <p>
+            Khi chúng ta muốn mở một cánh cửa đang bị khóa, chúng ta cần cái chìa
+            khóa. Đối với rất nhiều người, phần nội tâm (inner self) nằm ẩn đằng
+            sau một cánh cửa khóa, bởi họ hiếm khi nào phát hiện họ là ai hoặc
+            hoặc phát triển được tiềm năng tận cùng của mình.
+        </p>
+        <p>
+            Chìa khóa để khám phá con người nội tâm thông qua Numerology chính là
+            Biểu đồ Ngày sinh - Birth Chart. Mục đích chính của Biểu đồ Ngày sinh
+            là để tiết lộ nhanh công thức tổng hoặc những cấu trúc cho ta thấy
+            những chỗ nào là sức mạnh hoặc yếu điểm của ta. Mỗi ngày sinh khác
+            nhau cho ra một Biểu đồ Ngày sinh khác nhau. Có thể có vô vàn dị bản,
+            nhưng cách hình thành biểu đồ thì luôn tương tự nhau, nếu người lập
+            trung thành với nguyên tắc của nhà triết học - toán học Pytago. Đây là
+            một biểu đồ giản dị mà đầy cao quý, được truyền đời từ thế hệ thầy này
+            tiếp nối thế hệ thầy sau, qua nhiều thế kỷ không hề gián đoạn.
+        </p>
+        <center style="padding: 0 200px">
+            <table width="300" height="300" cellspacing="0" cellpadding="7">
+                <tbody>
+                <tr valign="bottom">
+                    <td style="background: #bfbfbf; text-align: center; vertical-align: middle;" bgcolor="#bfbfbf"
+                        width="35" height="100">
+                        <span style="color: #002060;"><span style="font-size: x-large;"><strong>3&nbsp;</strong></span></span>
+                    </td>
+                    <td style="background: #bfbfbf; text-align: center; vertical-align: middle;" bgcolor="#bfbfbf"
+                        width="35" height="100">
+                        <span style="color: #002060;"><span style="font-size: x-large;"><strong>3&nbsp;</strong></span></span>
+                    </td>
+                    <td style="background: #bfbfbf; text-align: center; vertical-align: middle;" bgcolor="#bfbfbf"
+                        width="35" height="100">
+                        <span style="color: #002060;"><span style="font-size: x-large;"><strong>3&nbsp;</strong></span></span>
+                    </td>
+                </tr>
+
+                </tbody>
+                <tbody>
+                <tr valign="bottom">
+                    <td style="background: #bfbfbf; text-align: center; vertical-align: middle;" bgcolor="#bfbfbf"
+                        width="35" height="100">
+                        <span style="color: #002060;"><span style="font-size: x-large;"><strong>3&nbsp;</strong></span></span>
+                    </td>
+                    <td style="background: #bfbfbf; text-align: center; vertical-align: middle;" bgcolor="#bfbfbf"
+                        width="35" height="100">
+                        <span style="color: #002060;"><span style="font-size: x-large;"><strong>3&nbsp;</strong></span></span>
+                    </td>
+                    <td style="background: #bfbfbf; text-align: center; vertical-align: middle;" bgcolor="#bfbfbf"
+                        width="35" height="100">
+                        <span style="color: #002060;"><span style="font-size: x-large;"><strong>3&nbsp;</strong></span></span>
+                    </td>
+                </tr>
+                </tbody>
+                <tbody>
+                <tr valign="bottom">
+                    <td style="background: #bfbfbf; text-align: center; vertical-align: middle;" bgcolor="#bfbfbf"
+                        width="35" height="100">
+                        <span style="color: #002060;"><span style="font-size: x-large;"><strong>3&nbsp;</strong></span></span>
+                    </td>
+                    <td style="background: #bfbfbf; text-align: center; vertical-align: middle;" bgcolor="#bfbfbf"
+                        width="35" height="100">
+                        <span style="color: #002060;"><span style="font-size: x-large;"><strong>3&nbsp;</strong></span></span>
+                    </td>
+                    <td style="background: #bfbfbf; text-align: center; vertical-align: middle;" bgcolor="#bfbfbf"
+                        width="35" height="100">
+                        <span style="color: #002060;"><span style="font-size: x-large;"><strong>3&nbsp;</strong></span></span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </center>
+        <p>
+            Biểu đồ ngày sinh cần mỗi số có 1 số từ 3 đến 9, riêng số 1 và 2 thì
+            cần có 2 số. Việc thừa hay thiếu mỗi số trên đều có ảnh hưởng sóng
+            rung đến cuộc đời của bạn.
+        </p>
+        <h3 class="font-bold">CÁCH LẬP MỘT BIỂU ĐỒ NGÀY SINH:</h3>
+        <p>Để lập một Biểu đồ Ngày sinh này, bạn làm theo các bước sau:</p>
+        <p>
+            Bước 1: Ghi rõ ràng ngày tháng năm sinh dương lịch của bạn xuống một
+            tờ giấy.
+        </p>
+        <p>
+            Bước 2: Trên tờ giấy này vạch hai sọc ngang và hai sọc dọc đan cài vào
+            nhau theo hình vuông góc. Như vậy, thông qua 4 sọc ngang dọc này,
+            chúng ta sẽ có 9 chỗ để điền 9 số tự nhiên (từ 1 đến 9) nào có trong
+            ngày sinh của mình vào. Các con số này có
+            vị trí cố định, không bao giờ được thay đổi. Ví dụ số 1 luôn nằm ở ô
+            thấp nhất, bên trái. Số 5 luôn nằm ở trung tâm của biểu đồ… Riêng số 0
+            không được tính hay ghi vào biểu đồ.
+        </p>
+        <p>
+            Bước 3: Nhìn lại vị trí của các con số trong Biểu đồ. Tùy theo ngày
+            sinh cụ thể, hãy đặt các con số trong ngày sinh của ta vào các ô tương
+            ứng. Có thể có nhiều con số được lặp lại, cứ gắp thả hết vào đúng vị
+            trí ô đó. Những ô nào ngày sinh ta không có, thì bỏ trống.
+        </p>
+        <p>
+            Bước 4: Biểu đồ Ngày sinh của bạn đã được hình thành, bạn đã có công
+            thức cá nhân tính cơ bản trước mặt. Giờ đây bạn đã có thể sẵn sàng
+            phân tích rất nhiều khía cạnh khác nhau chỉ dựa trên biểu đồ đơn giản
+            này.
+        </p>
+        <p>
+            Trước hết ta cần quan sát tổng quan về Biểu đồ Ngày sinh này, theo 03
+            Tầng được thể hiện bằng 3 trục ngang: từ dưới lên: Tầng Cơ bản - Basic
+            Self (gồm ba số: 1,4,7 - là trục Thể chất) với các hoạc động thực
+            tiễn, thực tế; Tầng Cao - High Self (gồm ba số: 2,5,8 - là trục ngang
+            Tâm hồn) với các hoạt động tinh thần, cảm giác; Tầng Ý thức -
+            Conscious Self (gồm ba số: 3,6,9 - là trục ngang Trí não) với các hoạt
+            động trí óc, suy nghĩ.
+        </p>
+        <p>
+            Số lượng các con số có mặt hay tụ vào trục nào nhiều hơn sẽ chỉ ra
+            rằng con người gốc của ta được thể hiện ở Thể nào rõ ràng, mạnh mẽ
+            hơn. Nắm được điều này sẽ rất có lợi cho các mối quan hệ, bởi nó tiết
+            lộ tính khí và sở thích giao tiếp của mỗi người với môi trường xung
+            quanh. Qua đó, bạn sẽ thấy hiểu hay dễ hòa hợp hơn với những người
+            thân trong gia đình, đồng nghiệp nơi công sở của bạn.
+        </p>
+        <h3 class="font-bold">Ý NGHĨA CỦA MỖI TRỤC</h3>
+        <p>
+            ☀ Trục Trí não 3,6,9: đại diện cho cái đầu con người, được hiển thị
+            bằng trục ngang nằm trên cùng của biểu đồ ngày sinh. Nó phụ trách trí
+            nhớ, suy nghĩ, óc phân tích, lý trí, trí tưởng tượng, sáng tạo, trách
+            nhiệm, hoài bão/tham vọng và lý tưởng sống.
+        </p>
+        <p>
+            ☀ Trục Tâm hồn 2,5,8: đại diện cho trái tim con người, được hiển thị ở
+            trục ngang nằm giữa biểu đồ ngày sinh. Nó phụ trách toàn bộ cảm giác,
+            cũng bao gồm luôn trực giác, tình yêu thương, sự tự do, các cảm xúc
+            tích cực, các biểu đạt nghệ thuật, sự độc lập về tinh thần, và trí
+            tuệ/sự thông thái.
+        </p>
+        <p>
+            ☀ Trục Thể chất 1,4,7: đại diện cho hoạt động của con người, hiển thị
+            bằng trục ngang nằm dưới cùng của biểu đồ ngày sinh. Nó quản lý các
+            lời nói, ngôn ngữ hình thể, động lực, óc tổ chức, tính kiên nhẫn, tính
+            vật chất và sự lĩnh hội thông qua mất mát (học hỏi qua những lần vấp
+            ngã).
+        </p>
+        <h3 class="font-bold">BIỂU ĐỒ NGÀY SINH CỦA VŨ HỮU ĐỒNG</h3>
+        <center style="padding: 0 200px">
+            <table width="300" height="300" cellspacing="0" cellpadding="7">
+                <tbody>
+                <tr valign="bottom">
+                    <td style="background: #bfbfbf; text-align: center; vertical-align: middle;" bgcolor="#bfbfbf"
+                        width="35" height="100">
+                        <span style="color: #002060;"><span style="font-size: x-large;"><strong>3&nbsp;</strong></span></span>
+                    </td>
+                    <td style="background: #bfbfbf; text-align: center; vertical-align: middle;" bgcolor="#bfbfbf"
+                        width="35" height="100">
+                        <span style="color: #002060;"><span style="font-size: x-large;"><strong>3&nbsp;</strong></span></span>
+                    </td>
+                    <td style="background: #bfbfbf; text-align: center; vertical-align: middle;" bgcolor="#bfbfbf"
+                        width="35" height="100">
+                        <span style="color: #002060;"><span style="font-size: x-large;"><strong>3&nbsp;</strong></span></span>
+                    </td>
+                </tr>
+
+                </tbody>
+                <tbody>
+                <tr valign="bottom">
+                    <td style="background: #bfbfbf; text-align: center; vertical-align: middle;" bgcolor="#bfbfbf"
+                        width="35" height="100">
+                        <span style="color: #002060;"><span style="font-size: x-large;"><strong>3&nbsp;</strong></span></span>
+                    </td>
+                    <td style="background: #bfbfbf; text-align: center; vertical-align: middle;" bgcolor="#bfbfbf"
+                        width="35" height="100">
+                        <span style="color: #002060;"><span style="font-size: x-large;"><strong>3&nbsp;</strong></span></span>
+                    </td>
+                    <td style="background: #bfbfbf; text-align: center; vertical-align: middle;" bgcolor="#bfbfbf"
+                        width="35" height="100">
+                        <span style="color: #002060;"><span style="font-size: x-large;"><strong>3&nbsp;</strong></span></span>
+                    </td>
+                </tr>
+                </tbody>
+                <tbody>
+                <tr valign="bottom">
+                    <td style="background: #bfbfbf; text-align: center; vertical-align: middle;" bgcolor="#bfbfbf"
+                        width="35" height="100">
+                        <span style="color: #002060;"><span style="font-size: x-large;"><strong>3&nbsp;</strong></span></span>
+                    </td>
+                    <td style="background: #bfbfbf; text-align: center; vertical-align: middle;" bgcolor="#bfbfbf"
+                        width="35" height="100">
+                        <span style="color: #002060;"><span style="font-size: x-large;"><strong>3&nbsp;</strong></span></span>
+                    </td>
+                    <td style="background: #bfbfbf; text-align: center; vertical-align: middle;" bgcolor="#bfbfbf"
+                        width="35" height="100">
+                        <span style="color: #002060;"><span style="font-size: x-large;"><strong>3&nbsp;</strong></span></span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </center>
+    </div>
+</div>
+<div class="new-page">
+    <div class="content">
+        <h1 class="title-content">BA GIAI ĐOẠN CỦA MỘT ĐỜI NGƯỜI</h1>
+        <p class="italic mt-30px font-bold">Ba giai đoạn này được biết đến như giai đoạn niên thiếu, giai đoạn trưởng
+            thành
+            và giai đoạn viên mãn. Và miễn là không có nghiệp quả nghiêm trọng hay tác động
+            nào từ môi trường, cuộc sống của chúng ta sẽ tuần tự có đủ ba giai đoạn này.</p>
+        <div class="mt-30px">
+            <h3 class="font-bold">GIAI ĐOẠN THỜI NIÊN THIẾU kéo dài đến năm bạn 25 tuổi. </h3>
+            <p>Giai đoạn thiếu niên là giai đoạn phần thể chất và trí não sẽ phát triển, và hoàn thiện
+                từ khi sinh ra cho đến khi đạt đỉnh cao đầu tiên của Kim tự tháp.</p>
+            <h4 class="font-bold">CHỈ SỐ GIAI ĐOẠN CUỘC ĐỜI 3</h4>
+            <p class="italic">THỂ HIỆN BẢN THÂN, GIAO TIẾP, SÁNG TẠO</p>
+            <p>Một Giai đoạn cuộc đời số 3 sẽ khuyến khích bạn sử dụng sức sáng tạo và trí tưởng
+                tượng của mình trong mọi lĩnh vực của cuộc sống. Nó sẽ dạy cho bạn cách thể hiện
+                bản thân thông qua lời nói, nghệ thuật, trí tuệ, cơ thể, và cảm xúc một cách tích cực,
+                thay vì thể hiện bản thân một cách tiêu cực. Trong giai đoạn này, bạn sẽ học cách
+                giao tiếp hiệu quả hơn và phát triển bất cứ tài năng sáng tạo nào bạn có, thậm chí là
+                biến nó thành sự nghiệp của mình. Đây là một chu kỳ thuận lợi cho việc: bắt đầu
+                một sở thích, học cách chơi một nhạc cụ, viết một cuốn sách (hay viết blog hoặc làm
+                thơ), viết nhật ký, ca hát (hay thể hiện bản thân bằng những cách khác), phát triển
+                các tài năng nghệ thuật/sáng tạo và giao lưu xã hội.</p>
+        </div>
+        <div class="mt-30px">
+            <h3 class="font-bold">GIAI ĐOẠN NĂM TRƯỞNG THÀNH kéo dài 27 năm. Từ
+                năm bạn 25 – 52 tuổi.</h3>
+            <p>Hoạt động trí não là trọng tâm của giai đoạn trưởng thành, nên sự phát triển của giai
+                đoạn này chủ yếu hướng đến việc học kiểm soát cảm xúc, thấu hiểu cuộc sống, đạt
+                được sự an toàn về tài chính và xây dựng mái ấm gia đình. Những ảnh hưởng mang
+                tính chu kỳ của nhiều hoạt động thể chất và tinh thần khác nhau sẽ tiếp tục xuất hiện
+                trong giai đoạn này, với phần thể chất từ từ mất đi thế thượng phong, trong khi phần
+                tinh thần ngày càng trở nên mạnh mẽ. Hành trình phát triển sự nghiệp và tạo dựng sự
+                độc lập tài chính cũng dễ thành công trong giai đoạn này hơn bất kỳ giai đoạn nào
+                khác, vì chúng ta sẽ gặp vô vàn cơ hội khi đi qua những vòng thay đổi 9 năm của các
+                Kim tự tháp với 4 đỉnh cao của cuộc đời.</p>
+            <p>Giai đoạn trưởng thành cũng là chặng đường thiết yếu trong hành trình khám phá con
+                người bên trong – cái tôi chân thật ở bên trong mỗi người chúng ta. Bởi vì mức độ
+                thành công của 27 năm ổn định này sẽ là tiền đề cho chúng ta phát triển giai đoạn thứ
+                ba của cuộc đời, những năm viên mãn.</p>
+            <h4 class="font-bold">CHỈ SỐ GIAI ĐOẠN CUỘC ĐỜI 1</h4>
+            <p class="italic">ĐỘC LẬP, LÃNH ĐẠO, DŨNG KHÍ</p>
+            <p>Một Giai đoạn cuộc đời số 1 sẽ khuyến khích bạn trở nên độc lập hơn và tự đi bằng
+                đôi chân của mình. Nó sẽ dạy cho bạn cách thể hiện năng lực lãnh đạo, tin vào những
+                quyết định của bản thân và đi con đường của riêng mình. Trong giai đoạn này, bạn sẽ
+                có được sức mạnh bên trong, lòng can đảm và sự tự tin. Bạn sẽ ít quan tâm đến ý kiến
+                của người khác đi và học cách không hy sinh bản thân chỉ để làm vừa lòng người
+                khác. Đây là một chu kỳ thuận lợi cho việc: mở công ty, làm nghề tự do, bắt đầu một
+                dự án mới, thay đổi phong cách ngoại hình, đảm nhận vai trò lãnh đạo, thăng tiến
+                trong sự nghiệp và tạo ra hay phát minh một cái gì đó độc đáo.</p>
+        </div>
+        <div class="mt-30px">
+            <h3 class="font-bold">GIAI ĐOẠN VIÊN MÃN sau tuổi 52</h3>
+            <p>Sau giai đoạn đỉnh cao thứ 4 của Kim tự tháp, trọng tâm phát triển của chúng ta bắt
+                đầu chuyển sang phần tinh thần và tâm linh. Từ sự độc lập về tài chính, chúng ta tiến
+                đến phát triển sự phát triển độc lập về tinh thần và có được trí tuệ sâu sắc hơn nhiều
+                so với những gì chúng ta đã biết trước đây. Bất kỳ sự thay đổi nào về mặt tài chính
+                hay sự nghiệp đều nên được thực hiện trong giai đoạn Trường thành, vì khi đã bước
+                vào giai đoạn Viên mãn thì sẽ hiếm có những thay đổi mang tính đột phá. Chúng ta
+                luôn có thể vận dụng sự khôn ngoan để điều chỉnh lối sống của mình, nhưng nếu như
+                giai đoạn thứ ba này xuất hiện một khả năng thay đổi to lớn nào đó thì chúng ta nên
+                hết sức cẩn thận với nó.</p>
+            <h4 class="font-bold">CHỈ SỐ GIAI ĐOẠN CUỘC ĐỜI 7</h4>
+            <p class="italic">CHUYÊN MÔN HÓA, PHÁT TRIỂN BẢN THÂN, PHÁT TRIỂN TÂM LINH</p>
+            <p>Một Giai đoạn cuộc đời số 7 sẽ khuyến khích bạn bỏ qua sự phù phiếm để đến với
+                những điều sâu sắc và ý nghĩa hơn trong cuộc sống. Nó sẽ cho bạn cơ hội đạt đến một
+                tầm nhận thức cao hơn thông qua việc phát triển bản thân và hiểu biết về tâm linh.
+                Trong giai đoạn này, bạn sẽ học cách tập trung và chuyên môn hóa trong lĩnh vực của
+                mình. Bạn sẽ tìm ra cách tận hưởng những khoảng thời gian một mình và biết trân
+                trọng mối quan hệ của bản thân với Thần linh. Đây là một chu kỳ thuận lợi cho việc:
+                học hỏi, bắt đầu thực hành một bộ môn tâm linh, tìm hiểu các phương pháp chữa trị
+                thay thế, nỗ lực phát triển bản thân cũng như tăng cường trực giác và khả năng ngoại
+                cảm của mình.</p>
+        </div>
+    </div>
+</div>
+<div class="new-page">
+    <div class="content">
+        <h1 class="title-content">4 ĐỈNH CAO CUỘC ĐỜI</h1>
+        <div>
+            <p class="text-lg">Đỉnh 1 = Lấy 36 – SỐ CHỦ ĐẠO của bạn </p>
+            <p class="text-lg">Đỉnh 2 = Đỉnh 1 + 9 </p>
+            <p class="text-lg">Đỉnh 3 = Đỉnh 2 + 9 </p>
+            <p class="text-lg">Đỉnh 4 = Đỉnh 3 + 9 </p>
+            <p class="text-lg">Pytago nghiên cứu 22 năm trong kim tự tháp để tìm ra con số 36 đặc biệt
+                thần bí này.</p>
+        </div>
+        <div class="mt-30px">
+            <h3 class="title-content">ĐƯỜNG ĐỜI CON NGƯỜI QUA BỐN ĐỈNH CAO KIM TỰ THÁP</h3>
+            <p>Các con số ở đỉnh Kim tự tháp mang đến những thông tin bổ sung cho Con số
+                chủ đạo, qua đó bạn sẽ phần nào hình dung được trong đoạn đường đời đó, bạn
+                nên thiên về hướng nào thì mới đạt thành công vượt trội. Nhưng điều này không
+                có nghĩa là mọi người đều sẽ được thôi thúc đi theo những thiên hướng này.
+                Trong số những người tôi biết, có không ít người đã sống gần hết một đời, giờ
+                đây thông qua Thần số học mới biết mình đã bỏ lỡ không ít cơ hội, vốn được thể
+                hiện ít nhiều dưới dạng những tín hiệu trong cuộc sống của mỗi người. Tuy
+                nhiên, đối với những người có trực giác tốt, những người có hành thiền hoặc tu
+                tập, kết nối tâm linh hay tâm thức vũ trụ, thì dù họ không biết về Thần số học,
+                trực giác vẫn mách bảo họ tận dụng được những tín hiệu này để đạt được thành
+                quả tương đối khớp với những gì mà các con số ở đỉnh Kim tự tháp của họ thể
+                hiện.</p>
+            <p>Đối với những “linh hồn già”, tức là những người đã trải qua nhiều kiếp sống
+                trên Trái đất này – thể hiện qua đặc điểm hiểu chuyện, biết suy nghĩ, ... - ảnh
+                hưởng của các con số ở đỉnh Kim tự tháp này có thể kéo dài hơn bình thường.
+                Điều này có nghĩa là nếu ở người bình thường, đỉnh cao này chỉ bắt đầu trong
+                năm thứ chín và có thể kéo dài qua năm thứ nhất của chu kỳ mới, thì ở những
+                người thuộc nhóm linh hồn già, tác động của đỉnh cao có thể đã bắt đầu từ
+                khoảng cuối năm thứ tám, đạt đỉnh ở năm thứ chín, và ảnh hưởng của nó có thể
+                kéo dài bốn năm – Năm thứ chín, Năm thứ nhất, Năm thứ hai, Năm thứ ba của
+                chu kỳ mới. Ảnh hưởng này chỉ giảm dần vào cuối Năm thứ ba mà thôi. Nếu
+                lưu ý điểm này và quan sát thì hẳn chúng ta cũng sẽ ghi nhận được nhiều trường
+                hợp rất thú vị ở bản thân hoặc ở những người xung quanh. </p>
+        </div>
+    </div>
+</div>
+<div class="new-page">
+    <h1 class="title-content">BỐN ĐỈNH CAO CỦA MỘT ĐỜI NGƯỜI</h1>
+    <div>
+        <table class="table-content text-lg font-bold">
+            <tr>
+                <td>NGÀY SINH</td>
+                <td>THÁNG SINH</td>
+                <td>NĂM SINH</td>
+                <td>SỐ CHỦ ĐẠO</td>
+            </tr>
+            <tr>
+                <td>01</td>
+                <td>03</td>
+                <td>1996</td>
+                <td>29/11/2</td>
+            </tr>
+            <tr>
+                <td>1</td>
+                <td>3</td>
+                <td>25/7</td>
+                <td>11/2</td>
+            </tr>
+        </table>
+        <div class="mt-30px">
+            <h3 class="font-bold">Ý NGHĨA CON SỐ Ở BỐN ĐỈNH CAO CỦA ĐỜI NGƯỜI</h3>
+            <table class="table-content text-lg font-bold">
+                <tr>
+                    <td colspan="1" style="text-align: left">TUỔI ĐỈNH CAO</td>
+                    <td>25</td>
+                    <td>34</td>
+                    <td>43</td>
+                    <td>52</td>
+                </tr>
+                <tr>
+                    <td colspan="1" style="text-align: left">4 ĐỈNH CAO</td>
+                    <td>4</td>
+                    <td>8</td>
+                    <td>3</td>
+                    <td>10</td>
+                </tr>
+                <tr>
+                    <td colspan="1" style="text-align: left">4 THỬ THÁCH</td>
+                    <td>2</td>
+                    <td>6</td>
+                    <td>4</td>
+                    <td>4</td>
+                </tr>
+            </table>
+        </div>
+
+    </div>
+</div>
+<div class="new-page">
+    <h1 class="title-content">SỐ THÁI ĐỘ</h1>
+    <div>
+        <p class="font-bold italic text-lg">Số Thái độ thể hiện cách bạn phản ứng với những gì xảy ra
+            trong cuộc đời mình. Nó độc lập với con số Đường đời và các
+            con số khác, số Thái độ hoàn toàn phụ thuộc vào bạn. Chúng
+            ta không kiểm soát được những gì đến với mình nhưng chúng
+            ta hoàn toàn làm chủ được cách phản ứng với nó.</p>
+    </div>
+</div>
+<div class="new-page">
+    <h1 class="title-content">SỐ NGÀY SINH</h1>
+    <div>
+        <p class="font-bold italic text-lg"><span class="uppercase">SỐ NGÀY SINH</span> chỉ ngày bạn được sinh ra. Nó là
+            cách bạn quan sát và người ta sẽ nhận biết bạn qua
+            cái nhìn đầu tiên ra sao. Vì số Đường đời hay số Chủ
+            đạo nói lên bạn là ai, dễ dàng hơn cả cho bạn là khi số
+            Ngày sinh là hợp tự nhiên hay hòa hợp với số Đường
+            đời. Tuy nhiên, nếu chúng thuộc nhóm đối đầu thì bạn
+            sẽ luôn cản trở người khác trong cuộc sống. Nếu đây
+            là trường hợp trong biểu đồ tên riêng của bạn, hãy nói
+            cho người khác biết bạn thật sự là ai – tức là số Đường
+            đời của bạn. Điều đó sẽ giúp bạn tránh được những
+            lầm lẫn không cần thiết trong suốt cuộc đời.</p>
+    </div>
+</div>
+<div class="new-page">
+    <h1 class="title-content">SỐ SỨ MỆNH</h1>
+    <div>
+        <h2><span class="uppercase">SỐ SỨ MỆNH</span> đại diện cho sức mạnh của
+            tên bạn và nói cho thế giới biết, bạn là ai!</h2>
+        <p>Hãy tưởng tượng cuộc sống của chúng ta sẽ thế nào nếu mỗi người
+            không có một cái tên cho riêng mình? Có lẽ cái tên là một trong những
+            âm thanh quen thuộc nhất đối với mỗi chúng ta. Hẳn bạn đã nhận ra
+            cho dù không gian xung quanh có ồn ào đến mức nào, chỉ cần có ai đó
+            gọi tên ta, lập tức ta sẽ nghe được và chuyển ngay sự chú ý đến họ. Tên
+            riêng đã trở thành âm thanh rất quna trọng đối với chúng ta, cho dù
+            là tên chính thức, tên ở nhà, biệt hiệu hoặc bất kì danh xưng nào chúng
+            ta thích dùng. Trên thực tế, tên riêng của chúng ta đã được xem như
+            một phần bổ sung của tính cách và cách biểu đạt của bản thân. Cái tên
+            rất quan trọng vì sóng rung của nó hòa quyện vào chính sóng rung của
+            chúng ta.</p>
+        <p>Thế nhưng thực tế là không phải ai cũng nhận ra tầm quan trọng của
+            tên riêng. Nhiều người còn xem nhẹ sức ảnh hưởng của tên riêng đối
+            với đặc điểm tính cách của bản thân nói chung. Không phải tình cờ mà
+            chúng ta có được những cái tên của mình. Mặc dù chúng ta hiếm khi
+            nhận ra, nhưng những cái tên sẽ tự gắn bó với cuộc đời chúng ta tùy
+            vào nhu cầu của mỗi người. Cha mẹ sẽ dựa vào những tiêu chí hay sở
+            thích nào đó để đặt tên cho con mình. Điều gì tạo ra tiêu chi hay các sở
+            thích đó, đó có thể là một cái tên mang ý nghĩa tốt đẹp nào, hoặc tên
+            một loài hoa, địa danh, sự kiện nào đó… hoặc đơn giản là đặt theo tên
+            của một người mà cha mẹ rất yêu mến. Cho dù lý do bạn mang cái tên
+            đó là gì, việc chọn tên riêng cũng thể hiện rõ 1 điều: luôn có lý do cụ
+            thể để cái tên riêng đó gắn vào cuộc đời bạn ở giai đoạn đầu đời, chứ
+            không phải hoàn toàn ngẫu nhiên. Tương tự, việc đổi tên cũng có lý do
+            của nó. Nhiều người đổi tên vì muốn mình có một tương lai tốt đẹp
+            hơn, để cho cái tên nghe hay hơn. Tuy nhiên theo góc độ Nhân số học,
+            khi một người đổi tên thì họ cũng thay đổi các sóng rung tác động lên
+            cuộc đời họ.</p>
+        <p>Theo trường phái Pytago nguồn lực mà tên riêng tạo ra để định hình
+            đặc điểm tính cách của chúng ta chủ yếu phụ thuộc vào sức mạnh của
+            cái tên và mối liên hệ giữa nó và con số chủ đạo. Nếu chúng ta có biểu
+            đồ ngày sinh không mang nhiều ưu thế vì có nhiều chỗ trống, nhiều mũi tên trống… thì ảnh hưởng của tên riêng
+            sẽ mạnh hơn nhiều so với
+            khi chúng ta có một biểu đồ ngày sinh đủ mạnh.</p>
+    </div>
+</div>
+<div class="new-page">
+    <h1 class="title-content">SỐ LINH HỒN</h1>
+    <div>
+        <p class="font-bold italic text-lg">Số linh hồn là những gì bạn cảm nhận bên trong mình. Số linh hồn có thể
+            không trùng
+            khớp với bạn lắm. Chúng có thể mang tính hướng ngoại nhiều hơn. Nhưng bạn cần
+            phải hiểu rõ hoàn toàn điều gì đang rung động trong linh hồn của mình, vì chính con
+            số này sẽ hướng bạn đến chốn bình yên trong tâm hồn. Số linh hồn là con số huyền
+            bí, chúng ta không luôn nhìn thấy được đặc điểm của nó thể hiện ra bên ngoài cơ thể
+            chúng ta hay ai khác. Tuy vậy, nếu chúng ta sống trái với số Linh hồn của mình, chúng
+            ta sẽ thấy nó thể hiện bằng nỗi buồn hoặc cảm giác không được thỏa mãn của mình. </p>
+    </div>
+</div>
+<div class="new-page">
+    <h1 class="title-content">SỐ NHÂN CÁCH</h1>
+    <div>
+        <p class="font-bold italic text-lg">SỐ NHÂN CÁCH thể hiện cách mà bạn thể hiện ra bên ngoài, tức là những gì
+            mà thế giới nhìn thấy bạn. Số NHÂN CÁCH là thứ người khác dùng để nhận
+            diện bạn. Hành động bạn thực hiện, lời nói bạn truyền đạt, phong thái bạn
+            trình bày sẽ tạo ra con người bạn trong mắt người khác như thế nào. Hay nói
+            cách khác, chỉ số này sẽ cho bạn biết, bạn là ai trong mắt người khác.</p>
+    </div>
+</div>
+<div class="new-page">
+    <h1 class="title-content">SỐ TRƯỞNG THÀNH</h1>
+    <div>
+        <p class="font-bold italic text-lg"><span class="uppercase">SỐ TRƯỞNG THÀNH</span> là sự tiếp nối bài học đường
+            đời của mình. Nếu
+            <span class="uppercase">ĐƯỜNG ĐỜI</span> là con đường cao tốc thì <span
+                    class="uppercase">SỐ TRƯỞNG THÀNH</span> là phần mở
+            rộng đường cao tốc ra. Số trưởng thành thể hiện năng lực mà bạn dùng
+            nhiều nhất trong giai đoạn trưởng thành, nghĩa là trong suốt 27 năm xuyên
+            suốt 4 đỉnh cao/thử thách của cuộc đời. Đây cũng là chỉ số thể hiện những
+            kỹ năng, thói quen, năng lực, lĩnh vực bạn cần rèn luyện và phát huy giúp
+            bạn thành công hơn trong cuộc sống</p>
+        <p class="font-bold italic text-lg"><span class="uppercase">SỐ TRƯỞNG THÀNH</span> sẽ thể hiện mạnh mẽ hơn nếu
+            trúng với các số trong
+            Bộ chỉ số cốt lõi như 1. Số sứ mệnh. 2. Số ngày sinh. 3. Số linh hồn. 4. Số
+            Chủ đạo….</p>
+        <p class="font-bold italic text-lg"><span class="uppercase">SỐ TRƯỞNG THÀNH</span> không trùng với số nào trong
+            Bộ số cốt lõi, điều
+            này nghĩa là mình cần phải học bài học mới hoàn toàn. </p>
+    </div>
+</div>
+<div class="new-page">
+    <h1 class="title-content">CHỈ SỐ PHÁT TRIỂN</h1>
+    <div>
+        <p class="font-bold italic text-lg">CHỈ SỐ PHÁT TRIỂN cũng có tên là Năng Lực Tiếp Cận, thể
+            hiện sứ mệnh của cái tên này là cái gì? làm gì thì bạn phải thoả
+            mãn với điều mình mong muốn thì mình mới làm, nếu muốn
+            đi xa hơn, tiến xa hơn thì mình cần phải có lý do. Bạn tìm được
+            điều này, hoặc người khác chỉ ra cho bạn điều này thì bạn mới
+            làm. </p>
+        <p class="font-bold italic text-lg">Chỉ số phát triển cho thấy trải nghiệm nào, tình huống môi
+            trường nào giúp mở rộng sự phát triển của cá nhân, nếu như
+            chỉ số phát triển trùng với chỉ số lõi (Sứ mệnh, Nội tâm, ngày
+            sinh, đường đời) thì cá nhân có cơ hội phát triển nhiều hơn. </p>
+    </div>
+</div>
+<div class="new-page">
+    <h1 class="title-content">SỐ NỢ NGHIỆP</h1>
+    <div>
+        <p>Numerology là một môn khoa học được thiết kế rất sâu sắc và có tính toán,
+            thiết lập xung quanh thực tế rằng chúng ta là những sinh vật có vị trí cao nhất
+            và có một tinh thần trong chiều kích vật lý mà chúng ta đang sống. Chúng ta
+            đã đến và đi rất nhiều lần để đạt đến trạng thái nhận thức cao độ mỗi khi chúng
+            ta đến cuộc sống này dưới các hình dạng – đời sống – khác nhau.</p>
+        <p>Trong quá trình tái sinh liên tục, ở mỗi đời sống được trao, chúng ta có được
+            học kiến thức và trở nên khôn ngoan hơn như là một phần của sự tiến hóa.
+            Chúng ta trải qua rất nhiều thăng trầm trong cuộc sống, được nếm trải những
+            giây phút hạnh phúc nhất và chia sẻ những nỗi buồn sâu thẳm nhất, mặc dù
+            điều duy nhất vẫn là chúng ta học được, qua tất cả những trải nghiệm của
+            chúng ta, là cố gắng hết sức để không đi qua đi lại cùng một làn đường.</p>
+        <p>Quá trình này sẽ còn tiếp tục cho đến khi ta có được tất cả sự khôn ngoan cần
+            thiết. Mà điều này chắc chắn không thể nhanh chóng đạt được qua một vài
+            kiếp sống. Trong khi tái sinh, chúng ta phải chịu thêm gánh nặng để sửa chữa
+            những sai lầm nghiêm trọng đã gây ra, được gọi là Nợ nghiệp – Karmic Dept.</p>
+        <p>Các số liên kết với Karmic Dept là 13, 14, 16 và 19. Những số nợ nghiệp này
+            đóng một vai trò quan trọng và thấm nhuần các đặc điểm khác biệt theo đó
+            chúng sẽ khiến người sở hữu gặp những thách thức lớn khác nhau trong cuộc
+            sống.</p>
+        <p>Bản chất của các số NỢ nghiệp này vốn là các số 4, 5, 7 và 1 nên cũng được
+            biểu thị bằng cách viết 13/4, 14/5, 16/7 và 19/1. Chúng được hình thành khi
+            bạn cộng các số có hai chữ số ngay trước khi rút gọn lần cuối cùng lại với
+            nhau. </p>
+        <p>Số nợ nghiệp có thể được tìm thấy ở bất cứ đâu, nhưng dưới góc độ nghiên
+            cứu, tác động của nợ nghiệp giảm dần như sau.</p>
+        <p>Số đường đời => Năng lực tự nhiên => Động lực bên trong => Nhân cách =>
+            Số ngày sinh, ...vv....</p>
+        <p>Cùng một nợ nghiệp của hai người nhưng ở vị trí khác nhau có thể có tác
+            động khác nhau đối với họ. Chẳng hạn hai người cùng có nợ nghiệp 14 có thể
+            gặp tác động của nó một cách rõ rệt nếu nó xuất phát từ các vị trí khác nhau. </p>
+    </div>
+</div>
+<div class="new-page">
+    <h1 class="title-content">SỐ THIẾU</h1>
+    <div>
+        <p class="font-bold italic text-lg">Số thiếu là số chỉ những điểm yếu bẩm sinh
+            của bạn nhưng đến thời điểm hiện tại có thể
+            không còn thiếu nữa bởi môi trường đã rèn
+            luyện cho bạn và bổ khuyết cho bạn rồi.</p>
+    </div>
+</div>
+<div class="new-page">
+    <h1 class="title-content">THỂ NHÂN DẠNG</h1>
+    <div>
+        <p class="font-bold italic text-lg">Thể Nhân Dạng là đặc tính chính của con người, là cái để mình
+            tiếp cận lấy cảm tình của họ. Nó cho chúng ta biết những gì thật
+            sự diễn ra bên trong bạn. Đó là thứ mà bạn luôn cảm nhận thấy. </p>
+    </div>
+</div>
+<div class="new-page">
+    <h1 class="title-content">SỐ ĐIỆN THOẠI</h1>
+    <div>
+
+    </div>
+</div>
+<div class="new-page">
+    <h1 class="title-content">SỐ NĂM CÁ NHÂN</h1>
+    <div class="content">
+        <div class="intro">
+            <div class="text-center my-30px">
+                <img src="https://media.istockphoto.com/id/1441320232/vi/anh/h%C3%ACnh-b%C3%B3ng-c%E1%BB%A7a-con-ng%C6%B0%E1%BB%9Di-gi%C6%A1-tay-th%C3%A1ch-th%E1%BB%A9c-n%C4%83m-2022-tr%C3%AAn-%C4%91%E1%BB%93i-n%C3%BAi-ch%C3%BAc-m%E1%BB%ABng-n%C4%83m-m%E1%BB%9Bi-2023-man.jpg?s=2048x2048&w=is&k=20&c=W1gtRKkBG389k-ITYuj1BWiaKbiLfZmTxsk5OB3R-5s="
+                     alt=""/>
+            </div>
+            <p>Mỗi năm bạn có Số năm cá nhân là một trong các số từ 1 đến 9 hoặc 11, 22, 33 chỉ ra
+                những bài học, cơ hội và kinh nghiệm lớn nhất mà bạn sẽ tích lũy được trong năm đó
+                – Hoặc cũng có thể đó sẽ là thành công mà bạn theo đuổi trong năm hoặc trong cả chu
+                kỳ 9 năm.</p>
+            <p>Chu kỳ này kéo dài từ ngày 1 tháng 1 đến ngày 31 tháng 12 trùng với năm dương lịch.
+                Tuy nhiên, đôi khi sự ảnh hưởng của năm cá nhân sắp tới có thể được cảm nhận sớm
+                hơn một chút – khoảng tháng 12 của năm trước đó, giống như sự chuyển pha giữa các
+                cung hoàng đạo trong năm</p>
+            <p>Chu kỳ số năm cá nhân của bạn bắt đầu từ khi bạn sinh ra và tịnh tiến trong khoảng
+                thời gian mỗi chín năm cuộc sống của bạn. Mỗi chu ký có một chủ đề độc đáo của
+                riêng mình và liên quan mật thiết tới 4 ĐỈNH CAO/THÁCH THỨC TRONG CUỘC
+                ĐỜI bạn.</p>
+            <p>Khi bạn biết về Số năm cá nhân của mình, bạn có thể chuẩn bị cho những gì sẽ diễn
+                ra trong 12 tháng trước mắt. Con số này là một chỉ số tuyệt vời về thời gian lý tưởng
+                để thực hiện một số hành động nhất định, chẳng hạn như tập trung về sự nghiệp của
+                bạn, chuyển nhà, đi du lịch hoặc bắt tay vào sửa chữa hoặc bắt đầu một mối quan hệ,
+                học tập.</p>
+            <p>Một vài con số dự báo về việc kết hôn, làm việc trên sự phát triển cá nhân của bạn,
+                vân vân. Khi bạn biết số năm cá nhân của những người xung quanh, bạn sẽ hiểu rõ
+                hơn về những gì xảy ra trong cuộc sống của họ, điều đó có thể giúp cải thiện các mối
+                quan hệ của bạn ở thời điểm thích hợp.</p>
+        </div>
+        <div>
+            <h3 class="title-content">2022 NĂM CÁ NHÂN 1</h3>
+            <h4>NĂM THỨ NHẤT (PYN 1) - NĂM CỦA SỰ ĐIỀU CHỈNH QUYẾT
+                LIỆT</h4>
+            <p>Đây là một năm của những hành động phát triển cá nhân mạnh mẽ, sau khi
+                chúng ta đã điều chỉnh để thích ứng Với những thay đổi trong Năm thứ chín
+                của chu kỳ trước.</p>
+            <p>Sức mạnh của năm này thúc đẩy chúng ta dám trở nên đặc biệt và phát triển
+                lòng tự tin. Đây cũng là một năm phù hợp để chúng ta phá bỏ những thói quen
+                cũ. Bên cạnh đó, việc hình thành lối sống mới chắc chắn đòi hỏi ta có sự kiên
+                trì cao độ.</p>
+            <p>Khi năm Cá nhân của bạn là 1, thì đây là lúc tốt nhất để bạn làm điều gì cần
+                làm. Vào năm trước bạn ở trong năm Cá nhân số 9, mọi thứ cần thiết cho công
+                việc đã được bạn chuẩn bị. Giờ đã đến lúc bạn gặt hái thành quả! Đến lượt
+                mình, bạn hãy thực hiện tốt nhất những gì mình cần làm và mọi người sẽ đặt
+                mình dưới sự chỉ đạo của bạn. Đây là thời khắc bạn xứng đáng được đặt niềm
+                tin. Bất kể trong sự nghiệp hay trong tình cảm, bạn có thể theo đuổi và đạt
+                được thành công trong năm này.</p>
+            <p>Năm này sẽ đặc biệt tác động đến những người có số chủ đạo 10. Mọi việc
+                diễn ra quá thuận lợi với họ đến mức họ có thể dễ dàng rơi vào tình trạng chủ
+                quan hoặc thiếu cảnh giác, đặc biệt là trong vấn đề tài chính. Những người
+                này cần lưu ý tránh ngủ quên trên chiến thắng mà sinh lòng kiêu ngạo. Với ý
+                thức tự chủ hợp lý, những người mang Con số chủ đạo 10 sẽ thấy Năm thứ
+                nhất là một năm có sự phát triển vượt bậc về đời sống vật chất và nhận được
+                sự ủng hộ từ những người xung quanh.</p>
+        </div>
+        <div class="mt-30px">
+            <h3 class="title-content">2023 NĂM CÁ NHÂN 2</h3>
+            <h4>NĂM THỨ HAI (PYN 2) - NĂM CỦA SỰ PHÁT TRIỂN TÂM LINH
+                VÀ CHIA SẺ</h4>
+            <p>Mặc dù không có sức mạnh của một năm thay đổi đỉnh điểm, đây vẫn là một
+                năm có bản chất mạnh mẽ đủ để khiến một tâm hồn rối rắm trở về được với
+                sự bình yên tự tại. Sự phát triển tâm linh là yếu tố rõ nét nhất của năm này,
+                khi người ta cảm thụ cuộc sống ở mức độ tinh tế hơn. Đây không phải là một
+                năm của thay đổi to lớn, mà là năm phát triển khả năng kiểm soát cảm xúc,
+                nâng cao nhận thức về tâm linh và củng cố trực giác.</p>
+            <p>Trọng tâm phát triển dưới sóng rung của năm này là nhu cầu chủ động phát
+                triển sức mạnh của việc thiền định.</p>
+            <p>Điều này có nghĩa là cơ thể sẽ tự điều chỉnh ở mức độ tế bào để đạt được sức
+                mạnh nội tại mà tất cả chúng ta đều muốn sử dụng để làm nguồn năng lượng
+                dự trữ vô hạn và là sức thu hút mạnh mẽ của mỗi người. Để đạt được điều
+                này, chúng ta học cách kiểm soát tốt cảm xúc của mình, để chủ đồng hành
+                động thay vì chỉ biết phản ứng với hoàn cảnh, để thay sự hoang mang và nghi
+                ngờ bằng sự tự tin và vững vàng, và đủ khôn ngoan để phân biệt những gì
+                quan trọng và ít quan trọng hơn để ưu tiên thực hiện hay theo đuổi.</p>
+            <p>Sau hai năm phát triển trước đó, một số người có khuynh hướng ngủ quên
+                trên chiến thắng, hoặc sa vào cảm giác tự thỏa mãn và không muốn tiếp tục
+                nỗ lực hơn nữa. Đây cũng chính là lúc luật âm - dương (trong âm có dương,
+                trong dương có âm) vận hành: phần tiêu cực chớp lấy CƠ hội để làm dấy lên
+                những cảm xúc thụ động như nỗi sợ, sự lo lắng, thôi tranh cãi và sự bất an.
+                Những điều này có thể thể hiện theo những cách thức bất ngờ, khiến một
+                người đáng mến trở nên khá khó ưa hoặc hống hách đến mức không chịu nổi.
+                Hãy nhận thức rằng đây là một năm của sự hợp tác, cùng làm việc với nhau
+                tại nhiều môi trường khác nhau (tại nhà, tại nơi làm việc, trong các trận đấu
+                thể thao,...). Để đạt được điều này, chúng ta cần sống yêu thương và biết chấp
+                nhận nhiều hơn, từ đó đẩy mạnh khía cạnh phát triển của Năm thứ hai.</p>
+            <p>Năm cá nhân số 2 liên quan đến sự yêu thương, bạn cần dành nhiều thời gian
+                hơn cho người thân và chia sẻ cảm xúc thật của mình với họ. Nó là năm mà
+                bạn nên mở lòng, đừng ngần ngại nói “Tôi yêu và cần đến bạn.” Bạn sẽ thấy
+                rằng, bộc lộ cảm xúc là điều đáng làm. Năm cá nhân số 2 là thời điểm thích
+                hợp để hối thúc người thân yêu của mình tổ chức một kỳ nghỉ - để thật sự trân
+                trọng những gì bạn đã làm, nhắm thúc đẩy những mối quan hệ tươi đẹp và
+                lành mạnh.</p>
+            <p>
+                Năm thứ hai này càng đặc biệt có ảnh hưởng mạnh đối với những người có
+                con số chủ đạo là 2 và 11/2. Không có gì ngạc nhiên nếu nhận thức tâm linh
+                của họ tăng lên đáng kể, đến mức gần như phỏng chiếu nhận thức của họ và
+                chiều không gian - thời gian khác. Họ nên tạo điều kiện sự phát triển này diễn
+                ra thuận lợi bằng cách dành thời gian để thiền định và tìm hiểu các vấn đề tâm
+                linh. Khi làm vậy họ không chỉ gia tăng sức mạnh của bản thân, mà còn ích
+                cho vai trò của họ trong việc dẫn dắt người khác.
+            </p>
+        </div>
+        <div class="mt-30px">
+            <h3 class="title-content">2024 NĂM CÁ NHÂN 3</h3>
+            <h4>NĂM THỨ BA (PYN 3) - NĂM CỦA SỰ MỞ MANG TÂM TRÍ</h4>
+            <p>Giữa năm đỉnh điểm của sự thay đổi (Năm thứ chín, của chu kỳ cũ) và năm
+                cực thoái đầu tiên (Năm thứ tự) là Năm thứ ba - năm tập trung một cách đáng ngạc nhiên vào sức mạnh trí
+                não, góp phần mang lại sự phát triển trọn vẹn
+                cho giai đoạn này trong chu kỳ 9 năm của con người. Dưới tác động của sóng
+                rung này, khả năng tư duy và quan sát của chúng ta được mài giũa để trở nên
+                nhạy bén. Đây cũng là năm của sự khao khát kiến thức và sự thể hiện. Một số
+                người sẽ chọn theo đuổi một môn học thuật nào đó. Những người khác có thể
+                khám phá cuộc sống và những triết lý sống, một số người khác nữa thì đi tìm
+                sự khai sáng trong tiến trình phát triển cá nhân của mình.</p>
+            <p>Có hai cách phổ biến để lĩnh hội sự mở mang đi trí tuệ trong Năm thứ ba này:
+                hoặc thông qua một khóa học, hoặc thông qua việc du ngoạn đó đây. Cho dù
+                là hình thức nào, điều quan trọng là hãy nhận thức được rằng đây là năm mà
+                sự phát triển trí nhớ, vì sóng rung của số 3 là cánh cổng dẫn vào tâm trí thông
+                qua trí nhớ.</p>
+            <p>Chúng ta cần nhận thức được rằng trí nhớ là nền tảng của lòng tự tôn và sự tự
+                tin, đồng thời là chiếc cầu nối giữa ý thức và vô thức. Quá trình không ngừng
+                mở rộng khả năng và sự nhạy bén của trí nhớ sẽ tạo ra sự khác biệt rõ ràng
+                giữa những người đang lão hóa và những người “trẻ mãi không già”.</p>
+            <p>Ở khía cạnh nhẹ nhàng hơn của Năm thứ ba, chúng ta nên nhận ra nhu cầu
+                cân bằng cuộc sống bằng cách dành thời gian cho niềm vui, những buổi tụ tập
+                bạn bè và những câu chuyện dí dỏm.</p>
+            <p>
+                Những người có Con số chủ đạo 3 sẽ có cùng sóng rung của Năm thứ ba này,
+                nhưng họ cần học cách kiểm soát lý trí cao độ của mình để đảm bảo nó không
+                lấn át cảm xúc. Quá trình nâng cao mức độ nhạy bén của tư duy mà những
+                người này sẽ trải nghiệm trong Năm thứ ba cần được hướng vào những nhận
+                thức mang tính xây dựng, để có thể mang lại sự thỏa mãn cho bản thân họ và
+                sự bình yên cho những người xung quanh họ - những người sẽ trở nên mệt
+                mỏi với tính lý trí thái quá và trở thành nạn nhân của thói chỉ trích của họ.
+            </p>
+        </div>
+        <div class="mt-30px">
+            <h3 class="title-content">2025 NĂM CÁ NHÂN 4</h3>
+            <h4>NĂM THỨ TƯ (PYN 4) - NĂM CỦA SỰ CỦNG CỐ NỘI LỰC</h4>
+            <p>Các yếu tố về thể chất và vật chất sẽ chiếm thế thượng phong trong năm 'chạm
+                đáy' này. Sự nghỉ ngơi và ổn định là điều kiện thiết yếu để tái tạo năng lượng
+                và củng cố nội lực sau 5 năm phát triển trước đó. Đây là một năm 'vuông vức',
+                khi mọi thứ đều được đem ra cân đong đo đếm và những khía cạnh không
+                được mong muốn sẽ bị loại bỏ. Như dây leo được cắt tỉa trong mùa đông đế
+                có chỗ đâm chồi nảy lộc vào mùa xuân kế tiếp.</p>
+            <p>Đây là một năm lý tưởng để hòa hợp Thể Cơ bản (bao gồm cơ thể và cảm
+                xúc), Thể Ý thức (bao gồm tư duy và ý tưởng) với Thể Siêu thức (phần linh hồn vĩnh cửu). Những người
+                không lắng nghe nhu cầu nghỉ ngơi và điều chỉnh
+                sẽ thấy bản thân rơi vào trạng thái không hài hòa - ví dụ như cảm thấy mọi
+                thứ đều bế tắc, không có sự hòa hợp trong nội tâm - từ đó dẫn đến sự uất giận,
+                rối rắm và sợ hãi. Trong năm này, những nỗ lực thay đổi nào lớn trong Công
+                việc hoặc lối sống đều hiếm khi thành công, mà thường gây ra những tổn thất
+                về tài chính, sức khỏe, hoặc cả hai.</p>
+            <p>Đối với những người vốn đã nhạy cảm và dễ bị căng thẳng thần kinh, trong
+                Năm thứ tư họ cần đặc biệt cẩn trọng để tránh bất hòa với những người xung
+                quanh. Một kỳ nghỉ thư giãn sẽ có ích nhất cho những người này.</p>
+            <p>Số 4 là chuyên gia, vì thế đấy là năm dành cho bạn rèn giũa những kỹ năng
+                của mình. Nếu bạn là người làm việc trí óc, đây là năm bạn đọc sách. Nếu bạn
+                giỏi chơi bóng chày, có thể trong năm nay bạn trở thành một huấn luyện viên.
+                Nếu bạn giỏi điều gì đó thì hãy bắt đầu sử dụng kỹ năng của mình, bởi vì đây
+                là năm để cho mọi người thưởng lãm năng lực của bạn. Năm cá nhân số 4
+                cũng mang lại nhu cầu về cuộc sống gia đình, đây là thời gian tốt cho việc tu
+                bổ ngôi nhà, vườn tược chẳng hạn. Hãy bắt đầu cùng nhau lập kế hoạch cho
+                tương lai và sống với nó ngay từ bây giờ. </p>
+            <p>
+                Người có Con số chủ đạo 4 thường chịu tác động mạnh nhất trong Năm thứ
+                tư, do đó họ sẽ tỏ ra khó chịu trước ảnh hưởng của sóng rung này. Họ thường
+                không thể nhận ra đây là một năm củng cố nội lực, mà thay vào đó thường ra
+                sức thúc đẩy những tiến triển mà họ đã có được trong bốn năm trước. Hậu
+                quả là hệ thần kinh của họ rơi vào tình trạng cực kỳ căng thẳng. Những người
+                này cần nghỉ ngơi và giảm thiểu những tác động làm nhiễu cảm xúc chẳng
+                hạn như tránh xem ti-vi quá nhiều, tránh xem có phim trinh thám kịch tính,
+                tránh tranh cãi tại nơi làm việc và tại nhà, đồng thời kết hợp với một chế độ
+                dinh dưỡng phù hợp.
+            </p>
+        </div>
+        <div class="mt-30px">
+            <h3 class="title-content">2026 NĂM CÁ NHÂN 5</h3>
+            <h4>NĂM THỨ NĂM (PYN 5) - NĂM CỦA TỰ DO</h4>
+            <p>Đây là một năm mà các yếu tố cảm xúc, tinh thần và tâm linh thể hiện rất rõ.
+                Sóng rung của năm này sẽ kết nối cực trùng của năm trước đó với đỉnh sáng
+                tạo của năm sau, kích hoạt năng lượng của sự tự do, thứ được tạo thành bởi
+                nhận thức tâm linh và khả năng biểu đạt cá nhân được nâng tầm. Điều này
+                dẫn đến sự phát triển năng lực của chúng ta, để thoát khỏi sự ràng buộc về vật
+                chất và sự gò bó của xã hội, thay vào đó là sự tập trung vào biểu đạt nghệ
+                thuật, một cách chuyên nghiệp hoặc như một sở thích. Một số người sẽ bắt
+                đầu xây dựng nền tảng cho con đường sự nghiệp mới dưới tác động của sóng rung này. Một số người khác thì
+                khám phá sự tự do trong việc chuyển nhà,
+                dọn về quê và thoát khỏi sự bó buộc của đời sống đô thị.</p>
+            <p>Cuộc đời bạn có nhiều sóng gió trong năm này và bạn phải vượt qua nó. Nếu
+                đã không có gì tốt đáng kể trong năm số 5, vậy thì làm sao để khắc phục? Chỉ
+                cần tiếp tục phiêu du! Đây là lúc bạn có thể đi du lịch. Hãy ra ngoài thăm thú
+                thế giới, thực hiện và nắm lấy mọi thứ có thể trên hành tinh này. Cũng trong
+                năm này, bạn không nên nói lời hẹn ước. Nếu bạn gặp ai đó và yêu say đắm
+                thì xin vui lòng đợi cho qua năm rồi hãy tính chuyện bền lâu! Vì vậy, trong
+                năm Cá nhân số 5, tốt nhất là nên xem phim, đọc những cuốn sách hay, và
+                tìm cách giữ cho mình sự minh mẫn. Và khi mọi thứ dường như ra khỏi tầm
+                kiểm soát, hãy nhớ đến câu nói này, “rồi nó sẽ qua nhanh thôi”.</p>
+            <p>Những người có con số chủ đạo 5 thường trở nên ám ảnh với khát khao tự do
+                trong Năm thứ năm này. Tuy nhiên, họ cần nhận ra rằng họ không phải lúc
+                nào cũng cần sự tự do về mặt thể chất - dù đôi khi hoàn cảnh khiến họ rất dễ
+                tin như vậy, từ đó sử dụng lý trí để bao biện và che giấu sự trống rỗng trong
+                phương diện thấu hiểu bản thân. Điều mà họ cần nhất là sự tự do biểu đạt, thứ
+                có thể đạt được qua nhiều hình thức nghệ thuật khác nhau, như âm nhạc, hội
+                họa, thủ công mỹ nghệ... hoặc bất kỳ hình thức nào tương tự để nuôi dưỡng
+                sự cân bằng trong tâm hồn, từ đó giúp họ đạt được sự an tĩnh, bình yên.</p>
+        </div>
+        <div class="mt-30px">
+            <h3 class="title-content">2027 NĂM CÁ NHÂN 6</h3>
+            <h4>NĂM THỨ SÁU (PYN 6) - NĂM CỦA SỰ SÁNG TẠO</h4>
+            <p>Đây có thể được gọi là một năm đỉnh cao 'mini' trung vào những năng lượng
+                được tích lũy thông qua các hoạt động sáng tạo. Những dự án sáng tạo mới
+                được thể hiện trong năm này sẽ có nhiều khả năng thành công nhất. Đặc biệt
+                là nếu chúng hướng đến mục đích nâng cao chất lượng cuộc sống con người.
+                Đây là một năm mà sự hình thành của bất kỳ một doanh nghiệp nào có đầu tư
+                nghiêm túc đều sẽ có lợi.</p>
+            <p>Đây cũng là một năm của gia đình và các mối quan hệ cá nhân. Các hoạt động
+                sáng tạo có liên quan đến gia đình sẽ được thúc đẩy bởi sóng rung của Năm
+                thứ sáu. Trong các mối quan hệ, nhiều người sẽ cảm thấy an tâm, hoặc sẽ giải
+                tỏa những hiểu lầm và vướng mắc. Nếu người ta cứ ngoan cố bám víu các
+                năng lượng tiêu cực thì Năm thứ sáu sẽ là năm khó khăn nhất, gây ra sự lo
+                lắng tột độ, các cuộc tranh cãi và sự oán giận. Năm cá nhân số 6 là năm thích
+                hợp cho việc cưới hỏi hay có con. Nếu bạn phải lòng ai đó và làm đám cưới
+                thì không có dịp nào tốt hơn năm này. Sau năm số 5 điên rồ, thì giờ bạn có thể ổn định cuộc sống! Số 6
+                là những nhà thiết kế nội thất và tôi biết người số
+                6 thích quan sát ngôi nhà của họ rồi nói, “Được rồi, giờ đã đến lúc làm lại.
+                Hãy bắt tay sơn lại, thiết kế lại gian bếp nào.” Thời gian này bạn hãy nhìn bao
+                quát xung quanh và làm điều gì đó khác biệt. Trong năm Cá nhân số 6, bạn
+                không thoải mái khi sếp của bạn cứ luẩn quẩn bên cạnh để bảo ban này nọ.
+                Bạn thậm chí thấy mình cần mở công ty riêng. Bạn cũng sẽ tạo ra sức hấp dẫn
+                để lôi cuốn mọi người theo bạn. Nếu bạn là người không thích bị quấy rầy thì
+                bạn sẽ phải đối phó với việc trở thành mục tiêu chú ý trong năm này. Những
+                vận hội nhờ trực giác của bạn sẽ đúng đắn trong thời gian này – Tôi tin vào
+                chính mình trong năm số 6. Hợp đồng sẽ đến tới tấp vì người ta độ nhiên
+                muốn tạo lập quan hệ với bạn. Những cơ hội lớn sẽ tăng lên sau một năm số
+                5 quái quỷ, với những thứ không như ý. Những lời người khác nói sẽ có ý
+                nghĩa lớn với bạn và họ sẽ ủng hộ bạn trong năm Cá nhân số 6 này.</p>
+            <p>Rất rõ ràng, bài học của năm này là đối mặt với bản chất của sự việc như nó
+                vốn có. Bên cạnh đó, hãy hiểu rằng để có một cuộc sống dễ chịu thì sự chân
+                thành, phẩm giá và thái độ tích cực là rất quan trọng. Nếu chúng ta được như
+                vậy thì đây sẽ là một năm đáng thỏa mãn đầy hạnh phúc, những thành quả
+                sáng tạo và thành quả tài chính.</p>
+            <p>Người có con số chủ đạo 6 sẽ chịu nhiều thứ trong Năm thứ sáu, vì dưới sự
+                tác động của sóng rung số 6, tính sáng tạo và chính trực của họ sẽ được nhấn
+                mạnh và kết hợp với nhau, tạo ra một giai đoạn tràn đầy sức mạnh nhưng
+                cũng có tính thanh lọc. Những người quyết tâm theo đuổi tính tích cực của số
+                6 sẽ thấy tính sáng tạo của mình được kích hoạt mạnh mẽ, và chắc chắn họ sẽ
+                chạm đến hạnh phúc ở một tầm cao mới.</p>
+            <p>Tuy nhiên, nhiều người có Con số chủ đạo 6 vẫn chưa nhìn thấy ánh sáng,
+                vẫn lựa chọn vùi mình trong hố sâu tiêu cực, để cho sự lo lắng và bất an
+                thường xuyên xâm chiếm cuộc sống của họ. Họ đang bệnh và sẽ chỉ càng
+                bệnh nặng hơn, vì cơ thể họ ngày càng bị rút hết năng lượng, và thái độ sống
+                của họ càng khiến họ cô độc hơn. Cách chữa trị duy nhất là họ phải đón nhận
+                thái độ tích cực và sáng tạo trong cuộc sống.</p>
+        </div>
+        <div class="mt-30px">
+            <h3 class="title-content">2028 NĂM CÁ NHÂN 7</h3>
+            <h4>NĂM THỨ BẢY (PYN 7) - NĂM CỦA SỰ TẬP TRUNG VƯỢT
+                CHƯỚNG NGẠI</h4>
+            <p>Tương tự như Năm thứ tư, đây là một năm trũng để tập trung củng cố nội lực
+                và không nên có những bước thay đổi nào quá lớn. Tuy nhiên, Năm thứ bảy vô cùng có ý nghĩa, vì đây là
+                giai đoạn mà chúng ta học cách tập trung cao độ
+                vào việc xem xét sự phát triển của những năm trước để hiểu cuộc đời của
+                mình hơn. Theo cách đó, đây là năm thiết yếu để học hỏi từ các trải nghiệm
+                cá nhân. Đối với nhiều người, điều này đồng nghĩa với sự mất mát vì một thất
+                bại nào đó, để qua đó họ nhận ra và áp dụng sự hướng dẫn đến từ những nguồn
+                năng lượng cao hơn, được truyền tải qua sự dẫn dắt của các bậc cha mẹ, các
+                bậc thầy... và từ sự thông thái vốn có của họ. Khi chỉ biết phản ứng một cách
+                thiếu suy nghĩ trong cuộc sống, chúng ta tự khiến bản thân phải đón nhận
+                những phương - chỉnh đốn nghiêm khắc - thứ mà chúng ta hay gọi là 'báo ứng
+                nhãn tiền' - để từ đó điều chỉnh lại lối sống của mình. Và sự chỉnh đốn này
+                thường sẽ gây ra tổn thất về tiền bạc, sức khỏe hoặc tình cảm. Những tổn
+                thương này là lý do của chúng chứ không phải xuất hiện ngẫu nhiên, vì chúng
+                được tạo ra để đánh thức và đưa chúng ta quay lại con đường tiến hóa của
+                mình. Những người khôn ngoan sẽ trench mọi sự thay đổi lớn về tài chính hoặc
+                công việc trong Năm thứ bảy, vì đây là giai đoạn của sự ổn định chứ không
+                phải mở rộng, của quá trình cắt bỏ những cành cây khô để lấy chỗ cho sự phát
+                triển mới trong những năm kế tiếp. Đây cũng là một năm rất phù hợp để chia
+                sẻ hoặc hướng dẫn người khác, vì nhiều cơ hội sẽ xuất hiện để chúng ta có
+                dịp dẫn dắt người khác hướng đến mức độ hiểu biết cao hơn.</p>
+            <p>Trong năm cá nhân số 7, đức tin của bạn sẽ được kiểm chứng. Bạn nhìn vào
+                cuộc sống của mình và thốt lên, “Ôi chúa, con không thể tin rằng nó đã xảy
+                ra.” Nếu bạn là người có niềm tin thật sự thì bạn sẽ có thể cảm nhận được nó
+                ở một mức độ sâu sắc hơn. Nó nghiêng về mặt biểu lộ cảm xúc. Bạn chấm
+                dứt việc hỏi mọi thứ như – “Có Chúa Trời hay không?”, “Mình đang làm gì
+                ở đây?”. Đây là lúc tự vấn mình. Tôi đề nghị bạn lướt qua các nhà sách về
+                siêu hình và tìm đọc đến phần tôn giáo và duy linh. Đây cũng là năm cần tìm
+                đến nhờ tư vấn hay nhận các liệu pháp tâm lý. Mặc dù bạn muốn được sống
+                một mình cùng những ý nghĩ trong đầu nhưng thỉnh thoảng bạn cần một nhà
+                tư vấn giúp giải đáp những gì khó khăn nhất cũng như giúp bạn thật sự tiến
+                bọ lên. Trong năm cá nhân số 7, bạn cần đến “nước” – dù nó có thể chỉ là bồn
+                tắm mát xa Jacuzzi – bởi vì khi đắm mình vào nước, bạn sẽ tập trung được
+                năng lượng của mình. Tôi cũng muốn nói rằng trong năm Cá nhân số 7 này,
+                thật khó mà nói đến bạn đời của bạn. Bạn có thể có những dao động nội tâm,
+                nhưng đó là về bạn chứ không phải về họ. Hãy nỗ lực sống cởi mở và hòa ái
+                để cho họ không nghĩ rằng mình mắc phải điều gì sai sót.</p>
+            <p>Người có con số chủ đạo 7 thường chịu những thử thách hay tổn thất khắc
+                nghiệt nhất dưới tác động của sóng rung Năm thứ bảy, nhưng những trải
+                nghiệm của họ còn có vẻ tồi tệ hơn nữa dưới con mắt của người ngoài. Họ
+                không lạ gì việc gặp phải những mất mát, hy sinh, vì đó là cách họ học được
+                những bài học cuộc sống. Và mọi chuyện sẽ tiếp tục như vậy cho đến khi họ
+                có được sự khôn ngoan và mức độ nhận thức cá nhân nào đó. Một khi đạt
+                được quả này, họ có thể trở thành những người thầy, những triết gia thực tế
+                và những người hỗ trợ nhân loại, từ đó hoàn thành mục tiêu mà Con số chủ
+                đạo của họ để ra.</p>
+        </div>
+        <div class="mt-30px">
+            <h3 class="title-content">2029 NĂM CÁ NHÂN 8</h3>
+            <h4>NĂM THỨ TÁM (PYN 8) - NĂM CỦA SỰ ĐỘC LẬP VÀ TRÍ TUỆ</h4>
+            <p>Đây là một năm của những thay đổi nhanh chóng, khi chúng ta trỗi dậy sau
+                một năm âm thầm củng cố nội lực và chuẩn bị bước lên con dốc để đến với
+                đỉnh cao kế tiếp, cũng như đến với sự khởi đầu một chu kỳ phát triển mới và
+                thịnh vượng hơn. Rất nhiều cơ hội được tạo ra dưới tác động của sóng rung
+                này, khi chúng ta khẳng định sự độc lập của mình với sự khôn ngoan ngày
+                càng được nâng cao. Đối với một số người, đó sẽ là sự cải thiện đáng kể trong
+                các vấn đề tài chính. Đa số mọi người sẽ có sự trưởng thành và độc lập về mặt
+                tinh thần, khi mà họ nhận ra mình đã tiến bộ đến mức nào trong việc thấu hiểu
+                và kiểm soát cảm xúc, cũng như biết rằng giờ đây họ đã tập trung nhiều hơn
+                vào việc 'sống' (chủ động hành động) thay vì chỉ 'tồn tại' (thụ động phản ứng).</p>
+            <p>Tiền bạc có thể liên tục chảy vào túi bạn trong năm Cá nhân số 8. Việc cung
+                cấp tài chính cho gia đình với bạn dường như là ưu tiên hàng đầu so với nói
+                chuyện tâm tình với người thân trong năm này, vì thế hãy cam đoan là có lúc
+                bạn dẹp nó sang một bên để nói với người thân biết rằng bạn yêu họ thế nào.
+                Trong năm Cá nhân số 8, bạn nên làm việc, tạo dựng cuộc sống, thiết lập sự
+                bảo đảm tài chính, và hoàn thành tốt công việc. Đây là năm tốt cho việc đầu
+                tư, bởi vì năng lượng đang ủng hộ bạn. Năm này bạn sẽ hốt bạc. Khi bạn đang
+                sống trong năm Cá nhân số 8, bạn phải cẩn trọng, tránh vô tâm đến cảm nhận
+                của người khác trên bước đường thực hiện giấc mơ của mình. Bạn có thể cảm
+                thấy mình bị một vài người mắng mỏ hoặc chỉ trích gay gắt. Đừng bận tâm
+                nhiều. Đó là vấn đề của họ. Chỉ cần cam đoan rằng bạn sẽ mang lại ấm áp và
+                tình yêu cho những người xung quanh mình, và mọi thứ sẽ trở về đúng nghĩa
+                của nó. Nếu bạn thực hiện điều này một cách tỉnh táo thì bạn có thể thấy mình
+                tự thân tiến bộ cũng như có được sự nghiệp phát triển trong năm Cá nhân số
+                8 này.</p>
+            <p>Những người có con số chủ đạo 8 đã có được sự độc lập và sự khôn ngoan ở
+                một mức độ thích hợp nào đó, đủ để cuộc sống của họ trở nên tích cực. Nếu
+                không, họ sẽ xây lên bức tường cách ly xung quanh mình, hiểu lầm sự tách
+                biệt thành độc lập và gặp khó khăn trong việc giao tiếp với những người thân
+                thiết xung quanh mình, những người mà họ vẫn thường đón nhận như lẽ
+                đương nhiên chứ không hề trân trọng.</p>
+        </div>
+        <div class="mt-30px">
+            <h3 class="title-content">2030 NĂM CÁ NHÂN 9</h3>
+            <h4>NĂM THỨ CHÍN (PYN 9) - NĂM ĐỈNH ĐIỂM THAY ĐỔI</h4>
+            <p>Chúng ta sẽ bắt đầu phân tích năm này đầu tiên, vì nó là thời điểm khép lại
+                chu kỳ cũ và mở ra chu kỳ mới. Trước đỉnh cao của chu kỳ 9 năm của mỗi cá
+                nhân chính là một năm khởi động mọi sự thay đổi. Tuy nhiên, nhiều sự thay
+                đổi diễn ra âm thầm đến mức chúng ta sẽ không nhận ra mãi cho đến cuối
+                năm hoặc trong năm kế tiếp. Những thay đổi này rất đa dạng và khác nhau
+                trong suốt cuộc đời của mỗi người, và chúng trở nên đặc biệt rõ nét trong
+                quãng thời gian 27 năm phát triển và trưởng thành theo Bốn đỉnh cao cuộc
+                đời ở phần trước đó.</p>
+            <p>Các khía cạnh chủ yếu của Năm thứ chín bao gồm việc di chuyển đó đây, đổi
+                nhà, đổi Công việc, xây dựng mối quan hệ bạn bè mới, thường đi kèm với sự
+                kết thúc một vài mối quan hệ hay tình bạn cũ, không còn phù hợp với hành
+                trình mới. Đây cũng là năm tuyệt vời để tất toán những món nơ cũ, cũng như
+                xoa dịu những mối quan hệ đang bất hòa. Ở năm này, người ta thường cảm
+                nhận mạnh mẽ về trách nhiệm Con người, cũng như sự bao dung và thấu hiểu.
+                Khi bạn sống trong năm Cá nhân số 9, bạn nhìn vào cuộc đời mình và nói,
+                “Gượm đã, chuyện gì đang diễn ra vậy? Liệu có đáng hay không? Điều gì sẽ
+                đến?” Nếu bạn có tài sản không được chú ý đến trong 6 tháng, hay lâu hơn,
+                thì nên vất bỏ chúng. Bạn cuối cùng có thể rũ bỏ nó khi bước vào năm này.
+                Đây là lúc nên dọn tủ đồ, lựa chọn những thứ mới, sửa sang phòng để chứa
+                đồ dùng mới. Nó cũng là lúc bạn có những cú điện thoại quan trọng - mà bạn
+                phải nhất định thực hiện chúng. Rồi khi bạn gọi điện và cố gắng sắp đặt mọi
+                việc, sẽ có nhiều tín hiệu đáng mừng trong năm Cá nhân số 9 này. Bạn khám
+                phá ra rằng bạn có thể vượt qua trở ngại! Và còn mọi kế hoạch tách biệt trước
+                đây của bạn thì sao? Trong năm cá nhân số 9 này, chúng sẽ vận hành tốt với
+                nhau!</p>
+            <p>Năm thứ chín thường đặc biệt quan trọng đối với những người có con số chủ
+                đạo là số 9, vì họ sẽ cảm nhận được năng lượng mạnh mẽ của nó trong mỗi
+                hành động. Đây dự kiến sẽ là năm của sự thành công đáng kể đối với những người này. Năm thứ chín là đỉnh
+                cao trong chu kỳ phát triển 9 năm, do đó,
+                trách nhiệm và lý tưởng của người có Con số chủ đạo 9 sẽ càng được nâng
+                cao trong bất kỳ lĩnh vực nhân văn nào mà họ tham gia. Tuy nhiên, nếu họ
+                vốn đã nhiều tham vọng, năm thứ chín sẽ càng củng cố lòng tham của họ đối
+                với những thành công mang tính tư lợi, khiến họ kích động đến mức trở nên
+                bất cẩn, và điều này có thể dẫn họ đến với những bài học cực kỳ đau thương.
+                Bên cạnh đó, sự cuồng nhiệt quá độ, tính kiêu ngạo và tính nghiêm túc quá
+                mức là ba thứ có thể tước mất cơ hội tận hưởng một năm đầy thú vị của những
+                thay đổi ngoạn mục trong cuộc đời họ.</p>
+        </div>
+        <div class="text-center my-30px">
+            <img src="http://numerology.center/images/year_cycle.png" alt="">
+        </div>
+
+    </div>
+</div>
+<div class="new-page">
+    <h1 class="title-content">SỐ THÁNG CÁ NHÂN</h1>
+    <div class="content">
+        <div class="text-center my-30px">
+            <img src="https://images.unsplash.com/photo-1624969862293-b749659ccc4e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80"
+                 alt="">
+        </div>
+        <div class="mt-30px">
+            <h3>THÁNG 12.2022 SỐ THÁNG CÁ NHÂN SỐ 4</h3>
+            <p>Giờ là lúc hoàn tất các nhiệm vụ mà bạn đang lảng tránh. Cân bằng sổ séc, sơn lại nhà
+                cửa, hay cắt tỉa những cụm hoa hồng. Chỉnh đốn lại sổ chi tiêu. Tháng này bạn sẽ đạt
+                hiệu quả cao hơn và những nhiệm vụ, vốn dĩ ngán ngẩm trong những thời điểm khác,
+                nay có vẻ dễ dàng hơn. Hãy chắc chắn mọi tthứ nằm trong tầm kiểm soát, mọi người
+                được quan tâm đến. Xem xét các vấn đề cá nhân mà bạn bỏ qua là một việc đúng đắn
+                trong tháng Cá nhân số 4.</p>
+        </div>
+        <div class="mt-30px">
+            <h3>THÁNG 1.2023 SỐ THÁNG CÁ NHÂN SỐ 3</h3>
+            <p>Tháng 3 thì sao? Giàu năng lượng và có khoảng thời gian tốt lành. Hãy đi xem các
+                show, đi tiệc tùng, hoặc bất cứ nơi nào làm bạn thấy vui vẻ hơn. Tôi muốn nói với
+                những số Đường đời thuộc dạng nghiêm túc hơn như số 4 và số 7, những người khó
+                tính, nên thả lỏng cho đứa trẻ trong tâm trí được vui đùa trong tháng số 3 này.</p>
+        </div>
+        <div class="mt-30px">
+            <h3>THÁNG 2.2023 SỐ THÁNG CÁ NHÂN SỐ 4</h3>
+            <p>Giờ là lúc hoàn tất các nhiệm vụ mà bạn đang lảng tránh. Cân bằng sổ séc, sơn lại nhà
+                cửa, hay cắt tỉa những cụm hoa hồng. Chỉnh đốn lại sổ chi tiêu. Tháng này bạn sẽ đạt
+                hiệu quả cao hơn và những nhiệm vụ, vốn dĩ ngán ngẩm trong những thời điểm khác,
+                nay có vẻ dễ dàng hơn. Hãy chắc chắn mọi tthứ nằm trong tầm kiểm soát, mọi người
+                được quan tâm đến. Xem xét các vấn đề cá nhân mà bạn bỏ qua là một việc đúng đắn
+                trong tháng Cá nhân số 4.</p>
+        </div>
+        <div class="mt-30px">
+            <h3>THÁNG 3.2023 SỐ THÁNG CÁ NHÂN SỐ 5</h3>
+            <p>Mọi thứ diễn ra trong tháng này sẽ bị tiêu tan. Đây là tháng không dành cho các ràng
+                buộc dài hạn. Mọi người dường như phân vân – cảm xúc riêng của bạn thường thay
+                đổi. Hãy giữ cho nó được thư thái – đừng đánh mất tính hài hước của mình. Đây là
+                khoảng thời gian tuyệt vời cho các buổi tiệc hoặc đi chơi cuối tuần. Cách tốt nhất để
+                đối phó với tháng 5 là giả vờ như nó là một bộ phim hành động thú vị - hãy chộp lấy
+                túi bỏng ngô và chỉ việc xem nó trôi qua mà thôi.</p>
+        </div>
+        <div class="mt-30px">
+            <h3>THÁNG 4.2023 SỐ THÁNG CÁ NHÂN SỐ 6</h3>
+            <p>Đây là tháng dành cho việc trang hoàng nhà cửa. Lúc này thì sự lãng mạn là quan
+                trọng, một người bạn thân mới có thể trở thành bạn tốt dài lâu. Nó cũng là lúc thích
+                hợp để đánh tan những vướng mắc ảo vọng tình cảm. Giờ đây gia đình là tối quan
+                trọng. Hãy gọi hỏi han những người bạn hay người thân mà bạn đang thiếu quan tâm
+                đến. Tháng 6 là thời gian quay về nguồn cội, tổ ấm và gia đình. </p>
+        </div>
+        <div class="mt-30px">
+            <h3>THÁNG 5.2023 SỐ THÁNG CÁ NHÂN SỐ 7</h3>
+            <p>Bạn phải đánh vật với thời gian – có quá nhiều thứ để làm trong khi thời gian lại quá
+                eo hẹp. Trong tháng này bạn sẽ bở hơi tai. Ngồi lùi lại và nhìn sâu vào bên trong mình
+                – hãy tự đánh giá. Thậm chí dù bạn có ưa tụ tập tiệc tùng thì bạn có thể vẫn cần phải
+                ở một mình – vào lúc này. Hãy lưu tâm đến cảm nhận của mình – đó là tiếng nói của
+                sự Sáng bên trong bạn. Sống đơn giản, ăn uống tinh lọc, và cố không lạm dụng bia
+                rượu. Giữ bình tĩnh và tập trung. Trong tháng 7 này, nếu bạn ở gần bãi biển thì hãy ra
+                đó, đọc sách ở đó và ngắm nhìn đại dương. Hãy thưởng ngoạn thiên nhiên. Leo núi
+                hay vượt sông bằng bè chẳng hạn. Đây là tháng dành cho sự trải nghiệm và tận hưởng
+                cảnh đẹp trên hành tinh. Thời gian này bạn cần tự vấn và viết ra những suy nghĩ của
+                mình. Tập trung vào phương châm sống của mình.</p>
+        </div>
+        <div class="mt-30px">
+            <h3>THÁNG 6.2023 SỐ THÁNG CÁ NHÂN SỐ 8</h3>
+            <p>Đây là khoảng thời gian tốt để xem xét vấn đề tài chính của bạn, và quản lý tiền bạc
+                cẩn thận hơn thường lệ. Hãy bắt đầu lập một tài khoản tiết kiệm. Cẩn thận không làm
+                mất chìa khóa, vật kỉ niệm hay những vật có ý nghĩa với bạn. Trong tháng này, người ta hay bị phân tâm
+                và có thể mắc một số sai lầm. Tránh sa vào những trận cãi vã, vì
+                bạn có thể mất đi bạn tốt. Không ai là hoàn hảo cả, và tháng này thật sự đáng nhớ đấy. </p>
+        </div>
+        <div class="mt-30px">
+            <h3>THÁNG 7.2023 SỐ THÁNG CÁ NHÂN SỐ 9</h3>
+            <p>Đây là khoảng thời gian tốt cho việc thay đổi điều gì đó, như bỏ đống quần áo không
+                còn mặc nữa chẳng hạn. Hãy vứt các loại giấy tờ không còn dùng đến. Mang sách cũ
+                cho Quỹ từ thiện hay là bán lại cho các hiệu sách cũ. Đây cũng là tháng thích hợp để
+                vận động. Số 9 thích cho đi. Tháng này bạn quyên góp trên truyền hình công cộng –
+                như cái phong bì mà bạn gửi thư từ 6 tháng trước – hoặc có thể tham gia chương trình
+                “Bếp yêu thương” cho người nghèo. Những quyết định bạn đưa ra trong tháng 9 sẽ
+                giúp cho bạn cảm thấy tốt hơn đối với những tháng còn lại của năm.</p>
+        </div>
+        <div class="mt-30px">
+            <h3>THÁNG 8.2023 SỐ THÁNG CÁ NHÂN SỐ 1</h3>
+            <p>Đây là lúc trở nên độc lập hơn. Hãy học cách đối phó với những vấn đề của bạn. Bạn
+                có thể nhờ giúp đỡ để nhận diện nhưng đừng trông mong người khác giải quyết vấn
+                đề cho bạn. Đây là tháng thích hợp cho bạn thực hiện mục tiêu, kí kết hợp đồng, ấp ủ
+                những ý tưởng mạo hiểm. Du ngoạn cũng là việc tốt trong tháng này. Đây là tháng tốt
+                cho việc kết thúc một mối quan hệ xấu, cả trong công việc hay lẫn của cá nhân.</p>
+        </div>
+        <div class="mt-30px">
+            <h3>THÁNG 9.2023 SỐ THÁNG CÁ NHÂN SỐ 2</h3>
+            <p>Đây là tháng để nghỉ ngơi. Không phải là tháng để liều lĩnh, sẽ tốt hơn nếu bạn tìm
+                kiếm những bạn cũ, và nối lại mối quan hệ chân thành với họ. Giờ đây họ sẽ rất sẵn
+                lòng giúp đỡ bạn. Hãy để họ - làm điều đó. Tránh những ý nghĩ buồn rầu. Tập trung
+                vào cuộc sống tươi vui của bạn. Hãy nói rằng bạn có số Đường đời 1 và cư xử đúng
+                như con số này. Đây là tháng bạn cần lùi lại và nghỉ ngơi, chỉ để quan sát nhằm thay
+                đổi.</p>
+        </div>
+        <div class="my-30px text-center">
+            <img src="https://i0.wp.com/feliciabender.com/wp-content/uploads/forecast-og-scaled.jpg?fit=1024%2C538&ssl=1"
+                 alt="">
+        </div>
+
+    </div>
+</div>
+<div class="new-page">
+    <div>
+        <div class="font-bold text-center" style="font-size:2.8rem;width: 80%;margin: 0 auto;padding: 8rem 0 6rem 0">
+            Chúc bạn thấu hiểu và tìm ra chính mình,
+            tìm ra đúng con đường mà bạn đam mê
+            cùng với sứ mệnh của mình!
+        </div>
+        <span style="display: block;font-size:2.8rem" class="text-center">=============oOo=============</span>
+    </div>
+    <div class="note mt-30px">
+        <p class="text-lg font-bold italic">Lưu ý :</p>
+        <p class="text-lg font-bold italic">Nội dung của bản Nhân số học Pytago này chỉ mang giá
+            trị tham khảo nhất định để định hướng cho bạn một con
+            đường phù hợp dựa trên những nghiên cứu khoa học cụ
+            thể của Pytago và những người phát triển. Nội dung này
+            và sự tư vấn không cam kết, hứa hẹn hay ngụ ý liên quan
+            đến việc dựa vào nội dung này bạn sẽ thành công hay thất
+            bại cho bất kì cá nhân nào.</p>
+        <p class="text-lg font-bold italic">Hãy nhớ rằng những thông tin qua THẦN SỐ HỌC mới
+            chỉ là phần sức mạnh ban đầu, và nó không quan trọng
+            bằng những gì chúng ta có thể tự hoàn thiện bản thân
+            mình. Việc thấu hiểu bản thân qua điểm mạnh, điểm yếu
+            giúp chúng ta chủ động hoàn thiện bản thân.</p>
+    </div>
+</div>
+<div class="new-page">
+    <h1 class="uppercase">TÀI LIỆU THAM KHẢO</h1>
+    <div class="content mt-30px">
+        <ol>
+            <li class="text-lg"><p class="text-lg"><i>Khóa học Thần số học</i> của Thầy Cung Khắc Lược: 2012</p></li>
+            <li class="text-lg"><p class="text-lg">Millman, Dan: <i>The Life You Were Born to Live</i>,
+                H.J.Kramer, 1993</p>
+            </li>
+            <li class="text-lg"><p class="text-lg"><i>The Complete Book of Numerology</i>: Cuốn sách Toàn diện
+                về Thần số học - Tác giả: TS. David A. Phillips, NXB. Hay
+                House, 1992 – 2005 </p>
+            </li>
+            <li class="text-lg"><p class="text-lg"><i>Templeton, Rosemary, Numerology: Numbers and Their
+                Influence</i>, Rockpool Publishing, 2007 </p>
+            </li>
+            <li class="text-lg"><p class="text-lg">Buchanan, Michelle. The Numerology Guidebook:
+                <i>Discover Your Destiny and Blueprint of Your Life</i>, Hay
+                House, 2003 </p>
+            </li>
+            <li class="text-lg"><p class="text-lg">Decoz, J.Hans. Numerology, Perigee Books, 2001</li>
+            <li class="text-lg"><p class="text-lg">Drayer, Ruth. <i>Numerology: The Power In Numbers</i>,
+                Square One Publishers, 2002 </p>
+            </li>
+            <li class="text-lg"><p class="text-lg">Hay, Louis L. <i>Colors and Numbers</i>, Hay House, 2011</li>
+            <li class="text-lg"><p class="text-lg">Jordan, Juno. <i>The Romance in Your Name</i>, De Vorss
+                Publications, 1984</p>
+            </li>
+            <li class="text-lg"><p class="text-lg"><i>Thay đổi cuộc sống với Nhân số học</i> – Tác giả: Lê Đỗ
+                Quỳnh Hương – NXB Tổng hợp Thành phố Hồ Chí Minh
+                – 2020</p>
+            </li>
+            <li class="text-lg"><p class="text-lg"><i>Mật mã THẦN SỐ HỌC – NUMEROLOGY – CON
+                SỐ VẬN MỆNH CỦA BẠN</i> – Tác giả: Glynis McCants –
+                Biên dịch: Hồ Minh Trí – NXB Hồng Đức 2020</p>
+            </li>
+            <li class="text-lg"><p class="text-lg"><i>Numerology – Lời Thì Thầm Của Vận Mệnh</i> – Tác
+                giả: Hữu Thiện – 2020</p>
+            </li>
+            <li class="text-lg"><p class="text-lg"><i>Chuyển hóa cuộc đời cùng Thần số học Pytago</i>. Tác
+                giả Michelle Buchanan – NXB Công Thương, 2021</p>
+            </li>
+        </ol>
+    </div>
+</div>
+</body>
+</html>
