@@ -21,6 +21,21 @@ class HiepKy(models.Model):
         db_table = "hiep_ky"
 
 
+class Sao(models.Model):
+    name = models.CharField(max_length=255)
+    property = models.TextField(null=True)
+    good_ugly_stars = models.IntegerField(blank=True, null=True)
+    is_mountain = models.TextField(blank=True, null=True)
+
+    class Meta:
+        db_table = "sao"
+
+
+class SaoHiepKy(models.Model):
+    hiepky = models.ForeignKey(HiepKy, on_delete=models.CASCADE)
+    sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
+
+
 class TietKhi(models.Model):
     tiet_khi = models.CharField(max_length=255)
     start_time = models.DateTimeField(null=True, blank=True)
@@ -49,6 +64,66 @@ class HourInDay(models.Model):
 
     class Meta:
         db_table = "hour_in_days"
+
+
+class SaoHour1(models.Model):
+    hour_1 = models.ForeignKey(HourInDay, on_delete=models.CASCADE)
+    sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
+
+
+class SaoHour2(models.Model):
+    hour_2 = models.ForeignKey(HourInDay, on_delete=models.CASCADE)
+    sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
+
+
+class SaoHour3(models.Model):
+    hour_3 = models.ForeignKey(HourInDay, on_delete=models.CASCADE)
+    sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
+
+
+class SaoHour4(models.Model):
+    hour_4 = models.ForeignKey(HourInDay, on_delete=models.CASCADE)
+    sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
+
+
+class SaoHour5(models.Model):
+    hour_5 = models.ForeignKey(HourInDay, on_delete=models.CASCADE)
+    sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
+
+
+class SaoHour6(models.Model):
+    hour_6 = models.ForeignKey(HourInDay, on_delete=models.CASCADE)
+    sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
+
+
+class SaoHour7(models.Model):
+    hour_7 = models.ForeignKey(HourInDay, on_delete=models.CASCADE)
+    sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
+
+
+class SaoHour8(models.Model):
+    hour_8 = models.ForeignKey(HourInDay, on_delete=models.CASCADE)
+    sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
+
+
+class SaoHour9(models.Model):
+    hour_9 = models.ForeignKey(HourInDay, on_delete=models.CASCADE)
+    sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
+
+
+class SaoHour10(models.Model):
+    hour_10 = models.ForeignKey(HourInDay, on_delete=models.CASCADE)
+    sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
+
+
+class SaoHour11(models.Model):
+    hour_11 = models.ForeignKey(HourInDay, on_delete=models.CASCADE)
+    sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
+
+
+class SaoHour12(models.Model):
+    hour_12 = models.ForeignKey(HourInDay, on_delete=models.CASCADE)
+    sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
 
 
 class QuyNhan(models.Model):
@@ -276,3 +351,4 @@ class TamKyThang(ItemBase):
 
     class Meta:
         db_table = "tam_ky_thang"
+
