@@ -352,3 +352,22 @@ class TamKyThang(ItemBase):
     class Meta:
         db_table = "tam_ky_thang"
 
+
+class ThanSatByMonth(ItemBase):
+    sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
+    month_1 = models.CharField(max_length=255, blank=True, null=True)
+    month_2 = models.CharField(max_length=255, blank=True, null=True)
+    month_3 = models.CharField(max_length=255, blank=True, null=True)
+    month_4 = models.CharField(max_length=255, blank=True, null=True)
+    month_5 = models.CharField(max_length=255, blank=True, null=True)
+    month_6 = models.CharField(max_length=255, blank=True, null=True)
+    month_7 = models.CharField(max_length=255, blank=True, null=True)
+    month_8 = models.CharField(max_length=255, blank=True, null=True)
+    month_9 = models.CharField(max_length=255, blank=True, null=True)
+    month_10 = models.CharField(max_length=255, blank=True, null=True)
+    month_11 = models.CharField(max_length=255, blank=True, null=True)
+    month_12 = models.CharField(max_length=255, blank=True, null=True)
+
+    class Meta:
+        db_table = "than_sat_by_month"
+

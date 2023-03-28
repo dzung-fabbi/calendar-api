@@ -70,9 +70,7 @@ class ThanSatAPIView(APIView):
             lap_huong_hung = LapHuongHung.objects.filter(is_active=True, year__iexact=year).first()
             tu_phuong_hung = TuPhuongHung.objects.filter(is_active=True, year__iexact=year).first()
 
-            lap_huong_hung_thang = LapHuongHungThang.objects.filter(year__iexact=year)
-            khai_son_hung_thang = KhaiSonHungThang.objects.filter(year__iexact=year)
-            tu_phuong_hung_thang = TuPhuongHungThang.objects.filter(year__iexact=year)
+            than_sat_by_month = ThanSatByMonth.objects.filter(year__iexact=year)
 
             return Response(data={
                 'khai_son_tu_phuong_cat': KhaiSonTuPhuongCatSerializer(khai_son_tu_phuong_cat, many=True).data,
@@ -88,9 +86,7 @@ class ThanSatAPIView(APIView):
                 'am_phu_thai_tue': AmPhuThaiTueSerializer(am_phu_thai_tue).data if bool(am_phu_thai_tue) else None,
                 'lap_huong_hung': LapHuongHungSerializer(lap_huong_hung).data if bool(lap_huong_hung) else None,
                 'tu_phuong_hung': TuPhuongHungSerializer(tu_phuong_hung).data if bool(tu_phuong_hung) else None,
-                'lap_huong_hung_thang': LapHuongHungThangSerializer(lap_huong_hung_thang, many=True).data,
-                'khai_son_hung_thang': KhaiSonHungThangSerializer(khai_son_hung_thang, many=True).data,
-                'tu_phuong_hung_thang': TuPhuongHungThangSerializer(tu_phuong_hung_thang, many=True).data,
+                'than_sat_by_month': ThanSatByMonthSerializer(than_sat_by_month, many=True).data,
             })
         except Exception:
             raise BadRequestException()

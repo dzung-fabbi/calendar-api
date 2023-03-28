@@ -260,22 +260,37 @@ class TuPhuongHungSerializer(serializers.ModelSerializer):
         model = TuPhuongHung
         fields = '__all__'
 
-class LapHuongHungThangSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = LapHuongHungThang
-        fields = '__all__'
-class KhaiSonHungThangSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = KhaiSonHungThang
-        fields = '__all__'
-class TuPhuongHungThangSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = TuPhuongHungThang
-        fields = '__all__'
 
-class TamKyThangSerializer(serializers.ModelSerializer):
+class ThanSatByMonthSerializer(serializers.ModelSerializer):
+    sao = serializers.SerializerMethodField()
+
+
     class Meta:
-        model = TamKyThang
-        fields = '__all__'
+        model = ThanSatByMonth
+        fields = [
+            'month_1',
+            'month_2',
+            'month_3',
+            'month_4',
+            'month_5',
+            'month_6',
+            'month_7',
+            'month_8',
+            'month_9',
+            'month_10',
+            'month_11',
+            'month_12',
+            'sao'
+        ]
+
+    def get_sao(self, obj):
+        result = {
+            "name": obj.sao.name,
+            "property": obj.sao.property,
+            "good_ugly_stars": obj.sao.good_ugly_stars,
+            "is_mountain": obj.sao.is_mountain
+        }
+        return result
+
 
 
