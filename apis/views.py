@@ -11,7 +11,8 @@ from itertools import chain
 from operator import attrgetter
 
 from statistics import mode
-import unicodedata
+import unicodedata, json
+
 
 
 class TietkhiAPIView(APIView):
@@ -23,6 +24,30 @@ class TietkhiAPIView(APIView):
             ).order_by('start_time').first()
             serializer = TietKhiSerializer(tiet_khi, allow_null=True)
             return Response({'data': serializer.data})
+        except Exception:
+            raise BadRequestException()
+
+
+class CalendarAPIView(APIView):
+    def get(self, request):
+        try:
+            arr_data = json.loads(request.GET.get('data'))
+            data = []
+            for day in arr_data:
+                hiep_ky = HiepKy.objects.filter(
+                    month=day['month'], lunar_day=day['lunar_day']
+                ).first()
+                if hiep_ky:
+                    data.append({
+                        'should_things': hiep_ky.should_things,
+                        'no_should_things': hiep_ky.no_should_things
+                    })
+                else:
+                    data.append({
+                        'should_things': '',
+                        'no_should_things': ''
+                    })
+            return Response({'data': data})
         except Exception:
             raise BadRequestException()
 
