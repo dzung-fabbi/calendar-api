@@ -1,17 +1,13 @@
 from .models import *
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework import status
 
 from .serializers import *
 from .exceptions import BadRequestException
 from datetime import datetime
-from itertools import chain
-
-from operator import attrgetter
 
 from statistics import mode
-import unicodedata, json
+import json
 
 
 
@@ -84,7 +80,7 @@ class ThanSatAPIView(APIView):
     def get(self, request):
         try:
             year = request.GET.get('year', None)
-            khai_son_tu_phuong_cat = KhaiSonTuPhuongCat.objects.filter(year__iexact=year)
+            than_sat_by_year = ThanSatByYear.objects.filter(year__iexact=year)
             tam_nguyen_tu_bach = TamNguyenTuBach.objects.filter(is_active=True, year__iexact=year)
             cai_son_hoang_dao = CaiSonHoangDao.objects.filter(is_active=True, year__iexact=year).first()
             thong_thien_khieu = ThongThienKhieu.objects.filter(is_active=True, year__iexact=year).first()
@@ -98,7 +94,7 @@ class ThanSatAPIView(APIView):
             than_sat_by_month = ThanSatByMonth.objects.filter(year__iexact=year)
 
             return Response(data={
-                'khai_son_tu_phuong_cat': KhaiSonTuPhuongCatSerializer(khai_son_tu_phuong_cat, many=True).data,
+                'than_sat_by_year': ThanSatByYearSerializer(than_sat_by_year, many=True).data,
                 'tam_nguyen_tu_bach': TamNguyenTuBachSerializer(tam_nguyen_tu_bach, many=True).data,
                 'cai_son_hoang_dao': CaiSonHoangDaoSerializer(cai_son_hoang_dao).data if bool(
                     cai_son_hoang_dao) else None,

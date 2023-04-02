@@ -197,17 +197,38 @@ class QuyNhanSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class TuDaiCatThoiSerializer(serializers.HyperlinkedModelSerializer):
+    sao = serializers.SerializerMethodField()
+
     class Meta:
         model = TuDaiCatThoi
-        fields = ['hour', 'can_ngay_1', 'can_ngay_2', 'can_ngay_3', 'can_ngay_4', 'can_ngay_5',
-                  'can_ngay_6', 'can_ngay_7', 'can_ngay_8', 'can_ngay_9', 'can_ngay_10', 'tiet_khi']
+        fields = ['hour', 'can_ngay', 'sao', 'tiet_khi']
+
+    def get_sao(self, obj):
+        stars = TuDaiCatThoiSao.objects.filter(tudaicatthoi=obj)
+        tmp = []
+        for el in stars:
+            tmp.append({
+                "name": el.sao.name,
+                "property": el.sao.property,
+                "good_ugly_stars": el.sao.good_ugly_stars
+            })
+        return tmp
 
 
-class KhaiSonTuPhuongCatSerializer(serializers.ModelSerializer):
+class ThanSatByYearSerializer(serializers.ModelSerializer):
+    sao = serializers.SerializerMethodField()
+
     class Meta:
         model = KhaiSonTuPhuongCat
-        fields = '__all__'
+        fields = ['year', 'direction', 'sao']
 
+    def get_sao(self, obj):
+        stars = {
+            "name": obj.sao.name,
+            "property": obj.sao.property,
+            "good_ugly_stars": obj.sao.good_ugly_stars
+        }
+        return stars
 
 class TamNguyenTuBachSerializer(serializers.ModelSerializer):
     class Meta:

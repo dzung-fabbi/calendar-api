@@ -137,7 +137,7 @@ class QuyNhan(models.Model):
         db_table = "quy_nhan"
 
 
-class TuDaiCatThoi(models.Model):
+class TuDaiCatThoiOld(models.Model):
     hour = models.CharField(max_length=255)
     can_ngay_1 = models.CharField(max_length=255, null=True)
     can_ngay_2 = models.CharField(max_length=255, null=True)
@@ -152,7 +152,24 @@ class TuDaiCatThoi(models.Model):
     tiet_khi = models.CharField(max_length=255)
 
     class Meta:
+        db_table = "tu_dai_cat_thoi_old"
+
+
+class TuDaiCatThoi(models.Model):
+    hour = models.CharField(max_length=255)
+    can_ngay = models.CharField(max_length=255, null=True)
+    tiet_khi = models.CharField(max_length=255)
+
+    class Meta:
         db_table = "tu_dai_cat_thoi"
+
+
+class TuDaiCatThoiSao(models.Model):
+    tudaicatthoi = models.ForeignKey(TuDaiCatThoi, on_delete=models.CASCADE)
+    sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
+
+
+
 class KhaiSonTuPhuongCat(ItemBase):
     star_name = models.CharField(max_length=255, blank=True, null=True)
     direction = models.CharField(max_length=255, blank=True, null=True)
@@ -370,4 +387,12 @@ class ThanSatByMonth(ItemBase):
 
     class Meta:
         db_table = "than_sat_by_month"
+
+
+class ThanSatByYear(ItemBase):
+    sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
+    direction = models.CharField(max_length=255, blank=True, null=True)
+
+    class Meta:
+        db_table = "than_sat_by_year"
 
