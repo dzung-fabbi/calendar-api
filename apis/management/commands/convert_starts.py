@@ -13,13 +13,13 @@ class Command(BaseCommand):
             good_stars = el.good_stars.split(',')
             if len(good_stars) > 0:
                 for row_1 in good_stars:
-                    tmp = Sao.objects.filter(name__icontains=row_1.strip()).first()
+                    tmp = Sao.objects.filter(name=row_1.strip().capitalize()).first()
                     if tmp:
                         SaoHiepKy.objects.create(hiepky=el, sao=tmp)
 
             ugly_stars = el.ugly_stars.split(',')
             if len(ugly_stars) > 0:
                 for row_2 in ugly_stars:
-                    stars_ugly = Sao.objects.filter(name__icontains=row_2.strip()).first()
+                    stars_ugly = Sao.objects.filter(name=row_2.strip().capitalize()).first()
                     if stars_ugly:
                         SaoHiepKy.objects.create(hiepky=el, sao=stars_ugly)

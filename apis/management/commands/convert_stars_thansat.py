@@ -10,8 +10,8 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         tu_phuong_hung_thang = TuPhuongHungThang.objects.all()
         for el in tu_phuong_hung_thang:
-            stars = el.star_name.replace('\n', ' ').replace('  ', ' ').strip()
-            tmp = Sao.objects.filter(name__icontains=stars).first()
+            stars = el.star_name.replace('\n', ' ').replace('  ', ' ').strip().capitalize()
+            tmp = Sao.objects.filter(name=stars).first()
             if tmp:
                 ThanSatByMonth.objects.create(
                     sao=tmp,
@@ -33,8 +33,8 @@ class Command(BaseCommand):
 
         khai_son_hung_thang = KhaiSonHungThang.objects.all()
         for el in khai_son_hung_thang:
-            stars = el.star_name.replace('\n', ' ').replace('  ', ' ').strip()
-            tmp = Sao.objects.filter(name__icontains=stars).first()
+            stars = el.star_name.replace('\n', ' ').replace('  ', ' ').strip().capitalize()
+            tmp = Sao.objects.filter(name=stars).first()
             if tmp:
                 ThanSatByMonth.objects.create(
                     sao=tmp,
@@ -56,8 +56,8 @@ class Command(BaseCommand):
 
         lap_huong_hung_thang = LapHuongHungThang.objects.all()
         for el in lap_huong_hung_thang:
-            stars = el.star_name.replace('\n', ' ').replace('  ', ' ').strip()
-            tmp = Sao.objects.filter(name__icontains=stars).first()
+            stars = el.star_name.replace('\n', ' ').replace('  ', ' ').strip().capitalize()
+            tmp = Sao.objects.filter(name=stars).first()
             if tmp:
                 ThanSatByMonth.objects.create(
                     sao=tmp,
