@@ -10,7 +10,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         sao = Sao.objects.all()
         for el in sao:
-            name = el.name.strip().capitalize()
+            name = el.name.replace('\n', ' ').replace('   ', ' ').replace('  ', ' ').strip().capitalize()
             el.name = name
             el.save()
 

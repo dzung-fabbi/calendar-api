@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
 from django.db.models import Q
-
+import codecs
 from apis.models import HiepKy, Sao, SaoHiepKy, TuPhuongHungThang, ThanSatByMonth, LapHuongHungThang, KhaiSonHungThang
 
 
@@ -10,8 +10,10 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         tu_phuong_hung_thang = TuPhuongHungThang.objects.all()
         for el in tu_phuong_hung_thang:
-            stars = el.star_name.replace('\n', ' ').replace('  ', ' ').strip().capitalize()
+            stars = el.star_name.replace('\n', ' ').replace('  ', ' ').replace('.', '').strip().capitalize()
             tmp = Sao.objects.filter(name=stars).first()
+            if tmp is None:
+                tmp = Sao.objects.filter(name__icontains=stars).first()
             if tmp:
                 ThanSatByMonth.objects.create(
                     sao=tmp,
@@ -30,11 +32,17 @@ class Command(BaseCommand):
                     month_11=el.month_11.replace('\n', ' '),
                     month_12=el.month_12.replace('\n', ' ')
                 )
+
+            if tmp is None:
+                with codecs.open("sao.txt", "a", "utf-8-sig") as temp:
+                    temp.write("{}\n".format(stars))
 
         khai_son_hung_thang = KhaiSonHungThang.objects.all()
         for el in khai_son_hung_thang:
             stars = el.star_name.replace('\n', ' ').replace('  ', ' ').strip().capitalize()
             tmp = Sao.objects.filter(name=stars).first()
+            if tmp is None:
+                tmp = Sao.objects.filter(name__icontains=stars).first()
             if tmp:
                 ThanSatByMonth.objects.create(
                     sao=tmp,
@@ -54,10 +62,16 @@ class Command(BaseCommand):
                     month_12=el.month_12.replace('\n', ' ')
                 )
 
+            if tmp is None:
+                with codecs.open("sao.txt", "a", "utf-8-sig") as temp:
+                    temp.write("{}\n".format(stars))
+
         lap_huong_hung_thang = LapHuongHungThang.objects.all()
         for el in lap_huong_hung_thang:
             stars = el.star_name.replace('\n', ' ').replace('  ', ' ').strip().capitalize()
             tmp = Sao.objects.filter(name=stars).first()
+            if tmp is None:
+                tmp = Sao.objects.filter(name__icontains=stars).first()
             if tmp:
                 ThanSatByMonth.objects.create(
                     sao=tmp,
@@ -76,3 +90,7 @@ class Command(BaseCommand):
                     month_11=el.month_11.replace('\n', ' '),
                     month_12=el.month_12.replace('\n', ' ')
                 )
+
+            if tmp is None:
+                with codecs.open("sao.txt", "a", "utf-8-sig") as temp:
+                    temp.write("{}\n".format(stars))
