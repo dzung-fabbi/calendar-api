@@ -8,32 +8,135 @@ class ItemBase(models.Model):
     class Meta:
         abstract = True
 
+good_ugly_start = (
+    (0, "Không xác định"),
+    (1, "Sao tốt"),
+    (2, "Sao xấu")
+)
 
-class HiepKy(models.Model):
-    month = models.IntegerField()
-    lunar_day = models.CharField(max_length=255)
-    good_stars = models.TextField(blank=True, null=True)
-    ugly_stars = models.TextField(blank=True, null=True)
-    should_things = models.TextField(blank=True, null=True)
-    no_should_things = models.TextField(blank=True, null=True)
-
-    class Meta:
-        db_table = "hiep_ky"
-
+is_mountain = (
+    (1, "Cung"),
+    (2, "Sơn")
+)
 
 class Sao(models.Model):
-    name = models.CharField(max_length=255)
-    property = models.TextField(null=True)
-    good_ugly_stars = models.IntegerField(blank=True, null=True)
-    is_mountain = models.TextField(blank=True, null=True)
+    name = models.CharField(max_length=255, verbose_name="Tên sao")
+    property = models.TextField(null=True, verbose_name="Thuộc tính")
+    good_ugly_stars = models.IntegerField(blank=False, null=False, choices=good_ugly_start, verbose_name="Sao tốt xấu")
+    is_mountain = models.TextField(blank=True, null=True, choices=is_mountain, verbose_name="Thuộc cung hay sơn")
 
     class Meta:
         db_table = "sao"
+
+    def __str__(self):
+        return self.name
+
+month = (
+    (1, 1),
+    (2, 2),
+    (3, 3),
+    (4, 4),
+    (5, 5),
+    (6, 6),
+    (7, 7),
+    (8, 8),
+    (9, 9),
+    (10, 10),
+    (11, 11),
+    (12, 12),
+)
+
+lunar_day = (
+    ("GIÁP TÝ", "GIÁP TÝ"),
+    ("ẤT SỬU", "ẤT SỬU"),
+    ("BÍNH DẦN", "BÍNH DẦN"),
+    ("ĐINH MÃO", "ĐINH MÃO"),
+    ("MẬU THÌN", "MẬU THÌN"),
+    ("KỈ TỴ", "KỈ TỴ"),
+    ("CANH NGỌ", "CANH NGỌ"),
+    ("TÂN MÙI", "TÂN MÙI"),
+    ("NHÂM THÂN", "NHÂM THÂN"),
+    ("QUÝ DẬU", "QUÝ DẬU"),
+    ("ẤT SỬU", "ẤT SỬU"),
+    ("GIÁP TUẤT", "GIÁP TUẤT"),
+    ("ẤT HỢI", "ẤT HỢI"),
+    ("BÍNH TÝ", "BÍNH TÝ"),
+    ("ĐINH SỬU", "ĐINH SỬU"),
+    ("MẬU DẦN", "MẬU DẦN"),
+    ("KỶ MÃO", "KỶ MÃO"),
+    ("CANH THÌN", "CANH THÌN"),
+    ("TÂN TỴ", "TÂN TỴ"),
+    ("NHÂM NGỌ", "NHÂM NGỌ"),
+    ("QUÝ MÙI", "QUÝ MÙI"),
+    ("GIÁP THÂN", "GIÁP THÂN"),
+    ("ẤT DẬU", "ẤT DẬU"),
+    ("BÍNH TUẤT", "BÍNH TUẤT"),
+    ("ĐINH HỢI", "ĐINH HỢI"),
+    ("MẬU TÝ", "MẬU TÝ"),
+    ("KỶ SỬU", "KỶ SỬU"),
+    ("CANH DẦN", "CANH DẦN"),
+    ("TÂN MÃO", "TÂN MÃO"),
+    ("NHÂM THÌN", "NHÂM THÌN"),
+    ("QUÝ TỴ", "QUÝ TỴ"),
+    ("GIÁP NGỌ", "GIÁP NGỌ"),
+    ("ẤT MÙI", "ẤT MÙI"),
+    ("BÍNH THÂN", "BÍNH THÂN"),
+    ("ĐINH DẬU", "ĐINH DẬU"),
+    ("MẬU TUẤT", "MẬU TUẤT"),
+    ("KỶ HỢI", "KỶ HỢI"),
+    ("CANH TÝ", "CANH TÝ"),
+    ("TÂN SỬU", "TÂN SỬU"),
+    ("NHÂM DẦN", "NHÂM DẦN"),
+    ("QUÝ MÃO", "QUÝ MÃO"),
+    ("GIÁP THÌN", "GIÁP THÌN"),
+    ("ẤT TỊ", "ẤT TỊ"),
+    ("BÍNH NGỌ", "BÍNH NGỌ"),
+    ("ĐINH MÙI", "ĐINH MÙI"),
+    ("MẬU THÂN", "MẬU THÂN"),
+    ("KỶ DẬU", "KỶ DẬU"),
+    ("CANH TUẤT", "CANH TUẤT"),
+    ("TÂN HỢI", "TÂN HỢI"),
+    ("NHÂM TÝ", "NHÂM TÝ"),
+    ("QUÝ SỬU", "QUÝ SỬU"),
+    ("GIÁP DẦN", "GIÁP DẦN"),
+    ("BÍNH THÌN", "BÍNH THÌN"),
+    ("ĐINH TỴ", "ĐINH TỴ"),
+    ("MẬU NGỌ", "MẬU NGỌ"),
+    ("KỶ MÙI", "KỶ MÙI"),
+    ("CANH THÂN", "CANH THÂN"),
+    ("TÂN DẬU", "TÂN DẬU"),
+    ("NHÂM TUẤT", "NHÂM TUẤT"),
+    ("QUÝ HỢI", "QUÝ HỢI"),
+)
+
+class HiepKy(models.Model):
+    month = models.IntegerField(choices=month, verbose_name="Tháng")
+    lunar_day = models.CharField(max_length=255, verbose_name="Ngày can chi", choices=lunar_day)
+    good_stars = models.TextField(blank=True, null=True, verbose_name="Sao tốt", editable=False)
+    ugly_stars = models.TextField(blank=True, null=True, verbose_name="Sao xấu", editable=False)
+    should_things = models.TextField(blank=True, null=True, verbose_name="Việc nên làm")
+    no_should_things = models.TextField(blank=True, null=True, verbose_name="Việc không nên làm")
+    sao = models.ManyToManyField(Sao, through='SaoHiepKy', related_name='test')
+
+    def get_fk(self):
+        return self.sao.name
+
+    class Meta:
+        db_table = "hiep_ky"
+        verbose_name = "Sao theo ngày"
+        verbose_name_plural = "Sao theo ngày"
+
+
+
+
 
 
 class SaoHiepKy(models.Model):
     hiepky = models.ForeignKey(HiepKy, on_delete=models.CASCADE)
     sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
+
+    def get_fk(self):
+        return self.sao.name
 
 
 class TietKhi(models.Model):
