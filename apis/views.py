@@ -36,12 +36,16 @@ class CalendarAPIView(APIView):
                 if hiep_ky:
                     data.append({
                         'should_things': hiep_ky.should_things,
-                        'no_should_things': hiep_ky.no_should_things
+                        'no_should_things': hiep_ky.no_should_things,
+                        'good_stars': hiep_ky.good_stars,
+                        'ugly_stars': hiep_ky.ugly_stars
                     })
                 else:
                     data.append({
                         'should_things': '',
-                        'no_should_things': ''
+                        'no_should_things': '',
+                        'good_stars': '',
+                        'ugly_stars': ''
                     })
             return Response({'data': data})
         except Exception:
