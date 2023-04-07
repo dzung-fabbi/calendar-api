@@ -259,7 +259,7 @@ class SaoHour9(models.Model):
     class Meta:
         verbose_name = "Giờ thân"
         verbose_name_plural = "Giờ thân"
-        unique_together = ('hour_9', 'sao')
+        unique_together = ('hour_9', 'sao',)
 
 
 class SaoHour10(models.Model):
