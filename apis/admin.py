@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.forms import BaseInlineFormSet
 
-from apis.models import Sao, HiepKy, SaoHiepKy, HourInDay, TuDaiCatThoi
+from apis.models import Sao, HiepKy, SaoHiepKy, HourInDay, TuDaiCatThoi, QuyNhan
 
 admin.site.site_header = 'Thiên văn lịch pháp'
 
@@ -119,3 +119,10 @@ class TuDaiDayAdmin(admin.ModelAdmin):
 
 
 admin.site.register(TuDaiCatThoi, TuDaiDayAdmin)
+
+
+class QuyNhanAdmin(admin.ModelAdmin):
+    list_display = ['id', 'can_ngay', 'tiet_khi', 'am_duong', 'quy_nhan']
+    list_filter = ['can_ngay', 'tiet_khi']
+
+admin.site.register(QuyNhan, QuyNhanAdmin)

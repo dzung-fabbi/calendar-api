@@ -281,50 +281,6 @@ class SaoHour12(models.Model):
         verbose_name_plural = "Giờ hợi"
 
 
-class QuyNhan(models.Model):
-    can_ngay = models.CharField(max_length=255)
-    tiet_khi = models.CharField(max_length=255)
-    hour = models.CharField(max_length=255)
-    am_duong = models.CharField(max_length=255, null=True)
-    quy_nhan = models.CharField(max_length=255, null=True)
-
-    class Meta:
-        db_table = "quy_nhan"
-
-
-class TuDaiCatThoiOld(models.Model):
-    hour = models.CharField(max_length=255)
-    can_ngay_1 = models.CharField(max_length=255, null=True)
-    can_ngay_2 = models.CharField(max_length=255, null=True)
-    can_ngay_3 = models.CharField(max_length=255, null=True)
-    can_ngay_4 = models.CharField(max_length=255, null=True)
-    can_ngay_5 = models.CharField(max_length=255, null=True)
-    can_ngay_6 = models.CharField(max_length=255, null=True)
-    can_ngay_7 = models.CharField(max_length=255, null=True)
-    can_ngay_8 = models.CharField(max_length=255, null=True)
-    can_ngay_9 = models.CharField(max_length=255, null=True)
-    can_ngay_10 = models.CharField(max_length=255, null=True)
-    tiet_khi = models.CharField(max_length=255)
-
-    class Meta:
-        db_table = "tu_dai_cat_thoi_old"
-
-
-hour = (
-    ("Tý", "Tý"),
-    ("Sửu", "Sửu"),
-    ("Dần", "Dần"),
-    ("Mão", "Mão"),
-    ("Thìn", "Thìn"),
-    ("Tỵ", "Tỵ"),
-    ("Ngọ", "Ngọ"),
-    ("Mùi", "Mùi"),
-    ("Thân", "Thân"),
-    ("Dậu", "Dậu"),
-    ("Tuất", "Tuất"),
-    ("Hợi", "Hợi"),
-)
-
 can_ngay = (
     ("Giáp", "Tý"),
     ("Ất", "Sửu"),
@@ -365,9 +321,42 @@ tiet_khi = (
     ("Đại Hàn", "Đại Hàn"),
 )
 
+HOURS = (
+    ("Tý", "Tý"),
+    ("Sửu", "Sửu"),
+    ("Dần", "Dần"),
+    ("Mão", "Mão"),
+    ("Thìn", "Thìn"),
+    ("Tỵ", "Tỵ"),
+    ("Ngọ", "Ngọ"),
+    ("Mùi", "Mùi"),
+    ("Thân", "Thân"),
+    ("Dậu", "Dậu"),
+    ("Tuất", "Tuất"),
+    ("Hợi", "Hợi"),
+)
+
+AM_DUONG = (
+    ("Âm quý", "Âm quý"),
+    ("Dương quý", "Dương quý"),
+)
+
+
+class QuyNhan(models.Model):
+    can_ngay = models.CharField(max_length=255, choices=can_ngay, verbose_name="Can ngày")
+    tiet_khi = models.CharField(max_length=255, choices=tiet_khi, verbose_name="Tiết khí")
+    hour = models.CharField(max_length=255, choices=HOURS, verbose_name="Giờ")
+    am_duong = models.CharField(max_length=255, null=True, verbose_name="Âm dương", choices=AM_DUONG)
+    quy_nhan = models.CharField(max_length=255, null=True, verbose_name="Quý nhân", choices=HOURS)
+
+    class Meta:
+        db_table = "quy_nhan"
+        verbose_name = "Quý nhân đăng thiên môn"
+        verbose_name_plural = "Quý nhân đăng thiên môn"
+
 
 class TuDaiCatThoi(models.Model):
-    hour = models.CharField(max_length=255, choices=hour, verbose_name="Giờ")
+    hour = models.CharField(max_length=255, choices=HOURS, verbose_name="Giờ")
     can_ngay = models.CharField(max_length=255, null=True, choices=can_ngay, verbose_name="Can ngày")
     tiet_khi = models.CharField(max_length=255, choices=tiet_khi, verbose_name="Tiết khí")
     sao = models.ManyToManyField(Sao, through='TuDaiCatThoiSao', related_name='sao')
