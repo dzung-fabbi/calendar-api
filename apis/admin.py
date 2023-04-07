@@ -43,52 +43,52 @@ class SuuInline(admin.TabularInline):
 
 
 class DanInline(admin.TabularInline):
-    model = HourInDay.hour_2.through
-    extra = 0
-
-
-class MaoInline(admin.TabularInline):
     model = HourInDay.hour_3.through
     extra = 0
 
 
-class ThinInline(admin.TabularInline):
+class MaoInline(admin.TabularInline):
     model = HourInDay.hour_4.through
     extra = 0
 
 
-class TiInline(admin.TabularInline):
+class ThinInline(admin.TabularInline):
     model = HourInDay.hour_5.through
     extra = 0
 
 
-class NgoInline(admin.TabularInline):
+class TiInline(admin.TabularInline):
     model = HourInDay.hour_6.through
     extra = 0
 
 
-class MuiInline(admin.TabularInline):
+class NgoInline(admin.TabularInline):
     model = HourInDay.hour_7.through
     extra = 0
 
 
-class ThanInline(admin.TabularInline):
+class MuiInline(admin.TabularInline):
     model = HourInDay.hour_8.through
     extra = 0
 
 
-class DauInline(admin.TabularInline):
+class ThanInline(admin.TabularInline):
     model = HourInDay.hour_9.through
     extra = 0
 
 
-class TuatInline(admin.TabularInline):
+class DauInline(admin.TabularInline):
     model = HourInDay.hour_10.through
     extra = 0
 
 
-class HoiInline(admin.TabularInline):
+class TuatInline(admin.TabularInline):
     model = HourInDay.hour_11.through
+    extra = 0
+
+
+class HoiInline(admin.TabularInline):
+    model = HourInDay.hour_12.through
     extra = 0
 
 
