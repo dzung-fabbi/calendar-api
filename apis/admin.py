@@ -111,6 +111,7 @@ class TuDaiCatThoiSaoInline(admin.TabularInline):
 
 class TuDaiDayAdmin(admin.ModelAdmin):
     list_display = ['id', 'can_ngay', 'tiet_khi']
+    list_filter = ['can_ngay', 'tiet_khi']
 
     inlines = [
         TuDaiCatThoiSaoInline
