@@ -15,9 +15,55 @@ class SaoAdmin(admin.ModelAdmin):
 admin.site.register(Sao, SaoAdmin)
 
 
-class DirectorInline(admin.TabularInline):
+class HiepKySaoGoodAdmin(admin.TabularInline):
     model = HiepKy.sao.through
     extra = 0
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.filter(sao__good_ugly_stars=1)
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "sao":
+            kwargs["queryset"] = Sao.objects.filter(good_ugly_stars=1)
+        return super(HiepKySaoGoodAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
+
+    verbose_name = "Sao Tốt"
+    verbose_name_plural = "Sao Tốt"
+
+
+class HiepKySaoUglyAdmin(admin.TabularInline):
+    model = HiepKy.sao.through
+    extra = 0
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.filter(sao__good_ugly_stars=2)
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "sao":
+            kwargs["queryset"] = Sao.objects.filter(good_ugly_stars=2)
+        return super(HiepKySaoUglyAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
+
+    verbose_name = "Sao Xấu"
+    verbose_name_plural = "Sao Xấu"
+
+
+class HiepKySaoNoConfirmAdmin(admin.TabularInline):
+    model = HiepKy.sao.through
+    extra = 0
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.filter(sao__good_ugly_stars=0)
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "sao":
+            kwargs["queryset"] = Sao.objects.filter(good_ugly_stars=0)
+        return super(HiepKySaoNoConfirmAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
+
+    verbose_name = "Sao không xác định"
+    verbose_name_plural = "Sao không xác đinh"
 
 
 class HiepKyAdmin(admin.ModelAdmin):
@@ -25,7 +71,7 @@ class HiepKyAdmin(admin.ModelAdmin):
     search_fields = ['lunar_day', 'month']
     list_filter = ['lunar_day', 'month']
     inlines = [
-        DirectorInline,
+        HiepKySaoGoodAdmin, HiepKySaoUglyAdmin, HiepKySaoNoConfirmAdmin
     ]
 
 
@@ -124,5 +170,6 @@ admin.site.register(TuDaiCatThoi, TuDaiDayAdmin)
 class QuyNhanAdmin(admin.ModelAdmin):
     list_display = ['id', 'can_ngay', 'tiet_khi', 'am_duong', 'quy_nhan']
     list_filter = ['can_ngay', 'tiet_khi']
+
 
 admin.site.register(QuyNhan, QuyNhanAdmin)

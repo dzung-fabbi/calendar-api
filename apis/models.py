@@ -124,21 +124,20 @@ class HiepKy(models.Model):
     no_should_things = models.TextField(blank=True, null=True, verbose_name="Việc không nên làm")
     sao = models.ManyToManyField(Sao, through='SaoHiepKy', related_name='test')
 
-    def get_fk(self):
-        return self.sao.name
-
     class Meta:
         db_table = "hiep_ky"
         verbose_name = "Sao theo ngày"
         verbose_name_plural = "Sao theo ngày"
+        unique_together = ('month', 'lunar_day')
 
 
 class SaoHiepKy(models.Model):
-    hiepky = models.ForeignKey(HiepKy, on_delete=models.CASCADE)
+    hiepky = models.ForeignKey(HiepKy, on_delete=models.CASCADE, verbose_name="Ngày")
     sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
 
-    def get_fk(self):
-        return self.sao.name
+    class Meta:
+        verbose_name = "Sao tốt xấu"
+        verbose_name_plural = "Sao theo ngày"
 
 
 class TietKhi(models.Model):
@@ -153,7 +152,7 @@ class TietKhi(models.Model):
 
 
 class HourInDay(models.Model):
-    lunar_day = models.CharField(max_length=255, verbose_name="Ngày can chi", choices=lunar_day)
+    lunar_day = models.CharField(max_length=255, verbose_name="Ngày can chi", choices=lunar_day, unique=True)
     hour_1 = models.ManyToManyField(Sao, through='SaoHour1', related_name='hour_1')
     hour_2 = models.ManyToManyField(Sao, through='SaoHour2', related_name='hour_2')
     hour_3 = models.ManyToManyField(Sao, through='SaoHour3', related_name='hour_3')
@@ -174,111 +173,123 @@ class HourInDay(models.Model):
 
 
 class SaoHour1(models.Model):
-    hour_1 = models.ForeignKey(HourInDay, on_delete=models.CASCADE)
+    hour_1 = models.ForeignKey(HourInDay, on_delete=models.CASCADE, verbose_name="Giờ tý")
     sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
 
     class Meta:
         verbose_name = "Giờ tý"
         verbose_name_plural = "Giờ tý"
+        unique_together = ('hour_1', 'sao')
 
 
 class SaoHour2(models.Model):
-    hour_2 = models.ForeignKey(HourInDay, on_delete=models.CASCADE)
+    hour_2 = models.ForeignKey(HourInDay, on_delete=models.CASCADE, verbose_name="Giờ sửu")
     sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
 
     class Meta:
         verbose_name = "Giờ sửu"
         verbose_name_plural = "Giờ sửu"
+        unique_together = ('hour_2', 'sao')
 
 
 class SaoHour3(models.Model):
-    hour_3 = models.ForeignKey(HourInDay, on_delete=models.CASCADE)
+    hour_3 = models.ForeignKey(HourInDay, on_delete=models.CASCADE, verbose_name="Giờ dần")
     sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
 
     class Meta:
         verbose_name = "Giờ dần"
         verbose_name_plural = "Giờ dần"
+        unique_together = ('hour_3', 'sao')
 
 
 class SaoHour4(models.Model):
-    hour_4 = models.ForeignKey(HourInDay, on_delete=models.CASCADE)
+    hour_4 = models.ForeignKey(HourInDay, on_delete=models.CASCADE, verbose_name="Giờ mão")
     sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
 
     class Meta:
         verbose_name = "Giờ mão"
         verbose_name_plural = "Giờ mão"
+        unique_together = ('hour_4', 'sao')
 
 
 class SaoHour5(models.Model):
-    hour_5 = models.ForeignKey(HourInDay, on_delete=models.CASCADE)
+    hour_5 = models.ForeignKey(HourInDay, on_delete=models.CASCADE, verbose_name="Giờ thìn")
     sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
 
     class Meta:
         verbose_name = "Giờ thìn"
         verbose_name_plural = "Giờ thìn"
+        unique_together = ('hour_5', 'sao')
 
 
 class SaoHour6(models.Model):
-    hour_6 = models.ForeignKey(HourInDay, on_delete=models.CASCADE)
+    hour_6 = models.ForeignKey(HourInDay, on_delete=models.CASCADE, verbose_name="Giờ tỵ")
     sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
 
     class Meta:
         verbose_name = "Giờ tỵ"
         verbose_name_plural = "Giờ tỵ"
+        unique_together = ('hour_6', 'sao')
 
 
 class SaoHour7(models.Model):
-    hour_7 = models.ForeignKey(HourInDay, on_delete=models.CASCADE)
+    hour_7 = models.ForeignKey(HourInDay, on_delete=models.CASCADE, verbose_name="Giờ ngọ")
     sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
 
     class Meta:
         verbose_name = "Giờ ngọ"
         verbose_name_plural = "Giờ ngọ"
+        unique_together = ('hour_7', 'sao')
 
 
 class SaoHour8(models.Model):
-    hour_8 = models.ForeignKey(HourInDay, on_delete=models.CASCADE)
+    hour_8 = models.ForeignKey(HourInDay, on_delete=models.CASCADE, verbose_name="Giờ mùi")
     sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
 
     class Meta:
         verbose_name = "Giờ mùi"
         verbose_name_plural = "Giờ mùi"
+        unique_together = ('hour_8', 'sao')
 
 
 class SaoHour9(models.Model):
-    hour_9 = models.ForeignKey(HourInDay, on_delete=models.CASCADE)
+    hour_9 = models.ForeignKey(HourInDay, on_delete=models.CASCADE, verbose_name="Giờ thân")
     sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
 
     class Meta:
         verbose_name = "Giờ thân"
         verbose_name_plural = "Giờ thân"
+        unique_together = ('hour_9', 'sao')
 
 
 class SaoHour10(models.Model):
-    hour_10 = models.ForeignKey(HourInDay, on_delete=models.CASCADE)
+    hour_10 = models.ForeignKey(HourInDay, on_delete=models.CASCADE, verbose_name="Giờ dậu")
     sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
 
     class Meta:
         verbose_name = "Giờ dậu"
         verbose_name_plural = "Giờ dậu"
+        unique_together = ('hour_10', 'sao')
 
 
 class SaoHour11(models.Model):
-    hour_11 = models.ForeignKey(HourInDay, on_delete=models.CASCADE)
+    hour_11 = models.ForeignKey(HourInDay, on_delete=models.CASCADE, verbose_name="Giờ tuất")
     sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
 
     class Meta:
         verbose_name = "Giờ tuất"
         verbose_name_plural = "Giờ tuất"
+        unique_together = ('hour_11', 'sao')
 
 
 class SaoHour12(models.Model):
-    hour_12 = models.ForeignKey(HourInDay, on_delete=models.CASCADE)
+    hour_12 = models.ForeignKey(HourInDay, on_delete=models.CASCADE, verbose_name="Giờ hợi")
     sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
 
     class Meta:
         verbose_name = "Giờ hợi"
         verbose_name_plural = "Giờ hợi"
+        unique_together = ('hour_12', 'sao')
 
 
 can_ngay = (
