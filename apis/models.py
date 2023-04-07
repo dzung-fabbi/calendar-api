@@ -98,6 +98,7 @@ lunar_day = (
     ("NHÂM TÝ", "NHÂM TÝ"),
     ("QUÝ SỬU", "QUÝ SỬU"),
     ("GIÁP DẦN", "GIÁP DẦN"),
+    ("ẤT MÃO", "ẤT MÃO"),
     ("BÍNH THÌN", "BÍNH THÌN"),
     ("ĐINH TỴ", "ĐINH TỴ"),
     ("MẬU NGỌ", "MẬU NGỌ"),
