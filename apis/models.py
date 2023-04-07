@@ -23,9 +23,9 @@ is_mountain = (
 
 class Sao(models.Model):
     name = models.CharField(max_length=255, verbose_name="Tên sao")
-    property = models.TextField(null=True, verbose_name="Thuộc tính")
+    property = models.TextField(null=True, verbose_name="Thuộc tính", blank=True)
     good_ugly_stars = models.IntegerField(blank=False, null=False, choices=good_ugly_start, verbose_name="Sao tốt xấu")
-    is_mountain = models.TextField(blank=True, null=True, choices=is_mountain, verbose_name="Thuộc cung hay sơn")
+    is_mountain = models.IntegerField(blank=True, null=True, choices=is_mountain, verbose_name="Thuộc cung hay sơn")
 
     class Meta:
         db_table = "sao"
