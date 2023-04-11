@@ -21,66 +21,19 @@ class HiepKySaoGoodAdmin(admin.TabularInline):
     autocomplete_fields = (
         'sao',
     )
+    search_fields = ['sao']
 
-    # def get_queryset(self, request):
-    #     qs = super().get_queryset(request)
-    #     return qs.filter(sao__good_ugly_stars=1)
-    #
-    # def formfield_for_foreignkey(self, db_field, request, **kwargs):
-    #     if db_field.name == "sao":
-    #         kwargs["queryset"] = Sao.objects.filter(good_ugly_stars=1)
-    #     return super(HiepKySaoGoodAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
-
-    verbose_name = "Sao Tốt"
-    verbose_name_plural = "Sao Tốt"
-
-
-class HiepKySaoUglyAdmin(admin.TabularInline):
-    model = HiepKy.sao.through
-    extra = 0
-    autocomplete_fields = (
-        'sao',
-    )
-
-    # def get_queryset(self, request):
-    #     qs = super().get_queryset(request)
-    #     return qs.filter(sao__good_ugly_stars=2)
-    #
-    # def formfield_for_foreignkey(self, db_field, request, **kwargs):
-    #     if db_field.name == "sao":
-    #         kwargs["queryset"] = Sao.objects.filter(good_ugly_stars=2)
-    #     return super(HiepKySaoUglyAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
-
-    verbose_name = "Sao Xấu"
-    verbose_name_plural = "Sao Xấu"
-
-
-class HiepKySaoNoConfirmAdmin(admin.TabularInline):
-    model = HiepKy.sao.through
-    extra = 0
-    autocomplete_fields = (
-        'sao',
-    )
-
-    # def get_queryset(self, request):
-    #     qs = super().get_queryset(request)
-    #     return qs.filter(sao__good_ugly_stars=0)
-    #
-    # def formfield_for_foreignkey(self, db_field, request, **kwargs):
-    #     if db_field.name == "sao":
-    #         kwargs["queryset"] = Sao.objects.filter(good_ugly_stars=0)
-    #     return super(HiepKySaoNoConfirmAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
-
-    verbose_name = "Sao không xác định"
-    verbose_name_plural = "Sao không xác đinh"
+    verbose_name = "Sao"
+    verbose_name_plural = "Sao"
 
 
 class HiepKyAdmin(admin.ModelAdmin):
     list_display = ['id', 'month', 'lunar_day']
     search_fields = ['lunar_day', 'month']
     list_filter = ['lunar_day', 'month']
+
     inlines = [
-        HiepKySaoGoodAdmin, HiepKySaoUglyAdmin, HiepKySaoNoConfirmAdmin
+        HiepKySaoGoodAdmin
     ]
 
 
