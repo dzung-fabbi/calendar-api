@@ -115,7 +115,19 @@ lunar_day = (
 )
 
 
+class TietKhi(models.Model):
+    tiet_khi = models.CharField(max_length=255)
+    start_time = models.DateTimeField(null=True, blank=True)
+    end_time = models.DateTimeField(null=True, blank=True)
+    year = models.CharField(max_length=255)
+    gio_soc = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = "tiet_khi"
+
+
 class HiepKy(models.Model):
+    id = models.AutoField(primary_key=True)
     month = models.IntegerField(choices=month, verbose_name="Tháng")
     lunar_day = models.CharField(max_length=255, verbose_name="Ngày can chi", choices=lunar_day)
     good_stars = models.TextField(blank=True, null=True, verbose_name="Sao tốt", editable=False)
@@ -132,23 +144,12 @@ class HiepKy(models.Model):
 
 
 class SaoHiepKy(models.Model):
-    hiepky = models.ForeignKey(HiepKy, on_delete=models.CASCADE, verbose_name="Ngày")
+    hiepky = models.ForeignKey(HiepKy, on_delete=models.CASCADE, verbose_name="Ngày", null=True, blank=True)
     sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
 
     class Meta:
         verbose_name = "Sao tốt xấu"
         verbose_name_plural = "Sao theo ngày"
-
-
-class TietKhi(models.Model):
-    tiet_khi = models.CharField(max_length=255)
-    start_time = models.DateTimeField(null=True, blank=True)
-    end_time = models.DateTimeField(null=True, blank=True)
-    year = models.CharField(max_length=255)
-    gio_soc = models.DateTimeField(null=True, blank=True)
-
-    class Meta:
-        db_table = "tiet_khi"
 
 
 class HourInDay(models.Model):
