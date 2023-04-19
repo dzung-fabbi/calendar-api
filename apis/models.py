@@ -1,56 +1,6 @@
 from django.db import models
 
 
-class ItemBase(models.Model):
-    year = models.CharField(max_length=255, blank=True, null=True)
-    is_active = models.BooleanField(default=True, editable=False)
-
-    class Meta:
-        abstract = True
-
-
-good_ugly_start = (
-    (0, "Không xác định"),
-    (1, "Sao tốt"),
-    (2, "Sao xấu")
-)
-
-is_mountain = (
-    (1, "Cung"),
-    (2, "Sơn")
-)
-
-
-class Sao(models.Model):
-    name = models.CharField(max_length=255, verbose_name="Tên sao")
-    property = models.TextField(null=True, verbose_name="Thuộc tính", blank=True)
-    good_ugly_stars = models.IntegerField(blank=False, null=False, choices=good_ugly_start, verbose_name="Sao tốt xấu")
-    is_mountain = models.IntegerField(blank=True, null=True, choices=is_mountain, verbose_name="Thuộc cung hay sơn")
-
-    class Meta:
-        db_table = "sao"
-        verbose_name = "Sao"
-        verbose_name_plural = "Sao"
-
-    def __str__(self):
-        return self.name
-
-
-month = (
-    (1, 1),
-    (2, 2),
-    (3, 3),
-    (4, 4),
-    (5, 5),
-    (6, 6),
-    (7, 7),
-    (8, 8),
-    (9, 9),
-    (10, 10),
-    (11, 11),
-    (12, 12),
-)
-
 lunar_day = (
     ("GIÁP TÝ", "GIÁP TÝ"),
     ("ẤT SỬU", "ẤT SỬU"),
@@ -113,6 +63,58 @@ lunar_day = (
     ("NHÂM TUẤT", "NHÂM TUẤT"),
     ("QUÝ HỢI", "QUÝ HỢI"),
 )
+
+
+class ItemBase(models.Model):
+    year = models.CharField(max_length=255, choices=lunar_day, unique=True)
+    is_active = models.BooleanField(default=True, editable=False)
+
+    class Meta:
+        abstract = True
+
+
+good_ugly_start = (
+    (0, "Không xác định"),
+    (1, "Sao tốt"),
+    (2, "Sao xấu")
+)
+
+is_mountain = (
+    (1, "Cung"),
+    (2, "Sơn")
+)
+
+
+class Sao(models.Model):
+    name = models.CharField(max_length=255, verbose_name="Tên sao")
+    property = models.TextField(null=True, verbose_name="Thuộc tính", blank=True)
+    good_ugly_stars = models.IntegerField(blank=False, null=False, choices=good_ugly_start, verbose_name="Sao tốt xấu")
+    is_mountain = models.IntegerField(blank=True, null=True, choices=is_mountain, verbose_name="Thuộc cung hay sơn")
+
+    class Meta:
+        db_table = "sao"
+        verbose_name = "Sao"
+        verbose_name_plural = "Sao"
+
+    def __str__(self):
+        return self.name
+
+
+month = (
+    (1, 1),
+    (2, 2),
+    (3, 3),
+    (4, 4),
+    (5, 5),
+    (6, 6),
+    (7, 7),
+    (8, 8),
+    (9, 9),
+    (10, 10),
+    (11, 11),
+    (12, 12),
+)
+
 
 
 class TietKhi(models.Model):

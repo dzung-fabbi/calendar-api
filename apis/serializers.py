@@ -20,7 +20,6 @@ class HiepKySerializer(serializers.HyperlinkedModelSerializer):
             })
         return tmp
 
-
     def get_ugly_stars(self, obj):
         ugly_stars = SaoHiepKy.objects.filter(sao__good_ugly_stars=2, hiepky=obj)
         tmp = []
@@ -30,6 +29,7 @@ class HiepKySerializer(serializers.HyperlinkedModelSerializer):
                 "property": el.sao.property
             })
         return tmp
+
 
 class TietKhiSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
@@ -51,12 +51,10 @@ class HourInDaySerializer(serializers.HyperlinkedModelSerializer):
     hour_11 = serializers.SerializerMethodField()
     hour_12 = serializers.SerializerMethodField()
 
-
     class Meta:
         model = HourInDay
         fields = ['lunar_day', 'hour_1', 'hour_2', 'hour_3', 'hour_4', 'hour_5',
                   'hour_6', 'hour_7', 'hour_8', 'hour_9', 'hour_10', 'hour_11', 'hour_12']
-
 
     def get_hour_1(self, obj):
         stars = SaoHour1.objects.filter(hour_1=obj)
@@ -190,6 +188,7 @@ class HourInDaySerializer(serializers.HyperlinkedModelSerializer):
             })
         return tmp
 
+
 class QuyNhanSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = QuyNhan
@@ -215,24 +214,33 @@ class TuDaiCatThoiSerializer(serializers.HyperlinkedModelSerializer):
         return tmp
 
 
+class SaoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Sao
+        fields = '__all__'
+
+
 class ThanSatByYearSerializer(serializers.ModelSerializer):
-    sao = serializers.SerializerMethodField()
+    sao = SaoSerializer(many=True, read_only=True)
 
     class Meta:
         model = ThanSatByYear
-        fields = ['year', 'direction', 'sao']
+        fields = ['year', 'sao']
 
-    def get_sao(self, obj):
-        stars = {
-            "name": obj.sao.name,
-            "property": obj.sao.property,
-            "good_ugly_stars": obj.sao.good_ugly_stars
-        }
-        return stars
 
 class ThanSatByMonthSerializer(serializers.ModelSerializer):
-    sao = serializers.SerializerMethodField()
-
+    month_1 = SaoSerializer(many=True, read_only=True)
+    month_2 = SaoSerializer(many=True, read_only=True)
+    month_3 = SaoSerializer(many=True, read_only=True)
+    month_4 = SaoSerializer(many=True, read_only=True)
+    month_5 = SaoSerializer(many=True, read_only=True)
+    month_6 = SaoSerializer(many=True, read_only=True)
+    month_7 = SaoSerializer(many=True, read_only=True)
+    month_8 = SaoSerializer(many=True, read_only=True)
+    month_9 = SaoSerializer(many=True, read_only=True)
+    month_10 = SaoSerializer(many=True, read_only=True)
+    month_11 = SaoSerializer(many=True, read_only=True)
+    month_12 = SaoSerializer(many=True, read_only=True)
 
     class Meta:
         model = ThanSatByMonth
@@ -249,17 +257,4 @@ class ThanSatByMonthSerializer(serializers.ModelSerializer):
             'month_10',
             'month_11',
             'month_12',
-            'sao'
         ]
-
-    def get_sao(self, obj):
-        result = {
-            "name": obj.sao.name,
-            "property": obj.sao.property,
-            "good_ugly_stars": obj.sao.good_ugly_stars,
-            "is_mountain": obj.sao.is_mountain
-        }
-        return result
-
-
-

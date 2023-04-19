@@ -82,17 +82,14 @@ class HomeAPIView(APIView):
 
 class ThanSatAPIView(APIView):
     def get(self, request):
-        try:
-            year = request.GET.get('year', None)
-            than_sat_by_year = ThanSatByYear.objects.filter(year__iexact=year)
-            than_sat_by_month = ThanSatByMonth.objects.filter(year__iexact=year)
+        year = request.GET.get('year', None)
+        than_sat_by_year = ThanSatByYear.objects.filter(year__iexact=year).first()
+        than_sat_by_month = ThanSatByMonth.objects.filter(year__year__iexact=year)
 
-            return Response(data={
-                'than_sat_by_year': ThanSatByYearSerializer(than_sat_by_year, many=True).data,
-                'than_sat_by_month': ThanSatByMonthSerializer(than_sat_by_month, many=True).data,
-            })
-        except Exception:
-            raise BadRequestException()
+        return Response(data={
+            'than_sat_by_year': ThanSatByYearSerializer(than_sat_by_year, many=False).data,
+            'than_sat_by_month': ThanSatByMonthSerializer(than_sat_by_month, many=True).data,
+        })
 
 
 class SoHocAPIView(APIView):
