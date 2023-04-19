@@ -292,7 +292,7 @@ class Month12Inline(admin.TabularInline):
 
 class ThanSatMonthAdmin(admin.ModelAdmin):
     list_display = ['id', 'year']
-    search_fields = ['year']
+    search_fields = ['year__year']
 
     inlines = [
         Month1Inline, Month2Inline, Month3Inline, Month4Inline, Month5Inline, Month6Inline, Month7Inline,
