@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.forms import BaseInlineFormSet
 
-from apis.models import Sao, HiepKy, SaoHiepKy, HourInDay, TuDaiCatThoi, QuyNhan
+from apis.models import Sao, HiepKy, SaoHiepKy, HourInDay, TuDaiCatThoi, QuyNhan, ThanSatByYear, ThanSatByMonth
 
 admin.site.site_header = 'Thiên văn lịch pháp'
 
@@ -60,6 +60,7 @@ class DanInline(admin.TabularInline):
         'sao',
     )
 
+
 class MaoInline(admin.TabularInline):
     model = HourInDay.hour_4.through
     extra = 0
@@ -74,6 +75,7 @@ class ThinInline(admin.TabularInline):
     autocomplete_fields = (
         'sao',
     )
+
 
 class TiInline(admin.TabularInline):
     model = HourInDay.hour_6.through
@@ -170,3 +172,132 @@ class QuyNhanAdmin(admin.ModelAdmin):
 
 
 admin.site.register(QuyNhan, QuyNhanAdmin)
+
+
+class ThanSatInline(admin.TabularInline):
+    model = ThanSatByYear.sao.through
+    extra = 0
+    autocomplete_fields = (
+        'sao',
+    )
+
+
+class ThanSatYearAdmin(admin.ModelAdmin):
+    list_display = ['id', 'year']
+    search_fields = ['year']
+
+    inlines = [
+        ThanSatInline
+    ]
+
+
+admin.site.register(ThanSatByYear, ThanSatYearAdmin)
+
+
+class Month1Inline(admin.TabularInline):
+    model = ThanSatByMonth.month_1.through
+    extra = 0
+    autocomplete_fields = (
+        'sao',
+    )
+
+
+class Month2Inline(admin.TabularInline):
+    model = ThanSatByMonth.month_2.through
+    extra = 0
+    autocomplete_fields = (
+        'sao',
+    )
+
+
+class Month3Inline(admin.TabularInline):
+    model = ThanSatByMonth.month_3.through
+    extra = 0
+    autocomplete_fields = (
+        'sao',
+    )
+
+
+class Month4Inline(admin.TabularInline):
+    model = ThanSatByMonth.month_4.through
+    extra = 0
+    autocomplete_fields = (
+        'sao',
+    )
+
+
+class Month5Inline(admin.TabularInline):
+    model = ThanSatByMonth.month_5.through
+    extra = 0
+    autocomplete_fields = (
+        'sao',
+    )
+
+
+class Month6Inline(admin.TabularInline):
+    model = ThanSatByMonth.month_6.through
+    extra = 0
+    autocomplete_fields = (
+        'sao',
+    )
+
+
+class Month7Inline(admin.TabularInline):
+    model = ThanSatByMonth.month_7.through
+    extra = 0
+    autocomplete_fields = (
+        'sao',
+    )
+
+
+class Month8Inline(admin.TabularInline):
+    model = ThanSatByMonth.month_8.through
+    extra = 0
+    autocomplete_fields = (
+        'sao',
+    )
+
+
+class Month9Inline(admin.TabularInline):
+    model = ThanSatByMonth.month_9.through
+    extra = 0
+    autocomplete_fields = (
+        'sao',
+    )
+
+
+class Month10Inline(admin.TabularInline):
+    model = ThanSatByMonth.month_10.through
+    extra = 0
+    autocomplete_fields = (
+        'sao',
+    )
+
+
+class Month11Inline(admin.TabularInline):
+    model = ThanSatByMonth.month_11.through
+    extra = 0
+    autocomplete_fields = (
+        'sao',
+    )
+
+
+class Month12Inline(admin.TabularInline):
+    model = ThanSatByMonth.month_12.through
+    extra = 0
+    autocomplete_fields = (
+        'sao',
+    )
+
+
+class ThanSatMonthAdmin(admin.ModelAdmin):
+    list_display = ['id', 'year']
+    search_fields = ['year']
+
+    inlines = [
+        Month1Inline, Month2Inline, Month3Inline, Month4Inline, Month5Inline, Month6Inline, Month7Inline,
+        Month8Inline, Month9Inline, Month10Inline, Month11Inline, Month12Inline
+    ]
+
+
+admin.site.register(ThanSatByMonth, ThanSatMonthAdmin)

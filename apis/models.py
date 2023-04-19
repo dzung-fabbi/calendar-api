@@ -3,7 +3,7 @@ from django.db import models
 
 class ItemBase(models.Model):
     year = models.CharField(max_length=255, blank=True, null=True)
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True, editable=False)
 
     class Meta:
         abstract = True
@@ -388,228 +388,216 @@ class TuDaiCatThoiSao(models.Model):
         verbose_name_plural = "Sao"
 
 
-class KhaiSonTuPhuongCat(ItemBase):
-    star_name = models.CharField(max_length=255, blank=True, null=True)
-    direction = models.CharField(max_length=255, blank=True, null=True)
-
-    class Meta:
-        db_table = "khai_son_tu_phuong_cat"
-
-
-class TamNguyenTuBach(ItemBase):
-    nguyen = models.CharField(max_length=255, blank=True, null=True)
-    bach_1 = models.CharField(max_length=255, blank=True, null=True)
-    bach_6 = models.CharField(max_length=255, blank=True, null=True)
-    bach_8 = models.CharField(max_length=255, blank=True, null=True)
-    tu_9 = models.CharField(max_length=255, blank=True, null=True)
-
-    class Meta:
-        db_table = "tam_nguyen_tu_bach"
-
-
-class CaiSonHoangDao(ItemBase):
-    tham_lang = models.CharField(max_length=255, blank=True, null=True)
-    cu_mon = models.CharField(max_length=255, blank=True, null=True)
-    vu_khuc = models.CharField(max_length=255, blank=True, null=True)
-    van_khuc = models.CharField(max_length=255, blank=True, null=True)
-
-    class Meta:
-        db_table = "cai_son_hoang_dao"
-
-
-class ThongThienKhieu(ItemBase):
-    truoc_phuong_tam_hop = models.CharField(max_length=255, blank=True, null=True)
-    sau_phuong_tam_hop = models.CharField(max_length=255, blank=True, null=True)
-    note = models.TextField(blank=True, null=True)
-
-    class Meta:
-        db_table = "thong_thien_khieu"
-
-
-class TauMaLucNham(ItemBase):
-    than_hau = models.CharField(max_length=255, blank=True, null=True)
-    cong_tao = models.CharField(max_length=255, blank=True, null=True)
-    thien_cuong = models.CharField(max_length=255, blank=True, null=True)
-    thang_quang = models.CharField(max_length=255, blank=True, null=True)
-    truyen_tong = models.CharField(max_length=255, blank=True, null=True)
-    ha_khoi = models.CharField(max_length=255, blank=True, null=True)
-    note = models.TextField(blank=True, null=True)
-
-    class Meta:
-        db_table = "tau_ma_luc_nham"
-
-
-class TuLoiTamNguyen(ItemBase):
-    thai_duong = models.CharField(max_length=255, blank=True, null=True)
-    thai_am = models.CharField(max_length=255, blank=True, null=True)
-    long_duc = models.CharField(max_length=255, blank=True, null=True)
-    phuc_duc = models.CharField(max_length=255, blank=True, null=True)
-
-    class Meta:
-        db_table = "tu_loi_tam_nguyen"
-
-
-class KhaiSonTuPhuongHung(ItemBase):
-    thai_tue = models.CharField(max_length=255, blank=True, null=True)
-    tue_pha = models.CharField(max_length=255, blank=True, null=True)
-    tam_sat = models.CharField(max_length=255, blank=True, null=True)
-    toa_sat_huong_sat = models.CharField(max_length=255, blank=True, null=True)
-    phu_thien_khong_vong = models.CharField(max_length=255, blank=True, null=True)
-
-    class Meta:
-        db_table = "khai_son_tu_phuong_hung"
-
-
-class KhaiSonHung(ItemBase):
-    nien_khac_son_gia = models.CharField(max_length=255, blank=True, null=True)
-
-    class Meta:
-        db_table = "khai_son_hung"
-
-
-class AmPhuThaiTue(ItemBase):
-    am_phu_thai_tue = models.CharField(max_length=255, blank=True, null=True)
-    luc_hai = models.CharField(max_length=255, blank=True, null=True)
-    tu_phu = models.CharField(max_length=255, blank=True, null=True)
-    cuu_thoai = models.CharField(max_length=255, blank=True, null=True)
-
-    class Meta:
-        db_table = "am_phu_thai_tue"
-
-
-class LapHuongHung(ItemBase):
-    tuan_son_la_hau = models.CharField(max_length=255, blank=True, null=True)
-    benh_phu = models.CharField(max_length=255, blank=True, null=True)
-
-    class Meta:
-        db_table = "lap_huong_hung"
-
-
-class TuPhuongHung(ItemBase):
-    thien_quan_phu = models.CharField(max_length=255, blank=True, null=True)
-    dai_tuong_quan = models.CharField(max_length=255, blank=True, null=True)
-    dia_quan_phu = models.CharField(max_length=255, blank=True, null=True)
-    luc_si = models.CharField(max_length=255, blank=True, null=True)
-    tam_that = models.CharField(max_length=255, blank=True, null=True)
-    tam_menh = models.CharField(max_length=255, blank=True, null=True)
-    tue_hinh = models.CharField(max_length=255, blank=True, null=True)
-    hoang_phan = models.CharField(max_length=255, blank=True, null=True)
-    phi_liem = models.CharField(max_length=255, blank=True, null=True)
-    tang_mon = models.CharField(max_length=255, blank=True, null=True)
-    tam_quan = models.CharField(max_length=255, blank=True, null=True)
-    dieu_khach = models.CharField(max_length=255, blank=True, null=True)
-    kim_than = models.CharField(max_length=255, blank=True, null=True)
-    doc_hoa = models.CharField(max_length=255, blank=True, null=True)
-    pha_bai_ngu_qui = models.CharField(max_length=255, blank=True, null=True)
-    dai_sat = models.CharField(max_length=255, blank=True, null=True)
-    bach_ho = models.CharField(max_length=255, blank=True, null=True)
-    ngu_qui = models.CharField(max_length=255, blank=True, null=True)
-    cau_vi = models.CharField(max_length=255, blank=True, null=True)
-    tu_phu = models.CharField(max_length=255, blank=True, null=True)
-    phi_vien = models.CharField(max_length=255, blank=True, null=True)
-
-    class Meta:
-        db_table = "tu_phuong_hung"
-
-
-class TuPhuongHungThang(ItemBase):
-    star_name = models.CharField(max_length=255, blank=True, null=True)
-    month_1 = models.CharField(max_length=255, blank=True, null=True)
-    month_2 = models.CharField(max_length=255, blank=True, null=True)
-    month_3 = models.CharField(max_length=255, blank=True, null=True)
-    month_4 = models.CharField(max_length=255, blank=True, null=True)
-    month_5 = models.CharField(max_length=255, blank=True, null=True)
-    month_6 = models.CharField(max_length=255, blank=True, null=True)
-    month_7 = models.CharField(max_length=255, blank=True, null=True)
-    month_8 = models.CharField(max_length=255, blank=True, null=True)
-    month_9 = models.CharField(max_length=255, blank=True, null=True)
-    month_10 = models.CharField(max_length=255, blank=True, null=True)
-    month_11 = models.CharField(max_length=255, blank=True, null=True)
-    month_12 = models.CharField(max_length=255, blank=True, null=True)
-
-    class Meta:
-        db_table = "tu_phuong_hung_thang"
-
-
-class KhaiSonHungThang(ItemBase):
-    star_name = models.CharField(max_length=255, blank=True, null=True)
-    month_1 = models.CharField(max_length=255, blank=True, null=True)
-    month_2 = models.CharField(max_length=255, blank=True, null=True)
-    month_3 = models.CharField(max_length=255, blank=True, null=True)
-    month_4 = models.CharField(max_length=255, blank=True, null=True)
-    month_5 = models.CharField(max_length=255, blank=True, null=True)
-    month_6 = models.CharField(max_length=255, blank=True, null=True)
-    month_7 = models.CharField(max_length=255, blank=True, null=True)
-    month_8 = models.CharField(max_length=255, blank=True, null=True)
-    month_9 = models.CharField(max_length=255, blank=True, null=True)
-    month_10 = models.CharField(max_length=255, blank=True, null=True)
-    month_11 = models.CharField(max_length=255, blank=True, null=True)
-    month_12 = models.CharField(max_length=255, blank=True, null=True)
-
-    class Meta:
-        db_table = "khai_son_hung_thang"
-
-
-class LapHuongHungThang(ItemBase):
-    star_name = models.CharField(max_length=255, blank=True, null=True)
-    month_1 = models.CharField(max_length=255, blank=True, null=True)
-    month_2 = models.CharField(max_length=255, blank=True, null=True)
-    month_3 = models.CharField(max_length=255, blank=True, null=True)
-    month_4 = models.CharField(max_length=255, blank=True, null=True)
-    month_5 = models.CharField(max_length=255, blank=True, null=True)
-    month_6 = models.CharField(max_length=255, blank=True, null=True)
-    month_7 = models.CharField(max_length=255, blank=True, null=True)
-    month_8 = models.CharField(max_length=255, blank=True, null=True)
-    month_9 = models.CharField(max_length=255, blank=True, null=True)
-    month_10 = models.CharField(max_length=255, blank=True, null=True)
-    month_11 = models.CharField(max_length=255, blank=True, null=True)
-    month_12 = models.CharField(max_length=255, blank=True, null=True)
-
-    class Meta:
-        db_table = "lap_huong_hung_thang"
-
-
-class TamKyThang(ItemBase):
-    tam_ky = models.CharField(max_length=255, blank=True, null=True)
-    month_1 = models.CharField(max_length=255, blank=True, null=True)
-    month_2 = models.CharField(max_length=255, blank=True, null=True)
-    month_3 = models.CharField(max_length=255, blank=True, null=True)
-    month_4 = models.CharField(max_length=255, blank=True, null=True)
-    month_5 = models.CharField(max_length=255, blank=True, null=True)
-    month_6 = models.CharField(max_length=255, blank=True, null=True)
-    month_7 = models.CharField(max_length=255, blank=True, null=True)
-    month_8 = models.CharField(max_length=255, blank=True, null=True)
-    month_9 = models.CharField(max_length=255, blank=True, null=True)
-    month_10 = models.CharField(max_length=255, blank=True, null=True)
-    month_11 = models.CharField(max_length=255, blank=True, null=True)
-    month_12 = models.CharField(max_length=255, blank=True, null=True)
-
-    class Meta:
-        db_table = "tam_ky_thang"
-
-
-class ThanSatByMonth(ItemBase):
-    sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
-    month_1 = models.CharField(max_length=255, blank=True, null=True)
-    month_2 = models.CharField(max_length=255, blank=True, null=True)
-    month_3 = models.CharField(max_length=255, blank=True, null=True)
-    month_4 = models.CharField(max_length=255, blank=True, null=True)
-    month_5 = models.CharField(max_length=255, blank=True, null=True)
-    month_6 = models.CharField(max_length=255, blank=True, null=True)
-    month_7 = models.CharField(max_length=255, blank=True, null=True)
-    month_8 = models.CharField(max_length=255, blank=True, null=True)
-    month_9 = models.CharField(max_length=255, blank=True, null=True)
-    month_10 = models.CharField(max_length=255, blank=True, null=True)
-    month_11 = models.CharField(max_length=255, blank=True, null=True)
-    month_12 = models.CharField(max_length=255, blank=True, null=True)
-
-    class Meta:
-        db_table = "than_sat_by_month"
-
-
 class ThanSatByYear(ItemBase):
-    sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
-    direction = models.CharField(max_length=255, blank=True, null=True)
+    sao = models.ManyToManyField(Sao, through='ThanSatByYearSao')
 
     class Meta:
         db_table = "than_sat_by_year"
+        verbose_name = "Thần sát theo năm"
+        verbose_name_plural = "Thần sát theo năm"
+
+    def __str__(self):
+        return self.year
+
+
+cung_son = (
+    (1, "Cung"),
+    (2, "Son"),
+)
+
+direction = (
+    ("Khảm", "Khảm"),
+    ("Cấn", "Cấn"),
+    ("Chấn", "Chấn"),
+    ("Tốn", "Tốn"),
+    ("Ly", "Ly"),
+    ("Khôn", "Khôn"),
+    ("Đoài", "Đoài"),
+    ("Càn", "Càn"),
+    ("Nhâm", "Nhâm"),
+    ("Tý", "Tý"),
+    ("Sửu", "Sửu"),
+    ("Dần", "Dần"),
+    ("Giáp", "Giáp"),
+    ("Mão", "Mão"),
+    ("Ất", "Ất"),
+    ("Thìn", "Thìn"),
+    ("Tốn", "Tốn"),
+    ("Tỵ", "Tỵ"),
+    ("Bính", "Bính"),
+    ("Ngọ", "Ngọ"),
+    ("Đinh", "Đinh"),
+    ("Mùi", "Mùi"),
+    ("Khôn", "Khôn"),
+    ("Thân", "Thân"),
+    ("Canh", "Canh"),
+    ("Dậu", "Dậu"),
+    ("Tân", "Tân"),
+    ("Tuất", "Tuất"),
+    ("Hợi", "Hợi"),
+)
+
+
+class ThanSatByYearSao(models.Model):
+    sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
+    than_sat_year = models.ForeignKey(ThanSatByYear, on_delete=models.CASCADE)
+    cung_son = models.IntegerField(choices=cung_son)
+    direction = models.CharField(choices=direction, max_length=255, verbose_name="Phương hướng")
+
+    class Meta:
+        db_table = "than_sat_by_year_sao"
+        verbose_name = "Sao"
+        verbose_name_plural = "Sao"
+
+
+class ThanSatByMonth(ItemBase):
+    year = models.ForeignKey(ThanSatByYear, on_delete=models.CASCADE)
+    month_1 = models.ManyToManyField(Sao, through='SaoMonth1', related_name="sao_month_1")
+    month_2 = models.ManyToManyField(Sao, through='SaoMonth2', related_name="sao_month_2")
+    month_3 = models.ManyToManyField(Sao, through='SaoMonth3', related_name="sao_month_3")
+    month_4 = models.ManyToManyField(Sao, through='SaoMonth4', related_name="sao_month_4")
+    month_5 = models.ManyToManyField(Sao, through='SaoMonth5', related_name="sao_month_5")
+    month_6 = models.ManyToManyField(Sao, through='SaoMonth6', related_name="sao_month_6")
+    month_7 = models.ManyToManyField(Sao, through='SaoMonth7', related_name="sao_month_7")
+    month_8 = models.ManyToManyField(Sao, through='SaoMonth8', related_name="sao_month_8")
+    month_9 = models.ManyToManyField(Sao, through='SaoMonth9', related_name="sao_month_9")
+    month_10 = models.ManyToManyField(Sao, through='SaoMonth10', related_name="sao_month_10")
+    month_11 = models.ManyToManyField(Sao, through='SaoMonth11', related_name="sao_month_11")
+    month_12 = models.ManyToManyField(Sao, through='SaoMonth12', related_name="sao_month_12")
+
+    class Meta:
+        db_table = "than_sat_by_month"
+        verbose_name = "Thần sát theo tháng"
+        verbose_name_plural = "Thần sát theo tháng"
+
+
+class SaoMonth1(models.Model):
+    sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
+    than_sat_month = models.ForeignKey(ThanSatByMonth, on_delete=models.CASCADE)
+    cung_son = models.IntegerField(choices=cung_son)
+    direction = models.CharField(choices=direction, max_length=255, verbose_name="Phương hướng")
+
+    class Meta:
+        verbose_name = "Sao tháng 1"
+        verbose_name_plural = "Sao tháng 1"
+
+
+class SaoMonth2(models.Model):
+    sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
+    than_sat_month = models.ForeignKey(ThanSatByMonth, on_delete=models.CASCADE)
+    cung_son = models.IntegerField(choices=cung_son)
+    direction = models.CharField(choices=direction, max_length=255, verbose_name="Phương hướng")
+
+    class Meta:
+        verbose_name = "Sao tháng 2"
+        verbose_name_plural = "Sao tháng 2"
+
+
+class SaoMonth3(models.Model):
+    sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
+    than_sat_month = models.ForeignKey(ThanSatByMonth, on_delete=models.CASCADE)
+    cung_son = models.IntegerField(choices=cung_son)
+    direction = models.CharField(choices=direction, max_length=255, verbose_name="Phương hướng")
+
+    class Meta:
+        verbose_name = "Sao tháng 3"
+        verbose_name_plural = "Sao tháng 3"
+
+
+class SaoMonth4(models.Model):
+    sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
+    than_sat_month = models.ForeignKey(ThanSatByMonth, on_delete=models.CASCADE)
+    cung_son = models.IntegerField(choices=cung_son)
+    direction = models.CharField(choices=direction, max_length=255, verbose_name="Phương hướng")
+
+    class Meta:
+        verbose_name = "Sao tháng 4"
+        verbose_name_plural = "Sao tháng 4"
+
+
+class SaoMonth5(models.Model):
+    sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
+    than_sat_month = models.ForeignKey(ThanSatByMonth, on_delete=models.CASCADE)
+    cung_son = models.IntegerField(choices=cung_son)
+    direction = models.CharField(choices=direction, max_length=255, verbose_name="Phương hướng")
+
+    class Meta:
+        verbose_name = "Sao tháng 5"
+        verbose_name_plural = "Sao tháng 5"
+
+
+class SaoMonth6(models.Model):
+    sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
+    than_sat_month = models.ForeignKey(ThanSatByMonth, on_delete=models.CASCADE)
+    cung_son = models.IntegerField(choices=cung_son)
+    direction = models.CharField(choices=direction, max_length=255, verbose_name="Phương hướng")
+
+    class Meta:
+        verbose_name = "Sao tháng 6"
+        verbose_name_plural = "Sao tháng 6"
+
+
+class SaoMonth7(models.Model):
+    sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
+    than_sat_month = models.ForeignKey(ThanSatByMonth, on_delete=models.CASCADE)
+    cung_son = models.IntegerField(choices=cung_son)
+    direction = models.CharField(choices=direction, max_length=255, verbose_name="Phương hướng")
+
+    class Meta:
+        verbose_name = "Sao tháng 7"
+        verbose_name_plural = "Sao tháng 7"
+
+
+class SaoMonth8(models.Model):
+    sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
+    than_sat_month = models.ForeignKey(ThanSatByMonth, on_delete=models.CASCADE)
+    cung_son = models.IntegerField(choices=cung_son)
+    direction = models.CharField(choices=direction, max_length=255, verbose_name="Phương hướng")
+
+    class Meta:
+        verbose_name = "Sao tháng 8"
+        verbose_name_plural = "Sao tháng 8"
+
+
+class SaoMonth9(models.Model):
+    sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
+    than_sat_month = models.ForeignKey(ThanSatByMonth, on_delete=models.CASCADE)
+    cung_son = models.IntegerField(choices=cung_son)
+    direction = models.CharField(choices=direction, max_length=255, verbose_name="Phương hướng")
+
+    class Meta:
+        verbose_name = "Sao tháng 9"
+        verbose_name_plural = "Sao tháng 9"
+
+
+class SaoMonth10(models.Model):
+    sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
+    than_sat_month = models.ForeignKey(ThanSatByMonth, on_delete=models.CASCADE)
+    cung_son = models.IntegerField(choices=cung_son)
+    direction = models.CharField(choices=direction, max_length=255, verbose_name="Phương hướng")
+
+    class Meta:
+        verbose_name = "Sao tháng 10"
+        verbose_name_plural = "Sao tháng 10"
+
+
+class SaoMonth11(models.Model):
+    sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
+    than_sat_month = models.ForeignKey(ThanSatByMonth, on_delete=models.CASCADE)
+    cung_son = models.IntegerField(choices=cung_son)
+    direction = models.CharField(choices=direction, max_length=255, verbose_name="Phương hướng")
+
+    class Meta:
+        verbose_name = "Sao tháng 11"
+        verbose_name_plural = "Sao tháng 11"
+
+
+class SaoMonth12(models.Model):
+    sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
+    than_sat_month = models.ForeignKey(ThanSatByMonth, on_delete=models.CASCADE)
+    cung_son = models.IntegerField(choices=cung_son)
+    direction = models.CharField(choices=direction, max_length=255, verbose_name="Phương hướng")
+
+    class Meta:
+        verbose_name = "Sao tháng 12"
+        verbose_name_plural = "Sao tháng 12"

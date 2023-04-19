@@ -219,7 +219,7 @@ class ThanSatByYearSerializer(serializers.ModelSerializer):
     sao = serializers.SerializerMethodField()
 
     class Meta:
-        model = KhaiSonTuPhuongCat
+        model = ThanSatByYear
         fields = ['year', 'direction', 'sao']
 
     def get_sao(self, obj):
@@ -229,58 +229,6 @@ class ThanSatByYearSerializer(serializers.ModelSerializer):
             "good_ugly_stars": obj.sao.good_ugly_stars
         }
         return stars
-
-class TamNguyenTuBachSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = TamNguyenTuBach
-        fields = '__all__'
-
-
-class CaiSonHoangDaoSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CaiSonHoangDao
-        fields = '__all__'
-
-
-class ThongThienKhieuSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ThongThienKhieu
-        fields = '__all__'
-
-
-class TauMaLucNhamSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = TauMaLucNham
-        fields = '__all__'
-
-
-class KhaiSonTuPhuongHungSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = KhaiSonTuPhuongHung
-        fields = '__all__'
-
-
-class KhaiSonHungSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = KhaiSonHung
-        fields = '__all__'
-
-class AmPhuThaiTueSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = AmPhuThaiTue
-        fields = '__all__'
-
-class LapHuongHungSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = LapHuongHung
-        fields = '__all__'
-
-
-class TuPhuongHungSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = TuPhuongHung
-        fields = '__all__'
-
 
 class ThanSatByMonthSerializer(serializers.ModelSerializer):
     sao = serializers.SerializerMethodField()

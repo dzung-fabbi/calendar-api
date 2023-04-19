@@ -85,32 +85,10 @@ class ThanSatAPIView(APIView):
         try:
             year = request.GET.get('year', None)
             than_sat_by_year = ThanSatByYear.objects.filter(year__iexact=year)
-            tam_nguyen_tu_bach = TamNguyenTuBach.objects.filter(is_active=True, year__iexact=year)
-            cai_son_hoang_dao = CaiSonHoangDao.objects.filter(is_active=True, year__iexact=year).first()
-            thong_thien_khieu = ThongThienKhieu.objects.filter(is_active=True, year__iexact=year).first()
-            tau_ma_luc_nham = TauMaLucNham.objects.filter(is_active=True, year__iexact=year).first()
-            khai_son_tu_phuong_hung = KhaiSonTuPhuongHung.objects.filter(is_active=True, year__iexact=year).first()
-            khai_son_hung = KhaiSonHung.objects.filter(is_active=True, year__iexact=year).first()
-            am_phu_thai_tue = AmPhuThaiTue.objects.filter(is_active=True, year__iexact=year).first()
-            lap_huong_hung = LapHuongHung.objects.filter(is_active=True, year__iexact=year).first()
-            tu_phuong_hung = TuPhuongHung.objects.filter(is_active=True, year__iexact=year).first()
-
             than_sat_by_month = ThanSatByMonth.objects.filter(year__iexact=year)
 
             return Response(data={
                 'than_sat_by_year': ThanSatByYearSerializer(than_sat_by_year, many=True).data,
-                'tam_nguyen_tu_bach': TamNguyenTuBachSerializer(tam_nguyen_tu_bach, many=True).data,
-                'cai_son_hoang_dao': CaiSonHoangDaoSerializer(cai_son_hoang_dao).data if bool(
-                    cai_son_hoang_dao) else None,
-                'thong_thien_khieu': ThongThienKhieuSerializer(thong_thien_khieu).data if bool(
-                    thong_thien_khieu) else None,
-                'tau_ma_luc_nham': TauMaLucNhamSerializer(tau_ma_luc_nham).data if bool(tau_ma_luc_nham) else None,
-                'khai_son_tu_phuong_hung': KhaiSonTuPhuongHungSerializer(khai_son_tu_phuong_hung).data if bool(
-                    khai_son_tu_phuong_hung) else None,
-                'khai_son_hung': KhaiSonHungSerializer(khai_son_hung).data if bool(khai_son_hung) else None,
-                'am_phu_thai_tue': AmPhuThaiTueSerializer(am_phu_thai_tue).data if bool(am_phu_thai_tue) else None,
-                'lap_huong_hung': LapHuongHungSerializer(lap_huong_hung).data if bool(lap_huong_hung) else None,
-                'tu_phuong_hung': TuPhuongHungSerializer(tu_phuong_hung).data if bool(tu_phuong_hung) else None,
                 'than_sat_by_month': ThanSatByMonthSerializer(than_sat_by_month, many=True).data,
             })
         except Exception:
