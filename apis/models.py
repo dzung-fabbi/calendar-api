@@ -438,6 +438,9 @@ direction = (
     ("Tân", "Tân"),
     ("Tuất", "Tuất"),
     ("Hợi", "Hợi"),
+    ("Mậu", "Mậu"),
+    ("Trung", "Trung"),
+    ("Kỷ", "Kỷ"),
 )
 
 
