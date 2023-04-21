@@ -21,72 +21,7 @@ class Command(BaseCommand):
             )
             thansat_sao = thansat_month_sao.saomonth1_set.all()
 
-            SaoMonth2.objects.create(
-                than_sat_month=thansat_sao,
-                sao_id=thansat_sao.sao.id,
-                cung_son=thansat_sao.cung_son,
-                direction=thansat_sao.direction
-            )
-            SaoMonth3.objects.create(
-                than_sat_month=thansat_sao,
-                sao_id=thansat_sao.sao.id,
-                cung_son=thansat_sao.cung_son,
-                direction=thansat_sao.direction
-            )
-            SaoMonth4.objects.create(
-                than_sat_month=thansat_sao,
-                sao_id=thansat_sao.sao.id,
-                cung_son=thansat_sao.cung_son,
-                direction=thansat_sao.direction
-            )
-            SaoMonth5.objects.create(
-                than_sat_month=thansat_sao,
-                sao_id=thansat_sao.sao.id,
-                cung_son=thansat_sao.cung_son,
-                direction=thansat_sao.direction
-            )
-            SaoMonth6.objects.create(
-                than_sat_month=thansat_sao,
-                sao_id=thansat_sao.sao.id,
-                cung_son=thansat_sao.cung_son,
-                direction=thansat_sao.direction
-            )
-            SaoMonth7.objects.create(
-                than_sat_month=thansat_sao,
-                sao_id=thansat_sao.sao.id,
-                cung_son=thansat_sao.cung_son,
-                direction=thansat_sao.direction
-            )
-            SaoMonth8.objects.create(
-                than_sat_month=thansat_sao,
-                sao_id=thansat_sao.sao.id,
-                cung_son=thansat_sao.cung_son,
-                direction=thansat_sao.direction
-            )
-            SaoMonth9.objects.create(
-                than_sat_month=thansat_sao,
-                sao_id=thansat_sao.sao.id,
-                cung_son=thansat_sao.cung_son,
-                direction=thansat_sao.direction
-            )
-            SaoMonth10.objects.create(
-                than_sat_month=thansat_sao,
-                sao_id=thansat_sao.sao.id,
-                cung_son=thansat_sao.cung_son,
-                direction=thansat_sao.direction
-            )
-            SaoMonth11.objects.create(
-                than_sat_month=thansat_sao,
-                sao_id=thansat_sao.sao.id,
-                cung_son=thansat_sao.cung_son,
-                direction=thansat_sao.direction
-            )
-            SaoMonth12.objects.create(
-                than_sat_month=thansat_sao,
-                sao_id=thansat_sao.sao.id,
-                cung_son=thansat_sao.cung_son,
-                direction=thansat_sao.direction
-            )
+
 
 
             for row in thansat_sao:
@@ -96,6 +31,75 @@ class Command(BaseCommand):
                     cung_son=row.cung_son,
                     direction=row.direction
                 )
+
+                SaoMonth2.objects.create(
+                    than_sat_month=thansat_month_sao,
+                    sao_id=row.sao.id,
+                    cung_son=row.cung_son,
+                    direction=row.direction
+                )
+                SaoMonth3.objects.create(
+                    than_sat_month=thansat_month_sao,
+                    sao_id=row.sao.id,
+                    cung_son=row.cung_son,
+                    direction=row.direction
+                )
+                SaoMonth4.objects.create(
+                    than_sat_month=thansat_month_sao,
+                    sao_id=row.sao.id,
+                    cung_son=row.cung_son,
+                    direction=row.direction
+                )
+                SaoMonth5.objects.create(
+                    than_sat_month=thansat_month_sao,
+                    sao_id=row.sao.id,
+                    cung_son=row.cung_son,
+                    direction=row.direction
+                )
+                SaoMonth6.objects.create(
+                    than_sat_month=thansat_month_sao,
+                    sao_id=row.sao.id,
+                    cung_son=row.cung_son,
+                    direction=row.direction
+                )
+                SaoMonth7.objects.create(
+                    than_sat_month=thansat_month_sao,
+                    sao_id=row.sao.id,
+                    cung_son=row.cung_son,
+                    direction=row.direction
+                )
+                SaoMonth8.objects.create(
+                    than_sat_month=thansat_month_sao,
+                    sao_id=row.sao.id,
+                    cung_son=row.cung_son,
+                    direction=row.direction
+                )
+                SaoMonth9.objects.create(
+                    than_sat_month=thansat_month_sao,
+                    sao_id=row.sao.id,
+                    cung_son=row.cung_son,
+                    direction=row.direction
+                )
+                SaoMonth10.objects.create(
+                    than_sat_month=thansat_month_sao,
+                    sao_id=row.sao.id,
+                    cung_son=row.cung_son,
+                    direction=row.direction
+                )
+                SaoMonth11.objects.create(
+                    than_sat_month=thansat_month_sao,
+                    sao_id=row.sao.id,
+                    cung_son=row.cung_son,
+                    direction=row.direction
+                )
+                SaoMonth12.objects.create(
+                    than_sat_month=thansat_month_sao,
+                    sao_id=row.sao.id,
+                    cung_son=row.cung_son,
+                    direction=row.direction
+                )
+
+
 
             for row in thansat_sao:
                 SaoMonth2.objects.create(
