@@ -229,7 +229,7 @@ class ThanSatYearSaoSerializer(serializers.ModelSerializer):
 
 
 class ThanSatByYearSerializer(serializers.ModelSerializer):
-    than_sat_sao = ThanSatYearSaoSerializer(read_only=True, many=True)
+    than_sat_sao = ThanSatYearSaoSerializer(source='thansatbyyearsao_set', read_only=True, many=True)
 
     class Meta:
         model = ThanSatByYear
