@@ -220,12 +220,20 @@ class SaoSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class ThanSatYearSaoSerializer(serializers.ModelSerializer):
+    sao = SaoSerializer(read_only=True)
+
+    class Meta:
+        model = ThanSatByYearSao
+        fields = ['cung_son', 'sao', 'direction']
+
+
 class ThanSatByYearSerializer(serializers.ModelSerializer):
-    sao = SaoSerializer(many=True, read_only=True)
+    than_sat_sao = ThanSatYearSaoSerializer(read_only=True, many=True)
 
     class Meta:
         model = ThanSatByYear
-        fields = ['year', 'sao']
+        fields = ['year', 'than_sat_sao']
 
 
 class ThanSatByMonthSerializer(serializers.ModelSerializer):
