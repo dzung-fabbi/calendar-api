@@ -97,11 +97,11 @@ class ThanSatAPIView(APIView):
             'saomonth10_set',
             'saomonth11_set',
             'saomonth12_set',
-        ).filter(year__year__iexact=year)
+        ).filter(year__year__iexact=year).first()
 
         return Response(data={
             'than_sat_by_year': ThanSatByYearSerializer(than_sat_by_year, many=False).data,
-            'than_sat_by_month': ThanSatByMonthSerializer(than_sat_by_month, many=True).data,
+            'than_sat_by_month': ThanSatByMonthSerializer(than_sat_by_month, many=False).data,
         })
 
 
