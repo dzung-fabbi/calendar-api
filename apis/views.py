@@ -10,7 +10,6 @@ from statistics import mode
 import json
 
 
-
 class TietkhiAPIView(APIView):
     def get(self, request):
         try:
@@ -84,7 +83,21 @@ class ThanSatAPIView(APIView):
     def get(self, request):
         year = request.GET.get('year', None)
         than_sat_by_year = ThanSatByYear.objects.filter(year__iexact=year).first()
-        than_sat_by_month = ThanSatByMonth.objects.filter(year__year__iexact=year)
+        than_sat_by_month = ThanSatByMonth.objects. \
+            prefetch_related(
+            'saomonth1_set',
+            'saomonth2_set',
+            'saomonth3_set',
+            'saomonth4_set',
+            'saomonth5_set',
+            'saomonth6_set',
+            'saomonth7_set',
+            'saomonth8_set',
+            'saomonth9_set',
+            'saomonth10_set',
+            'saomonth11_set',
+            'saomonth12_set',
+        ).filter(year__year__iexact=year)
 
         return Response(data={
             'than_sat_by_year': ThanSatByYearSerializer(than_sat_by_year, many=False).data,
