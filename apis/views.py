@@ -1,3 +1,5 @@
+from rest_framework.permissions import AllowAny
+
 from .models import *
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -8,7 +10,6 @@ from datetime import datetime
 
 from statistics import mode
 import json
-
 
 
 class TietkhiAPIView(APIView):
@@ -53,6 +54,8 @@ class CalendarAPIView(APIView):
 
 
 class HomeAPIView(APIView):
+    permission_classes = [AllowAny]
+
     def get(self, request):
         tiet_khi = None
         tiet_khi = TietKhi.objects.filter(start_time__lt=request.GET.get('lunar_date')).order_by(

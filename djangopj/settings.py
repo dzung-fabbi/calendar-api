@@ -15,7 +15,6 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
@@ -26,7 +25,6 @@ SECRET_KEY = 'uo$i5ugn4l#ulluy0&zp^#&hac0_!wfo!f9%!17-$rg+c(%xa9'
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -39,7 +37,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'corsheaders'
+    'corsheaders',
+    'oauth2_provider',
+    'social_django',
+    'drf_social_oauth2',
 ]
 
 MIDDLEWARE = [
@@ -67,13 +68,14 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'social_django.context_processors.backends',
+                'social_django.context_processors.login_redirect',
             ],
         },
     },
 ]
 
 WSGI_APPLICATION = 'djangopj.wsgi.application'
-
 
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
@@ -107,7 +109,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
 
@@ -121,10 +122,35 @@ USE_L10N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
 
 CORS_ALLOW_ALL_ORIGINS = True
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',  # django-oauth-toolkit >= 1.0.0
+        'drf_social_oauth2.authentication.SocialAuthentication',
+    ),
+}
+
+AUTHENTICATION_BACKENDS = (
+   'drf_social_oauth2.backends.DjangoOAuth2',
+   'django.contrib.auth.backends.ModelBackend',
+   'social_core.backends.facebook.FacebookAppOAuth2',
+   'social_core.backends.facebook.FacebookOAuth2',
+)
+
+# Facebook configuration
+SOCIAL_AUTH_FACEBOOK_KEY = '269331342224612'
+SOCIAL_AUTH_FACEBOOK_SECRET = '0201431e1e2a5e854d5427bdb6687a0f'
+
+# Define SOCIAL_AUTH_FACEBOOK_SCOPE to get extra permissions from Facebook.
+# Email is not sent by default, to get it, you must request the email permission.
+SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
+SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
+    'fields': 'id, name, email'
+}
