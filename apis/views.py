@@ -1,5 +1,8 @@
+from django.db.models import Prefetch
+from rest_framework import status
 from rest_framework.permissions import AllowAny
 
+from .constant import CAN_CHI
 from .models import *
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -34,12 +37,19 @@ class CalendarAPIView(APIView):
                 hiep_ky = HiepKy.objects.filter(
                     month=day['month'], lunar_day=day['lunar_day']
                 ).first()
+
                 if hiep_ky:
+                    good_stars = SaoHiepKy.objects.filter(sao__good_ugly_stars=1, hiepky=hiep_ky).values_list(
+                        "sao__name",
+                        flat=True)
+                    ugly_stars = SaoHiepKy.objects.filter(sao__good_ugly_stars=2, hiepky=hiep_ky).values_list(
+                        "sao__name",
+                        flat=True)
                     data.append({
                         'should_things': hiep_ky.should_things,
                         'no_should_things': hiep_ky.no_should_things,
-                        'good_stars': hiep_ky.good_stars,
-                        'ugly_stars': hiep_ky.ugly_stars
+                        'good_stars': ','.join(list(good_stars)),
+                        'ugly_stars': ','.join(list(ugly_stars))
                     })
                 else:
                     data.append({
@@ -332,3 +342,85 @@ class SoHocAPIView(APIView):
         if num in [11, 22, 33]:
             return num
         return sum(int(digit) for digit in str(num))
+
+
+class DateGoodByWorkAPIView(APIView):
+    def get(self, request):
+        work = request.GET.get('work', '')
+        start_date = request.GET.get('start_date', None)
+        can_chi_start = request.GET.get('can_chi_start', None)
+        can_chi_start_up = can_chi_start.upper()
+        end_date = request.GET.get('end_date', None)
+        date_format = '%d/%m/%Y'
+        start_date = datetime.strptime(start_date, date_format)
+        end_date = datetime.strptime(end_date, date_format)
+        delta = abs(end_date - start_date)
+        index_of_start = CAN_CHI.index(can_chi_start_up)
+        index_of_end = index_of_start + delta.days
+        can_chi = CAN_CHI * (int(index_of_end / 60) + 1)
+        arr_tmp = can_chi[index_of_start:index_of_end]
+        hiep_ky = HiepKy.objects.filter(should_things__icontains=work, month__range=(start_date.month, end_date.month),
+                                        lunar_day__in=arr_tmp)
+        data = []
+        for el in hiep_ky:
+            good_stars = SaoHiepKy.objects.filter(sao__good_ugly_stars=1, hiepky=el).values_list("sao__name", flat=True)
+            ugly_stars = SaoHiepKy.objects.filter(sao__good_ugly_stars=2, hiepky=el).values_list("sao__name", flat=True)
+            is_good = self.get_day_good_ugly(el.should_things, el.no_should_things, ','.join(list(good_stars)),
+                                             ','.join(list(ugly_stars)))
+            if is_good["is_good"]:
+                data.append({
+                    "month": el.month,
+                    "work": el.should_things,
+                    "lunar_day": el.lunar_day,
+                    "percent": is_good['percent'],
+                    "text": is_good['text']
+                })
+
+        data = sorted(data, key=lambda x: x['percent'], reverse=True)
+
+        return Response({'data': data})
+
+    def get_day_good_ugly(self, good_thing, ugly_thing, good_star, ugly_star):
+        if not good_thing or not good_star:
+            return {
+                "is_good": False
+            }
+
+        if not ugly_thing or not good_star:
+            return {
+                "is_good": False
+            }
+
+        percent = ((good_thing.split(',').__len__() / ugly_thing.split(',').__len__()) * 2 + good_star.split(
+            ',').__len__() / ugly_star.split(',').__len__()) / 3
+        if percent > 1.5:
+            return {
+                "is_good": True,
+                "percent": percent,
+                "text": "Ngày rất tốt"
+            }
+
+        if 1 <= percent <= 1.5:
+            return {
+                "is_good": True,
+                "percent": percent,
+                "text": "Ngày tốt"
+            }
+
+        if 1 > percent >= 0.5:
+            return {
+                "is_good": False,
+                "percent": percent
+            }
+        return {
+            "is_good": False
+        }
+
+
+class BookCalendarAPIView(APIView):
+    def post(self, request, format=None):
+        serializer = BookCalendarSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
