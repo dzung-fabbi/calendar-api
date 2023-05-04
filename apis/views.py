@@ -363,6 +363,8 @@ class DateGoodByWorkAPIView(APIView):
         work = request.GET.get('work', '')
         start_date = request.GET.get('start_date', None)
         can_chi_start = request.GET.get('can_chi_start', None)
+        month_start = request.GET.get('month_start', None)
+        month_end = request.GET.get('month_end', None)
         can_chi_start_up = can_chi_start.upper()
         end_date = request.GET.get('end_date', None)
         date_format = '%d/%m/%Y'
@@ -373,7 +375,7 @@ class DateGoodByWorkAPIView(APIView):
         index_of_end = index_of_start + delta.days
         can_chi = CAN_CHI * (int(index_of_end / 60) + 1)
         arr_tmp = can_chi[index_of_start:index_of_end]
-        hiep_ky = HiepKy.objects.filter(should_things__icontains=work, month__range=(start_date.month, end_date.month),
+        hiep_ky = HiepKy.objects.filter(should_things__icontains=work, month__range=(month_start, month_end),
                                         lunar_day__in=arr_tmp)
         data = []
         for el in hiep_ky:
@@ -391,7 +393,7 @@ class DateGoodByWorkAPIView(APIView):
                 })
 
         data = sorted(data, key=lambda x: x['percent'], reverse=True)
-
+        data = data[0: 10]
         return Response({'data': data})
 
     def get_day_good_ugly(self, good_thing, ugly_thing, good_star, ugly_star):
