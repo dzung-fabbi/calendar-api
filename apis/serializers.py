@@ -362,3 +362,9 @@ class ThanSatByMonthSerializer(serializers.ModelSerializer):
             'month_11',
             'month_12',
         ]
+
+
+class BookCalendarSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BookCalendar
+        fields = ['work', 'date', 'email']

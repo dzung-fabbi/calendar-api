@@ -1,5 +1,5 @@
+from django.contrib.auth.models import User
 from django.db import models
-
 
 lunar_day = (
     ("GIÁP TÝ", "GIÁP TÝ"),
@@ -114,7 +114,6 @@ month = (
     (11, 11),
     (12, 12),
 )
-
 
 
 class TietKhi(models.Model):
@@ -607,3 +606,16 @@ class SaoMonth12(models.Model):
     class Meta:
         verbose_name = "Sao tháng 12"
         verbose_name_plural = "Sao tháng 12"
+
+
+class BookCalendar(models.Model):
+    work = models.CharField(max_length=255)
+    date = models.DateField()
+    email = models.EmailField(max_length=255, null=True, blank=True)
+    status = models.IntegerField(default=0)
+    phone = models.CharField(max_length=255, null=True, blank=True)
+    user = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = "Lịch đặt"
+        verbose_name_plural = "Lịch đặt"
