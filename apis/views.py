@@ -393,7 +393,6 @@ class DateGoodByWorkAPIView(APIView):
                 })
 
         data = sorted(data, key=lambda x: x['percent'], reverse=True)
-        data = data[0: 10]
         return Response({'data': data})
 
     def get_day_good_ugly(self, good_thing, ugly_thing, good_star, ugly_star):
