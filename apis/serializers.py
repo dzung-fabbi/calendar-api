@@ -368,3 +368,10 @@ class BookCalendarSerializer(serializers.ModelSerializer):
     class Meta:
         model = BookCalendar
         fields = ['work', 'date', 'email']
+
+
+class AppointmentDateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AppointmentDate
+        fields = ('id', 'name', 'date', 'user_id')
+
