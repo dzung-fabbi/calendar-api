@@ -9,4 +9,5 @@ urlpatterns = [
   path("calendar", CalendarAPIView.as_view(), name="calendar"),
   path("get-date-good-by-work", DateGoodByWorkAPIView.as_view(), name="get_date_good_by_work"),
   path("book-calendar", BookCalendarAPIView.as_view(), name="book-calendar"),
+  path("appointment-date", AppointmentDateAPIView.as_view(), name="appointment-date"),
 ]

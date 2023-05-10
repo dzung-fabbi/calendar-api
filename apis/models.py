@@ -619,3 +619,14 @@ class BookCalendar(models.Model):
     class Meta:
         verbose_name = "Lịch đặt"
         verbose_name_plural = "Lịch đặt"
+
+
+class AppointmentDate(models.Model):
+    name = models.CharField(max_length=255)
+    date = models.DateField(null=True)
+    user = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = "appointment_dates"
+        verbose_name = "Lịch hẹn"
+        verbose_name_plural = "Lịch hẹn"

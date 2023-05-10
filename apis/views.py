@@ -439,3 +439,36 @@ class BookCalendarAPIView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class AppointmentDateAPIView(APIView):
+    def get(self, request):
+        user_id = request.GET.get('user_id', '')
+        data = AppointmentDate.objects.filter(user_id=user_id)
+        serializer = AppointmentDateSerializer(data, many=True)
+        return Response({'data': serializer.data})
+
+    def post(self, request, format=None):
+        serializer = AppointmentDateSerializer(data=request.data, many=True)
+        if serializer.is_valid():
+            update_datas = []
+            create_datas = []
+            user_id = None
+            ids = []
+            for data in request.data:
+                if data.get('id', None):
+                    ids.append(data.get('id', None))
+                    bulk_data = AppointmentDate.objects.get(id=data.get('id', None))
+                    bulk_data.name = data.get('name', None)
+                    bulk_data.date = data.get('date', None)
+                    update_datas.append(bulk_data)
+                    user_id = bulk_data.user_id
+                else:
+                    create_datas.append(AppointmentDate(**data))
+            AppointmentDate.objects.exclude(id__in=ids).filter(user_id=user_id).delete()
+            AppointmentDate.objects.bulk_update(update_datas, fields=['name', 'date'])
+            AppointmentDate.objects.bulk_create(create_datas)
+            return Response({
+                'data': AppointmentDateSerializer(AppointmentDate.objects.filter(user_id=user_id), many=True).data
+            }, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
