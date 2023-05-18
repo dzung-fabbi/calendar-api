@@ -472,3 +472,15 @@ class AppointmentDateAPIView(APIView):
                 'data': AppointmentDateSerializer(AppointmentDate.objects.filter(user_id=user_id), many=True).data
             }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ConfigAPIView(APIView):
+    def get(self, request):
+        date_config = DateConfig.objects.order_by('-id').first()
+        serializer_date = DateConfigSerializer(date_config, many=False)
+        hours_config = HoursConfig.objects.order_by('-id').first()
+        serializer_hours = HoursConfigSerializer(hours_config, many=False)
+        return Response({'data': {
+            'date_config': serializer_date.data,
+            'hours_config': serializer_hours.data
+        }})

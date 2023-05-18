@@ -375,3 +375,14 @@ class AppointmentDateSerializer(serializers.ModelSerializer):
         model = AppointmentDate
         fields = ('id', 'name', 'date', 'user_id')
 
+
+class DateConfigSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DateConfig
+        fields = '__all__'
+
+
+class HoursConfigSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HoursConfig
+        fields = '__all__'

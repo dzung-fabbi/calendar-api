@@ -630,3 +630,22 @@ class AppointmentDate(models.Model):
         db_table = "appointment_dates"
         verbose_name = "Lịch hẹn"
         verbose_name_plural = "Lịch hẹn"
+
+
+class DateConfig(models.Model):
+    very_good_from = models.FloatField(verbose_name="Ngày rất tốt")
+    good_from = models.FloatField(verbose_name="Ngày tốt")
+    ugly_from = models.FloatField(verbose_name="Ngày xấu")
+
+    class Meta:
+        verbose_name = "Cài đặt ngày tốt xấu"
+        verbose_name_plural = "Cài đặt ngày tốt xấu"
+
+
+class HoursConfig(models.Model):
+    very_good = models.FloatField(verbose_name="Giờ rất tốt")
+    good = models.FloatField(verbose_name="Giờ tốt")
+
+    class Meta:
+        verbose_name = "Cài đặt giờ tốt xấu"
+        verbose_name_plural = "Cài đặt giờ tốt xấu"

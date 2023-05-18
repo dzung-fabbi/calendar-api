@@ -1,7 +1,8 @@
 from django.contrib import admin
 from django.forms import BaseInlineFormSet
 
-from apis.models import Sao, HiepKy, SaoHiepKy, HourInDay, TuDaiCatThoi, QuyNhan, ThanSatByYear, ThanSatByMonth
+from apis.models import Sao, HiepKy, SaoHiepKy, HourInDay, TuDaiCatThoi, QuyNhan, ThanSatByYear, ThanSatByMonth, \
+    DateConfig, HoursConfig
 
 admin.site.site_header = 'Thiên văn lịch pháp'
 
@@ -301,3 +302,17 @@ class ThanSatMonthAdmin(admin.ModelAdmin):
 
 
 admin.site.register(ThanSatByMonth, ThanSatMonthAdmin)
+
+
+class DateConfigAdmin(admin.ModelAdmin):
+    list_display = ['id', 'very_good_from', 'good_from', 'ugly_from']
+
+
+admin.site.register(DateConfig, DateConfigAdmin)
+
+
+class HoursConfigAdmin(admin.ModelAdmin):
+    list_display = ['id', 'very_good', 'good']
+
+
+admin.site.register(HoursConfig, HoursConfigAdmin)
