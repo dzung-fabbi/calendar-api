@@ -1,8 +1,10 @@
+from datetime import datetime
+
 from django.contrib import admin
-from django.forms import BaseInlineFormSet
+from django_object_actions import action, DjangoObjectActions
 
 from apis.models import Sao, HiepKy, SaoHiepKy, HourInDay, TuDaiCatThoi, QuyNhan, ThanSatByYear, ThanSatByMonth, \
-    DateConfig, HoursConfig
+    DateConfig, HoursConfig, BankConfig, BankTransaction
 
 admin.site.site_header = 'Thiên văn lịch pháp'
 
@@ -316,3 +318,37 @@ class HoursConfigAdmin(admin.ModelAdmin):
 
 
 admin.site.register(HoursConfig, HoursConfigAdmin)
+
+
+class BankConfigAdmin(admin.ModelAdmin):
+    list_display = ['account_number', 'account_holder', 'bank', 'branch']
+
+
+admin.site.register(BankConfig, BankConfigAdmin)
+
+
+# @admin.action(description="Hoàn thành")
+# def make_done(modeladmin, request, queryset):
+#     queryset.update(status=1)
+
+
+class BankTransactionAdmin(DjangoObjectActions, admin.ModelAdmin):
+    list_display = ['user', 'code', 'status']
+
+    @action(
+        label="Hoàn thành",  # optional
+        description="This will be the tooltip of the button"  # optional
+    )
+    def make_done(modeladmin, request, queryset):
+        for el in queryset:
+            if hasattr('profile', el.user):
+                profile = el.user.profile
+                profile.is_free = 1
+                profile.expiry_datetime = datetime.now()
+                profile.save()
+        queryset.update(status=1)
+
+    changelist_actions = ('make_done',)
+
+
+admin.site.register(BankTransaction, BankTransactionAdmin)

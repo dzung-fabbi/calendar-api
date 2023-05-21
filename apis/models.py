@@ -1,5 +1,6 @@
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractUser, User
 from django.db import models
+from django.db.models.signals import post_save
 
 lunar_day = (
     ("GIÁP TÝ", "GIÁP TÝ"),
@@ -649,3 +650,43 @@ class HoursConfig(models.Model):
     class Meta:
         verbose_name = "Cài đặt giờ tốt xấu"
         verbose_name_plural = "Cài đặt giờ tốt xấu"
+
+
+class BankConfig(models.Model):
+    account_number = models.CharField(max_length=255, verbose_name="Số tài khoản")
+    account_holder = models.CharField(max_length=255, verbose_name="Chủ tài khoản")
+    bank = models.CharField(max_length=255, verbose_name="Ngân hàng")
+    branch = models.CharField(max_length=255, verbose_name="Chi nhánh", null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Ngân hàng"
+        verbose_name_plural = "Ngân hàng"
+
+
+STATUS_TRANSACTION = (
+    (0, 'Tạo mới'),
+    (1, 'Hoàn thành')
+)
+
+
+class BankTransaction(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    code = models.CharField(max_length=6, verbose_name="code")
+    status = models.IntegerField(verbose_name="Trạng thái", default=0, choices=STATUS_TRANSACTION)
+
+    class Meta:
+        verbose_name = "Giao dịch"
+        verbose_name_plural = "Giao dịch"
+
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    is_free = models.IntegerField(verbose_name="Thành viên trả phí", default=0)
+    expiry_datetime = models.DateField(verbose_name="Thời gian hết hạn", null=True)
+
+    def create_user_profile(sender, instance, created, **kwargs):
+        if created:
+            profile, created = UserProfile.objects.get_or_create(user=instance)
+
+    post_save.connect(create_user_profile, sender=User)
+    # other fields here
