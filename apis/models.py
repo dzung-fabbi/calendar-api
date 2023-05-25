@@ -637,6 +637,8 @@ class DateConfig(models.Model):
     very_good_from = models.FloatField(verbose_name="Ngày rất tốt")
     good_from = models.FloatField(verbose_name="Ngày tốt")
     ugly_from = models.FloatField(verbose_name="Ngày xấu")
+    factor_1 = models.FloatField(verbose_name="Hệ số 1", default=1)
+    factor_2 = models.FloatField(verbose_name="Hệ số 2", default=2)
 
     class Meta:
         verbose_name = "Cài đặt ngày tốt xấu"
