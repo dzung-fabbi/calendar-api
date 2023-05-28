@@ -648,6 +648,7 @@ class DateConfig(models.Model):
 class HoursConfig(models.Model):
     very_good = models.FloatField(verbose_name="Giờ rất tốt")
     good = models.FloatField(verbose_name="Giờ tốt")
+    ugly = models.FloatField(verbose_name="Giờ xấu", default=2)
 
     class Meta:
         verbose_name = "Cài đặt giờ tốt xấu"
