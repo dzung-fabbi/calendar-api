@@ -4,7 +4,7 @@ from django.contrib import admin
 from django_object_actions import action, DjangoObjectActions
 
 from apis.models import Sao, HiepKy, SaoHiepKy, HourInDay, TuDaiCatThoi, QuyNhan, ThanSatByYear, ThanSatByMonth, \
-    DateConfig, HoursConfig, BankConfig, BankTransaction
+    DateConfig, HoursConfig, BankConfig, BankTransaction, CategoryStars
 
 admin.site.site_header = 'Thiên văn lịch pháp'
 
@@ -12,10 +12,18 @@ admin.site.site_header = 'Thiên văn lịch pháp'
 class SaoAdmin(admin.ModelAdmin):
     list_display = ['id', 'name', 'good_ugly_stars']
     search_fields = ['name', 'good_ugly_stars']
-    list_filter = ['good_ugly_stars', 'is_mountain']
+    list_filter = ['good_ugly_stars', 'is_mountain', 'category']
 
 
 admin.site.register(Sao, SaoAdmin)
+
+
+class CategoryStarsAdmin(admin.ModelAdmin):
+    list_display = ['id', 'name']
+    search_fields = ['name']
+
+
+admin.site.register(CategoryStars, CategoryStarsAdmin)
 
 
 class HiepKySaoGoodAdmin(admin.TabularInline):
