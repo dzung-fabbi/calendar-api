@@ -215,9 +215,27 @@ class TuDaiCatThoiSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class SaoSerializer(serializers.ModelSerializer):
+    category = serializers.SerializerMethodField()
+
     class Meta:
         model = Sao
-        fields = '__all__'
+        fields = [
+            'id',
+            'name',
+            'property',
+            'good_ugly_stars',
+            'is_mountain',
+            'category',
+        ]
+
+    def get_category(self, obj):
+        if obj.category is None:
+            return None
+        result = {
+            "id": obj.category.id,
+            "name": obj.category.name,
+        }
+        return result
 
 
 class ThanSatYearSaoSerializer(serializers.ModelSerializer):
