@@ -11,4 +11,5 @@ urlpatterns = [
   path("book-calendar", BookCalendarAPIView.as_view(), name="book-calendar"),
   path("appointment-date", AppointmentDateAPIView.as_view(), name="appointment-date"),
   path("get-config", ConfigAPIView.as_view(), name="get-config"),
+  path("get-bank", BankAPIView.as_view(), name="get-config"),
 ]

@@ -404,3 +404,9 @@ class HoursConfigSerializer(serializers.ModelSerializer):
     class Meta:
         model = HoursConfig
         fields = '__all__'
+
+
+class BankSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BankConfig
+        fields = '__all__'

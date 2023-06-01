@@ -12,7 +12,7 @@ from .exceptions import BadRequestException
 from datetime import datetime
 
 from statistics import mode
-import json
+import json, random, string
 
 
 class TietkhiAPIView(APIView):
@@ -483,4 +483,21 @@ class ConfigAPIView(APIView):
         return Response({'data': {
             'date_config': serializer_date.data,
             'hours_config': serializer_hours.data
+        }})
+
+
+class BankAPIView(APIView):
+    def get(self, request):
+        user = request.user
+        data = BankConfig.objects.first()
+        serializer = BankSerializer(data, many=False)
+        transaction = BankTransaction.objects.filter(user=user, status=0).first()
+        if not transaction:
+            transaction = BankTransaction()
+            transaction.user = user
+            transaction.code = ''.join(random.choices(string.ascii_uppercase, k=6))
+            transaction.save()
+        return Response({'data': {
+            'bank': serializer.data,
+            'code': transaction.code
         }})
