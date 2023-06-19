@@ -1,6 +1,6 @@
 from django.db.models import Prefetch
 from rest_framework import status
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 
 from .constant import CAN_CHI
 from django.contrib.auth.models import User
@@ -444,6 +444,7 @@ class BookCalendarAPIView(APIView):
 
 
 class AppointmentDateAPIView(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         data = AppointmentDate.objects.filter(user_id=request.user.id)
         serializer = AppointmentDateSerializer(data, many=True)
@@ -489,6 +490,7 @@ class ConfigAPIView(APIView):
 
 
 class BankAPIView(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         user = request.user
         data = BankConfig.objects.first()
@@ -506,6 +508,7 @@ class BankAPIView(APIView):
 
 
 class UserAPIView(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         data = User.objects.get(id=request.user.id)
         serializer = UserSerializer(data)
