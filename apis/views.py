@@ -3,6 +3,7 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny
 
 from .constant import CAN_CHI
+from django.contrib.auth.models import User
 from .models import *
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -10,6 +11,7 @@ from rest_framework.views import APIView
 from .serializers import *
 from .exceptions import BadRequestException
 from datetime import datetime
+from datetime import timedelta
 
 from statistics import mode
 import json, random, string
@@ -443,8 +445,7 @@ class BookCalendarAPIView(APIView):
 
 class AppointmentDateAPIView(APIView):
     def get(self, request):
-        user_id = request.GET.get('user_id', '')
-        data = AppointmentDate.objects.filter(user_id=user_id)
+        data = AppointmentDate.objects.filter(user_id=request.user.id)
         serializer = AppointmentDateSerializer(data, many=True)
         return Response({'data': serializer.data})
 
@@ -453,7 +454,7 @@ class AppointmentDateAPIView(APIView):
         if serializer.is_valid():
             update_datas = []
             create_datas = []
-            user_id = None
+            user_id = request.user.id
             ids = []
             for data in request.data:
                 if data.get('id', None):
@@ -461,12 +462,13 @@ class AppointmentDateAPIView(APIView):
                     bulk_data = AppointmentDate.objects.get(id=data.get('id', None))
                     bulk_data.name = data.get('name', None)
                     bulk_data.date = data.get('date', None)
+                    bulk_data.before_days = timedelta(days=int(data.get('before_days', 0)))
                     update_datas.append(bulk_data)
                     user_id = bulk_data.user_id
                 else:
                     create_datas.append(AppointmentDate(**data))
             AppointmentDate.objects.exclude(id__in=ids).filter(user_id=user_id).delete()
-            AppointmentDate.objects.bulk_update(update_datas, fields=['name', 'date'])
+            AppointmentDate.objects.bulk_update(update_datas, fields=['name', 'date', 'before_days'])
             AppointmentDate.objects.bulk_create(create_datas)
             return Response({
                 'data': AppointmentDateSerializer(AppointmentDate.objects.filter(user_id=user_id), many=True).data
@@ -501,3 +503,10 @@ class BankAPIView(APIView):
             'bank': serializer.data,
             'code': transaction.code
         }})
+
+
+class UserAPIView(APIView):
+    def get(self, request):
+        data = User.objects.get(id=request.user.id)
+        serializer = UserSerializer(data)
+        return Response({'data': serializer.data})

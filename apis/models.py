@@ -637,6 +637,7 @@ class BookCalendar(models.Model):
 class AppointmentDate(models.Model):
     name = models.CharField(max_length=255)
     date = models.DateField(null=True)
+    before_days = models.DurationField(default=0)
     user = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE)
 
     class Meta:
@@ -672,6 +673,7 @@ class BankConfig(models.Model):
     account_holder = models.CharField(max_length=255, verbose_name="Chủ tài khoản")
     bank = models.CharField(max_length=255, verbose_name="Ngân hàng")
     branch = models.CharField(max_length=255, verbose_name="Chi nhánh", null=True, blank=True)
+    qr_img = models.CharField(max_length=255, verbose_name="QR", null=True, blank=True)
 
     class Meta:
         verbose_name = "Ngân hàng"

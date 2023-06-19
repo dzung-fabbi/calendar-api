@@ -12,4 +12,5 @@ urlpatterns = [
   path("appointment-date", AppointmentDateAPIView.as_view(), name="appointment-date"),
   path("get-config", ConfigAPIView.as_view(), name="get-config"),
   path("get-bank", BankAPIView.as_view(), name="get-config"),
+  path("get-user", UserAPIView.as_view(), name="get-user"),
 ]
