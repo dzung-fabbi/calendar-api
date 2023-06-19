@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from .models import *
 from rest_framework import serializers
 
@@ -389,9 +390,14 @@ class BookCalendarSerializer(serializers.ModelSerializer):
 
 
 class AppointmentDateSerializer(serializers.ModelSerializer):
+    convert_time = serializers.SerializerMethodField('convert_duration')
+
+    def convert_duration(self, data):
+        return data.before_days
+
     class Meta:
         model = AppointmentDate
-        fields = ('id', 'name', 'date', 'user_id')
+        fields = ('id', 'name', 'date', 'before_days', 'user_id', 'convert_time')
 
 
 class DateConfigSerializer(serializers.ModelSerializer):
@@ -409,4 +415,10 @@ class HoursConfigSerializer(serializers.ModelSerializer):
 class BankSerializer(serializers.ModelSerializer):
     class Meta:
         model = BankConfig
+        fields = '__all__'
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
         fields = '__all__'
