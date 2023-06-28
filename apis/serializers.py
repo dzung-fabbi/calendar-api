@@ -353,17 +353,17 @@ class SaoMonth12Serializer(serializers.ModelSerializer):
 
 class ThanSatByMonthSerializer(serializers.ModelSerializer):
     month_01 = SaoMonth1Serializer(source='saomonth1_set', read_only=True, many=True)
-    month_02 = SaoMonth1Serializer(source='saomonth2_set', read_only=True, many=True)
-    month_03 = SaoMonth1Serializer(source='saomonth3_set', read_only=True, many=True)
-    month_04 = SaoMonth1Serializer(source='saomonth4_set', read_only=True, many=True)
-    month_05 = SaoMonth1Serializer(source='saomonth5_set', read_only=True, many=True)
-    month_06 = SaoMonth1Serializer(source='saomonth6_set', read_only=True, many=True)
-    month_07 = SaoMonth1Serializer(source='saomonth7_set', read_only=True, many=True)
-    month_08 = SaoMonth1Serializer(source='saomonth8_set', read_only=True, many=True)
-    month_09 = SaoMonth1Serializer(source='saomonth9_set', read_only=True, many=True)
-    month_10 = SaoMonth1Serializer(source='saomonth10_set', read_only=True, many=True)
-    month_11 = SaoMonth1Serializer(source='saomonth11_set', read_only=True, many=True)
-    month_12 = SaoMonth1Serializer(source='saomonth12_set', read_only=True, many=True)
+    month_02 = SaoMonth2Serializer(source='saomonth2_set', read_only=True, many=True)
+    month_03 = SaoMonth3Serializer(source='saomonth3_set', read_only=True, many=True)
+    month_04 = SaoMonth4Serializer(source='saomonth4_set', read_only=True, many=True)
+    month_05 = SaoMonth5Serializer(source='saomonth5_set', read_only=True, many=True)
+    month_06 = SaoMonth6Serializer(source='saomonth6_set', read_only=True, many=True)
+    month_07 = SaoMonth7Serializer(source='saomonth7_set', read_only=True, many=True)
+    month_08 = SaoMonth8Serializer(source='saomonth8_set', read_only=True, many=True)
+    month_09 = SaoMonth9Serializer(source='saomonth9_set', read_only=True, many=True)
+    month_10 = SaoMonth10Serializer(source='saomonth10_set', read_only=True, many=True)
+    month_11 = SaoMonth11Serializer(source='saomonth11_set', read_only=True, many=True)
+    month_12 = SaoMonth12Serializer(source='saomonth12_set', read_only=True, many=True)
 
     class Meta:
         model = ThanSatByMonth
