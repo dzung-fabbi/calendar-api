@@ -66,6 +66,21 @@ lunar_day = (
 )
 
 
+month = (
+    (1, 1),
+    (2, 2),
+    (3, 3),
+    (4, 4),
+    (5, 5),
+    (6, 6),
+    (7, 7),
+    (8, 8),
+    (9, 9),
+    (10, 10),
+    (11, 11),
+    (12, 12),
+)
+
 class ItemBase(models.Model):
     year = models.CharField(max_length=255, choices=lunar_day, unique=True)
     is_active = models.BooleanField(default=True, editable=False)
@@ -96,6 +111,11 @@ class CategoryStars(models.Model):
     def __str__(self):
         return self.name
 
+CALENDAR = (
+    (1, "Âm lịch"),
+    (2, "Tiết khí")
+)
+
 
 class Sao(models.Model):
     name = models.CharField(max_length=255, verbose_name="Tên sao")
@@ -103,6 +123,7 @@ class Sao(models.Model):
     good_ugly_stars = models.IntegerField(blank=False, null=False, choices=good_ugly_start, verbose_name="Sao tốt xấu")
     is_mountain = models.IntegerField(blank=True, null=True, choices=is_mountain, verbose_name="Thuộc cung hay sơn")
     category = models.ForeignKey(CategoryStars, on_delete=models.CASCADE, null=True, blank=True, verbose_name="Hệ sao")
+    calendar = models.IntegerField(choices=CALENDAR, null=True, blank=True, verbose_name="Chạy theo")
 
     class Meta:
         db_table = "sao"
@@ -113,20 +134,7 @@ class Sao(models.Model):
         return self.name
 
 
-month = (
-    (1, 1),
-    (2, 2),
-    (3, 3),
-    (4, 4),
-    (5, 5),
-    (6, 6),
-    (7, 7),
-    (8, 8),
-    (9, 9),
-    (10, 10),
-    (11, 11),
-    (12, 12),
-)
+
 
 
 class TietKhi(models.Model):
