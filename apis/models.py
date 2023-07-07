@@ -124,7 +124,7 @@ class Sao(models.Model):
     is_mountain = models.IntegerField(blank=True, null=True, choices=is_mountain, verbose_name="Thuộc cung hay sơn")
     category = models.ForeignKey(CategoryStars, on_delete=models.CASCADE, null=True, blank=True, verbose_name="Hệ sao")
     calendar = models.IntegerField(choices=CALENDAR, null=True, blank=True, verbose_name="Chạy theo")
-    level = models.FloatField(null=True, blank=True, verbose_name="Cập độ")
+    level = models.FloatField(null=True, blank=True, verbose_name="Cấp độ")
     point = models.FloatField(null=True, blank=True, verbose_name="Điểm")
 
     class Meta:
