@@ -469,7 +469,7 @@ direction = (
 class ThanSatByYearSao(models.Model):
     sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
     than_sat_year = models.ForeignKey(ThanSatByYear, on_delete=models.CASCADE)
-    cung_son = models.IntegerField(choices=cung_son)
+    cung_son = models.IntegerField(choices=cung_son, editable=False, null=True, blank=True)
     direction = models.CharField(choices=direction, max_length=255, verbose_name="Phương hướng")
 
     class Meta:
@@ -502,7 +502,7 @@ class ThanSatByMonth(ItemBase):
 class SaoMonth1(models.Model):
     sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
     than_sat_month = models.ForeignKey(ThanSatByMonth, on_delete=models.CASCADE)
-    cung_son = models.IntegerField(choices=cung_son)
+    cung_son = models.IntegerField(choices=cung_son, editable=False, null=True, blank=True)
     direction = models.CharField(choices=direction, max_length=255, verbose_name="Phương hướng")
 
     class Meta:
@@ -513,7 +513,7 @@ class SaoMonth1(models.Model):
 class SaoMonth2(models.Model):
     sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
     than_sat_month = models.ForeignKey(ThanSatByMonth, on_delete=models.CASCADE)
-    cung_son = models.IntegerField(choices=cung_son)
+    cung_son = models.IntegerField(choices=cung_son, editable=False, null=True, blank=True)
     direction = models.CharField(choices=direction, max_length=255, verbose_name="Phương hướng")
 
     class Meta:
@@ -524,7 +524,7 @@ class SaoMonth2(models.Model):
 class SaoMonth3(models.Model):
     sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
     than_sat_month = models.ForeignKey(ThanSatByMonth, on_delete=models.CASCADE)
-    cung_son = models.IntegerField(choices=cung_son)
+    cung_son = models.IntegerField(choices=cung_son, editable=False, null=True, blank=True)
     direction = models.CharField(choices=direction, max_length=255, verbose_name="Phương hướng")
 
     class Meta:
@@ -535,7 +535,7 @@ class SaoMonth3(models.Model):
 class SaoMonth4(models.Model):
     sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
     than_sat_month = models.ForeignKey(ThanSatByMonth, on_delete=models.CASCADE)
-    cung_son = models.IntegerField(choices=cung_son)
+    cung_son = models.IntegerField(choices=cung_son, editable=False, null=True, blank=True)
     direction = models.CharField(choices=direction, max_length=255, verbose_name="Phương hướng")
 
     class Meta:
@@ -546,7 +546,7 @@ class SaoMonth4(models.Model):
 class SaoMonth5(models.Model):
     sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
     than_sat_month = models.ForeignKey(ThanSatByMonth, on_delete=models.CASCADE)
-    cung_son = models.IntegerField(choices=cung_son)
+    cung_son = models.IntegerField(choices=cung_son, editable=False, null=True, blank=True)
     direction = models.CharField(choices=direction, max_length=255, verbose_name="Phương hướng")
 
     class Meta:
@@ -557,7 +557,7 @@ class SaoMonth5(models.Model):
 class SaoMonth6(models.Model):
     sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
     than_sat_month = models.ForeignKey(ThanSatByMonth, on_delete=models.CASCADE)
-    cung_son = models.IntegerField(choices=cung_son)
+    cung_son = models.IntegerField(choices=cung_son, editable=False, null=True, blank=True)
     direction = models.CharField(choices=direction, max_length=255, verbose_name="Phương hướng")
 
     class Meta:
@@ -568,7 +568,7 @@ class SaoMonth6(models.Model):
 class SaoMonth7(models.Model):
     sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
     than_sat_month = models.ForeignKey(ThanSatByMonth, on_delete=models.CASCADE)
-    cung_son = models.IntegerField(choices=cung_son)
+    cung_son = models.IntegerField(choices=cung_son, editable=False, null=True, blank=True)
     direction = models.CharField(choices=direction, max_length=255, verbose_name="Phương hướng")
 
     class Meta:
@@ -579,7 +579,7 @@ class SaoMonth7(models.Model):
 class SaoMonth8(models.Model):
     sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
     than_sat_month = models.ForeignKey(ThanSatByMonth, on_delete=models.CASCADE)
-    cung_son = models.IntegerField(choices=cung_son)
+    cung_son = models.IntegerField(choices=cung_son, editable=False, null=True, blank=True)
     direction = models.CharField(choices=direction, max_length=255, verbose_name="Phương hướng")
 
     class Meta:
@@ -590,7 +590,7 @@ class SaoMonth8(models.Model):
 class SaoMonth9(models.Model):
     sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
     than_sat_month = models.ForeignKey(ThanSatByMonth, on_delete=models.CASCADE)
-    cung_son = models.IntegerField(choices=cung_son)
+    cung_son = models.IntegerField(choices=cung_son, editable=False, null=True, blank=True)
     direction = models.CharField(choices=direction, max_length=255, verbose_name="Phương hướng")
 
     class Meta:
@@ -601,7 +601,7 @@ class SaoMonth9(models.Model):
 class SaoMonth10(models.Model):
     sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
     than_sat_month = models.ForeignKey(ThanSatByMonth, on_delete=models.CASCADE)
-    cung_son = models.IntegerField(choices=cung_son)
+    cung_son = models.IntegerField(choices=cung_son, editable=False, null=True, blank=True)
     direction = models.CharField(choices=direction, max_length=255, verbose_name="Phương hướng")
 
     class Meta:
@@ -612,7 +612,7 @@ class SaoMonth10(models.Model):
 class SaoMonth11(models.Model):
     sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
     than_sat_month = models.ForeignKey(ThanSatByMonth, on_delete=models.CASCADE)
-    cung_son = models.IntegerField(choices=cung_son)
+    cung_son = models.IntegerField(choices=cung_son, editable=False, null=True, blank=True)
     direction = models.CharField(choices=direction, max_length=255, verbose_name="Phương hướng")
 
     class Meta:
@@ -623,7 +623,7 @@ class SaoMonth11(models.Model):
 class SaoMonth12(models.Model):
     sao = models.ForeignKey(Sao, on_delete=models.CASCADE)
     than_sat_month = models.ForeignKey(ThanSatByMonth, on_delete=models.CASCADE)
-    cung_son = models.IntegerField(choices=cung_son)
+    cung_son = models.IntegerField(choices=cung_son, editable=False, null=True, blank=True)
     direction = models.CharField(choices=direction, max_length=255, verbose_name="Phương hướng")
 
     class Meta:
