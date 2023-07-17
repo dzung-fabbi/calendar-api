@@ -227,6 +227,12 @@ class SaoSerializer(serializers.ModelSerializer):
             'good_ugly_stars',
             'is_mountain',
             'category',
+            'level',
+            'level_year',
+            'level_month',
+            'level_day',
+            'level_hours',
+            'point',
         ]
 
     def get_category(self, obj):
