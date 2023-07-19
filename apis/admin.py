@@ -360,3 +360,10 @@ class BankTransactionAdmin(DjangoObjectActions, admin.ModelAdmin):
 
 
 admin.site.register(BankTransaction, BankTransactionAdmin)
+
+
+class HoursConfigAdmin(admin.ModelAdmin):
+    list_display = ['id', 'value']
+
+
+admin.site.register(DirectionConfig, HoursConfigAdmin)
