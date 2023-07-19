@@ -65,7 +65,6 @@ lunar_day = (
     ("QUÝ HỢI", "QUÝ HỢI"),
 )
 
-
 month = (
     (1, 1),
     (2, 2),
@@ -80,6 +79,7 @@ month = (
     (11, 11),
     (12, 12),
 )
+
 
 class ItemBase(models.Model):
     year = models.CharField(max_length=255, choices=lunar_day, unique=True)
@@ -111,6 +111,7 @@ class CategoryStars(models.Model):
     def __str__(self):
         return self.name
 
+
 CALENDAR = (
     (1, "Âm lịch"),
     (2, "Tiết khí")
@@ -138,9 +139,6 @@ class Sao(models.Model):
 
     def __str__(self):
         return self.name
-
-
-
 
 
 class TietKhi(models.Model):
@@ -721,3 +719,11 @@ class UserProfile(models.Model):
 
     post_save.connect(create_user_profile, sender=User)
     # other fields here
+
+
+class DirectionConfig(models.Model):
+    value = models.FloatField(verbose_name="giá trị")
+
+    class Meta:
+        verbose_name = "Cài đặt phương hướng tốt xấu"
+        verbose_name_plural = "Cài đặt phương hướng tốt xấu"

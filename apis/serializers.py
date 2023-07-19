@@ -428,3 +428,9 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = '__all__'
+
+
+class DirectionConfigSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DirectionConfig
+        fields = '__all__'

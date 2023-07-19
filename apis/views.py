@@ -445,6 +445,7 @@ class BookCalendarAPIView(APIView):
 
 class AppointmentDateAPIView(APIView):
     permission_classes = [IsAuthenticated]
+
     def get(self, request):
         data = AppointmentDate.objects.filter(user_id=request.user.id)
         serializer = AppointmentDateSerializer(data, many=True)
@@ -482,15 +483,19 @@ class ConfigAPIView(APIView):
         date_config = DateConfig.objects.order_by('-id').first()
         serializer_date = DateConfigSerializer(date_config, many=False)
         hours_config = HoursConfig.objects.order_by('-id').first()
+        direction_config = DirectionConfig.objects.order_by('-id').first()
         serializer_hours = HoursConfigSerializer(hours_config, many=False)
+        serializer_direction = DirectionConfigSerializer(direction_config, many=False)
         return Response({'data': {
             'date_config': serializer_date.data,
-            'hours_config': serializer_hours.data
+            'hours_config': serializer_hours.data,
+            'direction_config': serializer_direction.data
         }})
 
 
 class BankAPIView(APIView):
     permission_classes = [IsAuthenticated]
+
     def get(self, request):
         user = request.user
         data = BankConfig.objects.first()
@@ -509,6 +514,7 @@ class BankAPIView(APIView):
 
 class UserAPIView(APIView):
     permission_classes = [IsAuthenticated]
+
     def get(self, request):
         data = User.objects.get(id=request.user.id)
         serializer = UserSerializer(data)
