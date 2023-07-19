@@ -4,7 +4,7 @@ from django.contrib import admin
 from django_object_actions import action, DjangoObjectActions
 
 from apis.models import Sao, HiepKy, SaoHiepKy, HourInDay, TuDaiCatThoi, QuyNhan, ThanSatByYear, ThanSatByMonth, \
-    DateConfig, HoursConfig, BankConfig, BankTransaction, CategoryStars
+    DateConfig, HoursConfig, BankConfig, BankTransaction, CategoryStars, DirectionConfig
 
 admin.site.site_header = 'Thiên văn lịch pháp'
 
@@ -362,8 +362,8 @@ class BankTransactionAdmin(DjangoObjectActions, admin.ModelAdmin):
 admin.site.register(BankTransaction, BankTransactionAdmin)
 
 
-class HoursConfigAdmin(admin.ModelAdmin):
+class DirectorConfigAdmin(admin.ModelAdmin):
     list_display = ['id', 'value']
 
 
-admin.site.register(DirectionConfig, HoursConfigAdmin)
+admin.site.register(DirectionConfig, DirectorConfigAdmin)
