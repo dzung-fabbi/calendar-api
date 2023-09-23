@@ -227,6 +227,7 @@ class SaoSerializer(serializers.ModelSerializer):
             'good_ugly_stars',
             'is_mountain',
             'category',
+            'calendar',
             'level',
             'level_year',
             'level_month',
