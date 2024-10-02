@@ -371,8 +371,6 @@ class DateGoodByWorkAPIView(APIView):
         work = request.GET.get('work', '')
         month = request.GET.get('month', None)
         year = request.GET.get('year', None)
-        end_date = request.GET.get('end_date', None)
-        date_format = '%d/%m/%Y'
         hiep_ky = HiepKy.objects.filter(should_things__icontains=work, month=month)
         data = []
         for el in hiep_ky:
@@ -396,7 +394,7 @@ class DateGoodByWorkAPIView(APIView):
         return Response({'data': data})
 
     def get_can_chi_for_day(self, solar_date):
-        base_date = datetime.date(1984, 2, 2)  # Mốc ngày Giáp Tý gần nhất (2/2/1984)
+        base_date = dt.date(1984, 1, 31)  # Mốc ngày Giáp Tý gần nhất (2/2/1984)
         days_difference = (solar_date - base_date).days
 
         can_index = (days_difference % 10)
@@ -408,26 +406,38 @@ class DateGoodByWorkAPIView(APIView):
 
     def find_day_with_can_chi_in_lunar(self, target_can_chi, month, year):
         # Ngày đầu tiên của tháng 4 âm lịch 2024 (phải tra cứu bằng lịch âm dương)
+        lunar_date = Lunar(int(year), int(month), 1)
+        solar_date = Converter.Lunar2Solar(lunar_date)
+
+        # Ngày cuối của tháng 4 âm lịch
         try:
-            lunar_date = Lunar(year, month, 1)
-            solar_date = Converter.Lunar2Solar(lunar_date)
-
-            # Ngày cuối của tháng 4 âm lịch
-            lunar_end_date = Lunar(year, month, 31)
-            solar_end_date = Converter.Lunar2Solar(lunar_end_date)
-
-            # Duyệt từng ngày trong khoảng thời gian này
-            current_date = solar_date
-            while current_date <= solar_end_date:
-                can_chi = self.get_can_chi_for_day(current_date)
-                if can_chi == target_can_chi:
-                    return current_date  # Trả về ngày dương lịch tương ứng
-                # Tăng ngày lên 1
-                current_date += dt.timedelta(days=1)
+            lunar_end_date = Lunar(int(year), int(month), 31)
         except:
-            return None
+            try:
+                lunar_end_date = Lunar(int(year), int(month), 30)
+            except:
+                try:
+                    lunar_end_date = Lunar(int(year), int(month), 29)
+                except:
+                    lunar_end_date = Lunar(int(year), int(month), 28)
+        solar_end_date = Converter.Lunar2Solar(lunar_end_date)
+
+        # Duyệt từng ngày trong khoảng thời gian này
+        current_date = self.solar_to_date(solar_date)
+        end_date = self.solar_to_date(solar_end_date)
+        while current_date <= end_date:
+            can_chi = self.get_can_chi_for_day(current_date)
+            if can_chi.upper() == target_can_chi.upper():
+                solar_date = Solar(current_date.year, current_date.month, current_date.day)
+                lunar_date = Converter.Solar2Lunar(solar_date)
+                return '{}-{}-{}'.format(lunar_date.year, lunar_date.month, lunar_date.day)  # Trả về ngày dương lịch tương ứng
+            # Tăng ngày lên 1
+            current_date += dt.timedelta(days=1)
 
         return None  # Nếu không tìm thấy
+
+    def solar_to_date(self, solar_obj):
+        return dt.date(solar_obj.year, solar_obj.month, solar_obj.day)
 
     def get_day_good_ugly(self, good_thing, ugly_thing, good_star, ugly_star):
         if not good_thing or not good_star:
