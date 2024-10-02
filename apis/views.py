@@ -11,8 +11,10 @@ from rest_framework.views import APIView
 from .serializers import *
 from .exceptions import BadRequestException
 from datetime import datetime
-from datetime import timedelta
 
+from datetime import timedelta
+from lunarcalendar import Converter, Solar, Lunar
+import datetime as dt
 from statistics import mode
 import json, random, string
 
@@ -360,25 +362,18 @@ class SoHocAPIView(APIView):
         return sum(int(digit) for digit in str(num))
 
 
+CAN = ["Giáp", "Ất", "Bính", "Đinh", "Mậu", "Kỷ", "Canh", "Tân", "Nhâm", "Quý"]
+CHI = ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tỵ", "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi"]
+
+
 class DateGoodByWorkAPIView(APIView):
     def get(self, request):
         work = request.GET.get('work', '')
-        start_date = request.GET.get('start_date', None)
-        can_chi_start = request.GET.get('can_chi_start', None)
-        month_start = request.GET.get('month_start', None)
-        month_end = request.GET.get('month_end', None)
-        can_chi_start_up = can_chi_start.upper()
+        month = request.GET.get('month', None)
+        year = request.GET.get('year', None)
         end_date = request.GET.get('end_date', None)
         date_format = '%d/%m/%Y'
-        start_date = datetime.strptime(start_date, date_format)
-        end_date = datetime.strptime(end_date, date_format)
-        delta = abs(end_date - start_date)
-        index_of_start = CAN_CHI.index(can_chi_start_up)
-        index_of_end = index_of_start + delta.days
-        can_chi = CAN_CHI * (int(index_of_end / 60) + 1)
-        arr_tmp = can_chi[index_of_start:index_of_end]
-        hiep_ky = HiepKy.objects.filter(should_things__icontains=work, month__range=(month_start, month_end),
-                                        lunar_day__in=arr_tmp)
+        hiep_ky = HiepKy.objects.filter(should_things__icontains=work, month=month)
         data = []
         for el in hiep_ky:
             good_stars = SaoHiepKy.objects.filter(sao__good_ugly_stars=1, hiepky=el).values_list("sao__name", flat=True)
@@ -386,16 +381,53 @@ class DateGoodByWorkAPIView(APIView):
             is_good = self.get_day_good_ugly(el.should_things, el.no_should_things, ','.join(list(good_stars)),
                                              ','.join(list(ugly_stars)))
             if is_good["is_good"]:
-                data.append({
-                    "month": el.month,
-                    "work": el.should_things,
-                    "lunar_day": el.lunar_day,
-                    "percent": is_good['percent'],
-                    "text": is_good['text']
-                })
+                lunar_date = self.find_day_with_can_chi_in_lunar(el.lunar_day, month, year)
+                if lunar_date is not None:
+                    data.append({
+                        "month": el.month,
+                        "work": el.should_things,
+                        "lunar_day": el.lunar_day,
+                        "lunar_date": lunar_date,
+                        "percent": is_good['percent'],
+                        "text": is_good['text']
+                    })
 
         data = sorted(data, key=lambda x: x['percent'], reverse=True)
         return Response({'data': data})
+
+    def get_can_chi_for_day(self, solar_date):
+        base_date = datetime.date(1984, 2, 2)  # Mốc ngày Giáp Tý gần nhất (2/2/1984)
+        days_difference = (solar_date - base_date).days
+
+        can_index = (days_difference % 10)
+        chi_index = (days_difference % 12)
+
+        can = CAN[can_index]
+        chi = CHI[chi_index]
+        return f"{can} {chi}"
+
+    def find_day_with_can_chi_in_lunar(self, target_can_chi, month, year):
+        # Ngày đầu tiên của tháng 4 âm lịch 2024 (phải tra cứu bằng lịch âm dương)
+        try:
+            lunar_date = Lunar(year, month, 1)
+            solar_date = Converter.Lunar2Solar(lunar_date)
+
+            # Ngày cuối của tháng 4 âm lịch
+            lunar_end_date = Lunar(year, month, 31)
+            solar_end_date = Converter.Lunar2Solar(lunar_end_date)
+
+            # Duyệt từng ngày trong khoảng thời gian này
+            current_date = solar_date
+            while current_date <= solar_end_date:
+                can_chi = self.get_can_chi_for_day(current_date)
+                if can_chi == target_can_chi:
+                    return current_date  # Trả về ngày dương lịch tương ứng
+                # Tăng ngày lên 1
+                current_date += dt.timedelta(days=1)
+        except:
+            return None
+
+        return None  # Nếu không tìm thấy
 
     def get_day_good_ugly(self, good_thing, ugly_thing, good_star, ugly_star):
         if not good_thing or not good_star:
