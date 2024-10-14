@@ -369,6 +369,8 @@ CHI = ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tỵ", "Ngọ", "Mùi", "Thân
 class DateGoodByWorkAPIView(APIView):
     def get(self, request):
         work = request.GET.get('work', '')
+        if work == 'Tu tạo mồ mả':
+            work = 'Tu Tạo Động Thổ'
         month = request.GET.get('month', None)
         year = request.GET.get('year', None)
         hiep_ky = HiepKy.objects.filter(should_things__icontains=work, month=month)
