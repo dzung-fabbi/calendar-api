@@ -97,7 +97,7 @@ GET /api/gia-pha/clans/{clan_id}/persons?q=&generation=&branch=&death_year=
 
 ## Success Criteria
 - [x] `GET /tree` dùng **≤ 3 query** bất kể số người trong clan — xác nhận với fixture 24 persons
-- [ ] Clan 1.000 người: p95 < 500ms (đo bằng fixture sinh tự động) — **NOT verified:** query count (3) confirmed, but wall-clock performance at 1000 persons not benchmarked. Spec's "p95 < 500ms" is performance SLA, not query-count contract; defer to production monitoring.
+- [x] Clan 1.000 người: p95 < 500ms — **VERIFIED 2026-09-05:** p95 97.9ms (20 samples, 9 thế hệ, branching ~2.5), p50 36.6ms; 5.000 người: p95 224ms, payload 1.41MB; recompute từ gốc cây 1.000 người: 201ms. Query vẫn ≤3 ở mọi cỡ. Đo trên Docker/WSL2 máy dev, không phải phần cứng production. Benchmark: `giapha/tests/test_tree_performance_benchmark.py` (skip mặc định, chạy bằng `BENCHMARK_TREE_PERFORMANCE=1`). Báo cáo: `plans/reports/tester-260905-1611-tree-performance-benchmark.md`
 - [x] `generation` đúng với cây nhiều gốc và cha mẹ lệch đời
 - [x] Cây có chu trình (nhập qua admin) không làm treo request
 - [x] Người `is_deleted=True` không xuất hiện trong `nodes` lẫn `edges`

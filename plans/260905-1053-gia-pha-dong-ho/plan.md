@@ -93,6 +93,11 @@ Phase 5 chỉ cần model `Person` (phase 3), không cần cây. Phase 7/8/9 đ�
 | 4 | S3 hay R2 | **AWS S3** | Phase 8 xin credential S3 + cấu hình CORS bucket |
 | — | Phạm vi đợt này | **Phase 1–4** | Phase 5–10 để đợt sau |
 
+## Đã gỡ chặn (2026-09-05)
+
+- **Thuật toán âm lịch Hồ Ngọc Đức** — đã chốt, phase 5 hết chặn. `k -> tháng âm`: `diff = INT((monthStart - a11)/29)`, `lunarMonth = diff + 11`; nhuận: `diff >= leapMonthDiff` -> `lunarMonth = diff + 10`, bằng nhau -> `lunarLeap = 1`. Múi giờ vào đúng một chỗ: `getNewMoonDay(k, tz) = INT(newMoon(k) + 0.5 + tz/24)`. Test vector đã tính bằng code + round-trip, có 2 mốc lệch VN/TQ kiểm chứng độc lập: **1968** (VN 29/1, TQ 30/1) và **2007** (VN 17/2, TQ 18/2). **1985 KHÔNG lệch** (cả hai 20/2) — đừng dùng làm ca lệch. Chi tiết: `plans/reports/researcher-260905-1610-vn-lunar-ho-ngoc-duc-algorithm.md`
+- **Hiệu năng `GET /tree`** — đã đo, đạt. Xem phase 4.
+
 ## Câu hỏi mở (còn lại)
 
 ### Chốt được ở session này (phases 1–4)
