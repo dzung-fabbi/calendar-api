@@ -20,5 +20,6 @@ from django.urls import path, include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('apis.urls')),
+    path('api/gia-pha/', include('giapha.urls')),
     url(r'^auth/', include('drf_social_oauth2.urls', namespace='drf'))
 ]

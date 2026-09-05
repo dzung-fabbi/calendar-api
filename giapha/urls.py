@@ -1,0 +1,62 @@
+from django.urls import path
+
+from giapha.views import (
+    ClanDetailAPIView,
+    ClanInviteDetailAPIView,
+    ClanInviteListCreateAPIView,
+    ClanListCreateAPIView,
+    ClanMemberDetailAPIView,
+    ClanMembersAPIView,
+    ClanTreeAPIView,
+    JoinClanAPIView,
+    MarriageDetailAPIView,
+    MarriageListCreateAPIView,
+    PersonDetailAPIView,
+    PersonListCreateAPIView,
+    PersonRestoreAPIView,
+    PersonRevisionListAPIView,
+)
+
+urlpatterns = [
+    path('clans', ClanListCreateAPIView.as_view(), name='clan-list-create'),
+    path('clans/<int:clan_id>', ClanDetailAPIView.as_view(), name='clan-detail'),
+    path('clans/<int:clan_id>/members', ClanMembersAPIView.as_view(), name='clan-members'),
+    path(
+        'clans/<int:clan_id>/members/<int:user_id>',
+        ClanMemberDetailAPIView.as_view(),
+        name='clan-member-detail',
+    ),
+    path('clans/<int:clan_id>/invites', ClanInviteListCreateAPIView.as_view(), name='clan-invite-create'),
+    path(
+        'clans/<int:clan_id>/invites/<int:invite_id>',
+        ClanInviteDetailAPIView.as_view(),
+        name='clan-invite-detail',
+    ),
+    path('join', JoinClanAPIView.as_view(), name='clan-join'),
+
+    path('clans/<int:clan_id>/tree', ClanTreeAPIView.as_view(), name='clan-tree'),
+
+    path('clans/<int:clan_id>/persons', PersonListCreateAPIView.as_view(), name='person-list-create'),
+    path(
+        'clans/<int:clan_id>/persons/<int:person_id>',
+        PersonDetailAPIView.as_view(),
+        name='person-detail',
+    ),
+    path(
+        'clans/<int:clan_id>/persons/<int:person_id>/revisions',
+        PersonRevisionListAPIView.as_view(),
+        name='person-revisions',
+    ),
+    path(
+        'clans/<int:clan_id>/persons/<int:person_id>/restore/<int:revision_id>',
+        PersonRestoreAPIView.as_view(),
+        name='person-restore',
+    ),
+
+    path('clans/<int:clan_id>/marriages', MarriageListCreateAPIView.as_view(), name='marriage-list-create'),
+    path(
+        'clans/<int:clan_id>/marriages/<int:marriage_id>',
+        MarriageDetailAPIView.as_view(),
+        name='marriage-detail',
+    ),
+]

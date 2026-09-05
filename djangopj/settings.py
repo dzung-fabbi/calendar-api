@@ -10,26 +10,43 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
+import os
 from pathlib import Path
+
+from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'uo$i5ugn4l#ulluy0&zp^#&hac0_!wfo!f9%!17-$rg+c(%xa9'
+def env_flag(name, default=False):
+    return os.environ.get(name, str(default)).strip().lower() in ('1', 'true', 'yes', 'on')
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
 
-ALLOWED_HOSTS = []
+def env_list(name, default=''):
+    return [item.strip() for item in os.environ.get(name, default).split(',') if item.strip()]
+
+
+DEBUG = env_flag('DJANGO_DEBUG', False)
+
+# Secrets come from the environment. See .env.example. The previously
+# committed key, database password and OAuth secrets must be treated as
+# compromised and rotated -- they remain in the git history.
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', '')
+if not SECRET_KEY:
+    if not DEBUG:
+        raise ImproperlyConfigured(
+            'DJANGO_SECRET_KEY must be set when DJANGO_DEBUG is off.'
+        )
+    SECRET_KEY = 'dev-only-insecure-key-not-for-production'
+
+ALLOWED_HOSTS = env_list('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1' if DEBUG else '')
 
 # Application definition
 
 INSTALLED_APPS = [
     'apis.apps.ApisConfig',
+    'giapha.apps.GiaPhaConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -46,14 +63,16 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    # CorsMiddleware must precede CommonMiddleware so that CORS headers are
+    # attached to the redirects CommonMiddleware can generate. It used to sit
+    # after it, and CommonMiddleware was listed twice.
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware',
 ]
 
 ROOT_URLCONF = 'djangopj.urls'
@@ -84,11 +103,11 @@ WSGI_APPLICATION = 'djangopj.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'django-db',
-        'USER': 'root',
-        'PASSWORD': '',
-        'HOST': 'localhost',
-        'PORT': '3306'
+        'NAME': os.environ.get('DB_NAME', 'django-db'),
+        'USER': os.environ.get('DB_USER', 'root'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+        'HOST': os.environ.get('DB_HOST', 'localhost'),
+        'PORT': os.environ.get('DB_PORT', '3306'),
     }
 }
 
@@ -128,13 +147,23 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-CORS_ALLOW_ALL_ORIGINS = True
+# Left permissive because the public almanac endpoints are read-only and
+# unauthenticated. Set DJANGO_CORS_ALLOWED_ORIGINS to lock it down.
+CORS_ALLOWED_ORIGINS = env_list('DJANGO_CORS_ALLOWED_ORIGINS')
+CORS_ALLOW_ALL_ORIGINS = not CORS_ALLOWED_ORIGINS
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'oauth2_provider.contrib.rest_framework.OAuth2Authentication',  # django-oauth-toolkit >= 1.0.0
         'drf_social_oauth2.authentication.SocialAuthentication',
     ),
+    # No `DEFAULT_THROTTLE_CLASSES` -- deliberate, `apis/` has none and this
+    # must not change project-wide. `giapha.views.clan_membership.JoinClanAPIView`
+    # opts itself into the 'giapha-join' scope to blunt invite-code brute
+    # forcing; every other view stays unthrottled.
+    'DEFAULT_THROTTLE_RATES': {
+        'giapha-join': '10/hour',
+    },
 }
 
 AUTHENTICATION_BACKENDS = (
@@ -146,12 +175,12 @@ AUTHENTICATION_BACKENDS = (
 )
 
 # Facebook configuration
-SOCIAL_AUTH_FACEBOOK_KEY = '269331342224612'
-SOCIAL_AUTH_FACEBOOK_SECRET = '0201431e1e2a5e854d5427bdb6687a0f'
+SOCIAL_AUTH_FACEBOOK_KEY = os.environ.get('SOCIAL_AUTH_FACEBOOK_KEY', '')
+SOCIAL_AUTH_FACEBOOK_SECRET = os.environ.get('SOCIAL_AUTH_FACEBOOK_SECRET', '')
 
 # Google configuration
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '660308706495-co29km7ks3udc9f04lc01be74di6f3ia.apps.googleusercontent.com'
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = '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'
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.environ.get('SOCIAL_AUTH_GOOGLE_OAUTH2_KEY', '')
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.environ.get('SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET', '')
 
 SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
     'https://www.googleapis.com/auth/userinfo.email',
@@ -164,3 +193,55 @@ SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
 SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
     'fields': 'id, name, email'
 }
+
+# HTTPS hardening. Off by default because turning SSL redirect on behind a
+# proxy that does not forward the scheme causes a redirect loop; switch these
+# on per environment once TLS termination is confirmed. See .env.example.
+SECURE_SSL_REDIRECT = env_flag('DJANGO_SECURE_SSL_REDIRECT', False)
+SESSION_COOKIE_SECURE = env_flag('DJANGO_SECURE_COOKIES', False)
+CSRF_COOKIE_SECURE = env_flag('DJANGO_SECURE_COOKIES', False)
+SECURE_HSTS_SECONDS = int(os.environ.get('DJANGO_HSTS_SECONDS', '0'))
+SECURE_HSTS_INCLUDE_SUBDOMAINS = SECURE_HSTS_SECONDS > 0
+SECURE_HSTS_PRELOAD = SECURE_HSTS_SECONDS > 0
+if env_flag('DJANGO_BEHIND_TLS_PROXY', False):
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+
+# Logging: without this, exceptions swallowed by the views' broad `except`
+# blocks disappear entirely and every fault looks like a plain 400.
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '[{asctime}] {levelname} {name}: {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        'apis': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}
+
+# Gia phả dòng họ (giapha app): hard cap on persons per clan, guards against
+# runaway data entry and keeps admin/report queries bounded.
+MAX_CLAN_PERSONS = 5000
