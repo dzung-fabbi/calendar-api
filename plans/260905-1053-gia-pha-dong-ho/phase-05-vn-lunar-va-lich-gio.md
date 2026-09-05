@@ -1,7 +1,7 @@
 ---
 phase: 5
 title: "VN lunar va lich gio"
-status: pending
+status: completed
 priority: P1
 effort: "2.5d"
 dependencies: [3]
@@ -20,7 +20,7 @@ Tự implement chuyển đổi âm ↔ dương lịch **Việt Nam (UTC+7)** và
 
 ## Key Insights
 - `lunarcalendar==0.0.9` đang dùng trong `apis/` là **lịch âm Trung Quốc, múi giờ UTC+8**. Lịch VN dùng UTC+7 → lệch ở một số năm.
-- Ca lệch nổi tiếng cần dùng làm test: **Tết 1985** (VN 21/01 vs TQ 20/02 — lệch cả tháng do đặt tháng nhuận khác nhau) và **Tết 2007** (VN 17/02 vs TQ 18/02 — lệch 1 ngày do múi giờ).
+- Ca lệch nổi tiếng cần dùng làm test: **Tết 1985** (VN 21/01 vs TQ 20/02 — lệch cả tháng do đặt tháng nhuận khác nhau, **ĐÃ KIỂM CHỨNG ĐÚNG**) và **Tết 2007** (VN 17/02 vs TQ 18/02 — lệch 1 ngày do múi giờ). **Lưu ý:** báo cáo researcher ban đầu chạy ở tz=8 (lịch TQ) nên ghi sai 1985 là 20/02 — đã được đính chính trong báo cáo.
 - **Không đụng vào `apis/`.** Almanac giữ nguyên `lunarcalendar` để không phải ghi lại golden snapshots. Đây là mâu thuẫn có chủ đích, phải ghi vào `docs/system-architecture.md` ở phase 10.
 
 ## Architecture
@@ -117,15 +117,43 @@ Khoảng `from..to` tối đa **2 năm**; dài hơn trả 400. Mặc định khi
 8. Ghi query budget cho endpoint vào snapshot.
 
 ## Success Criteria
-- [ ] Toàn bộ 15+ test vector xanh, **mỗi vector có nguồn truy nguyên được**
-- [ ] Tết 1985 và 2007 khớp lịch VN, khác lịch TQ — chứng minh UTC+7 hoạt động
-- [ ] Các năm VN trùng TQ cho kết quả giống `lunarcalendar`
-- [ ] Ngày 30 tháng thiếu lùi về 29, cờ `adjusted=true`
-- [ ] Mất tháng nhuận → giỗ tháng thường
-- [ ] Ngoài khoảng 1800–2199 → 400, không trả kết quả sai âm thầm
-- [ ] `lich-gio` cho clan 1.000 người dùng ≤ 2 query
-- [ ] `vn_lunar.py` và `gio.py` test được bằng `SimpleTestCase`
-- [ ] `apis/` không bị sửa; suite hiện có vẫn xanh
+- [x] Toàn bộ 15+ test vector xanh, **mỗi vector có nguồn truy nguyên được**
+- [x] Tết 1985 và 2007 khớp lịch VN, khác lịch TQ — chứng minh UTC+7 hoạt động
+- [x] Các năm VN trùng TQ cho kết quả giống `lunarcalendar`
+- [x] Ngày 30 tháng thiếu lùi về 29, cờ `adjusted=true`
+- [x] Mất tháng nhuận → giỗ tháng thường
+- [x] Ngoài khoảng 1800–2199 → 400, không trả kết quả sai âm thầm
+- [x] `lich-gio` cho clan 1.000 người dùng ≤ 2 query
+- [x] `vn_lunar.py` và `gio.py` test được bằng `SimpleTestCase`
+- [x] `apis/` không bị sửa; suite hiện có vẫn xanh
+
+## Kết quả thực tế
+
+**Files tạo mới:**
+- `giapha/services/vn_lunar.py` — thuật toán Hồ Ngọc Đức, UTC+7
+- `giapha/services/gio.py` — quy tắc tập quán ngày giỗ
+- `giapha/services/can_chi.py` — Thiên can Địa chi (sao chép từ `apis/services/can_chi.py`)
+- `giapha/selectors/gio.py` — selector nạp người mất của clan
+- `giapha/serializers/gio.py` — serializer response lich-gio
+- `giapha/views/gio.py` — view endpoint
+- `giapha/tests/test_vn_lunar.py` — test vectors lịch âm (SimpleTestCase)
+- `giapha/tests/test_gio_service.py` — test quy tắc ngày giỗ (SimpleTestCase)
+- `giapha/tests/test_gio_api.py` — test endpoint
+
+**Files sửa:**
+- `giapha/urls.py` — thêm route lich-gio
+- `giapha/selectors/__init__.py`, `giapha/serializers/__init__.py`, `giapha/views/__init__.py` — export wiring
+
+**Endpoint thêm vào:**
+- `GET /api/gia-pha/clans/{clan_id}/lich-gio?from=YYYY-MM-DD&to=YYYY-MM-DD` — danh sách giỗ trong khoảng
+- `GET /api/gia-pha/clans/{clan_id}/lich-gio?year=YYYY` — giỗ trong năm dương
+
+**Kiểm chứng:**
+- 356 test xanh (50 `apis` + 306 `giapha`), 0 failure, 4 skipped
+- Differential 146.097 ngày (1800–2199) vs amlich.js gốc: 0 sai lệch
+- Năm VN = TQ ở tz=8: 0 sai lệch với `lunarcalendar`
+- Năm VN ≠ TQ: 1968, 1969, 1985, 2007 — tất cả khớp UTC+7, có test cho từng năm
+- Endpoint query budget: ≤ 2 queries bất kể kích cỡ clan
 
 ## Risk Assessment
 - **Rủi ro số 1 của cả plan.** Ngày giỗ sai là lỗi mất mặt với người dùng ở mức không sửa được bằng lời xin lỗi. Không merge phase này nếu test vectors chưa đủ nguồn.

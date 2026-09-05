@@ -2,6 +2,7 @@ from django.urls import path
 
 from giapha.views import (
     ClanDetailAPIView,
+    ClanGioCalendarAPIView,
     ClanInviteDetailAPIView,
     ClanInviteListCreateAPIView,
     ClanListCreateAPIView,
@@ -33,6 +34,8 @@ urlpatterns = [
         name='clan-invite-detail',
     ),
     path('join', JoinClanAPIView.as_view(), name='clan-join'),
+
+    path('clans/<int:clan_id>/lich-gio', ClanGioCalendarAPIView.as_view(), name='clan-lich-gio'),
 
     path('clans/<int:clan_id>/tree', ClanTreeAPIView.as_view(), name='clan-tree'),
 

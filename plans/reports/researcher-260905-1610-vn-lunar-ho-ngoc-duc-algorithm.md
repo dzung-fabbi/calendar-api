@@ -5,6 +5,34 @@ description: Complete Hồ Ngọc Đức lunar calendar algorithm with k→lunar
 
 # Hồ Ngọc Đức Vietnamese Lunar Calendar Algorithm — Complete Specification
 
+---
+
+> # ⚠️ CORRECTION NOTICE — 2026-09-05, after phase 5 implementation
+>
+> **Several test vectors in section 5 of this report are WRONG. Do not use
+> this report's vectors without checking them against the implementation.**
+>
+> Root cause: the "authoritative reference implementation" used to compute the
+> vectors was run at **tz=8**, i.e. it was reading the *Chinese* calendar. The
+> report's own line "Computed; China also 20/2/1985" is the tell.
+>
+> | Claim in this report | Actual (Vietnam, UTC+7) |
+> |---|---|
+> | Tết 1985 = 20/02/1985, **not** a divergence year | **21/01/1985** — a divergence of a FULL MONTH (China: 20/02) |
+> | Tết 2020 = 09/02/2020 | **25/01/2020** |
+> | Divergence years are 1968 and 2007 | **1968, 1969, 1985, 2007** |
+>
+> The algorithm *specification* in sections 1–4 and 6–8 was verified correct:
+> `giapha/services/vn_lunar.py` implements it, and a differential against Hồ
+> Ngọc Đức's own `amlich.js` under node matched on **all 146,097 days of
+> 1800–2199 in both directions, 0 mismatches**. It is only the section 5
+> vectors that are unreliable.
+>
+> Verified vectors now live in `giapha/tests/test_vn_lunar.py`.
+> See `plans/reports/code-reviewer-260905-1642-giapha-phase-05-lunar-gio.md`.
+
+---
+
 **Date:** 2026-09-05  
 **Purpose:** Resolve the blocking question for Phase 5: exact algorithm for mapping new-moon index `k` to lunar month number, including leap month handling and UTC+7 timezone application.
 
@@ -382,9 +410,9 @@ All test vectors computed using the authoritative `SolarLunarCalendar` Python im
 | Solar Date (Gregorian) | Lunar Date | Tết Name | Verification |
 |---------|-----------|----------|------|
 | 29/1/1968 | 1/1/1968 | Year of Monkey (Mậu Thân) | **Divergence:** China (UTC+8) = 30/1/1968 |
-| 20/2/1985 | 1/1/1985 | Year of Ox (Ất Sửu) | Computed; China also 20/2/1985 — NOT a divergence year |
+| ~~20/2/1985~~ **21/1/1985** | 1/1/1985 | Year of Ox (Ất Sửu) | ⚠️ CORRECTED. **Divergence of a full month:** China = 20/2/1985 |
 | 17/2/2007 | 1/1/2007 | Year of Pig (Đinh Hợi) | Coordinator-confirmed divergence case |
-| 9/2/2020 | 1/1/2020 | Year of Rat (Canh Tý) | Computed |
+| ~~9/2/2020~~ **25/1/2020** | 1/1/2020 | Year of Rat (Canh Tý) | ⚠️ CORRECTED |
 | 12/2/2021 | 1/1/2021 | Year of Ox (Tân Sửu) | Computed |
 | 22/1/2023 | 1/1/2023 | Year of Rabbit (Quý Mão) | Computed |
 | 10/2/2024 | 1/1/2024 | Year of Dragon (Giáp Thìn) | Computed |
@@ -393,7 +421,7 @@ All test vectors computed using the authoritative `SolarLunarCalendar` Python im
 **Test assertions (Python):**
 ```python
 assert solar_to_lunar(29, 1, 1968) == (1, 1, 1968, 0)   # China (tz=8) gives 30/1/1968
-assert solar_to_lunar(20, 2, 1985) == (1, 1, 1985, 0)
+assert solar_to_lunar(21, 1, 1985) == (1, 1, 1985, 0)   # CORRECTED (was 20/2, which is China)
 assert solar_to_lunar(17, 2, 2007) == (1, 1, 2007, 0)
 assert solar_to_lunar(12, 2, 2021) == (1, 1, 2021, 0)
 assert solar_to_lunar(22, 1, 2023) == (1, 1, 2023, 0)
@@ -463,7 +491,7 @@ All test vectors verified bidirectional:
 
 | Solar → Lunar | Lunar → Solar | Status |
 |---------|----------|--------|
-| 20/2/1985 → (1, 1, 1985, 0) | → 20/2/1985 | ✓ Pass |
+| 21/1/1985 → (1, 1, 1985, 0) | → 21/1/1985 | ✓ Pass (CORRECTED) |
 | 17/2/2007 → (1, 1, 2007, 0) | → 17/2/2007 | ✓ Pass |
 | 22/3/2004 → (2, 2, 2004, 1) | → 22/3/2004 | ✓ Pass |
 | 22/1/2023 → (1, 1, 2023, 0) | → 22/1/2023 | ✓ Pass |
@@ -611,7 +639,7 @@ A leap month duplicates the number of the prior month:
 - ✅ Tết 2007 divergence case: Section 5.2 (confirms UTC+7 vs UTC+8 effect is real)
 
 ### 9.2 Limitations of This Research (Known)
-- **Tết 1985 discrepancy:** Earlier report claimed Vietnamese Tết 1985 = 21/2, but reference implementation shows 20/2. This has been corrected in Section 5.1. The discrepancy appears to stem from prose restatement errors; algorithm + implementation are self-consistent.
+- **Tết 1985 — THIS REPORT WAS WRONG.** It claimed 20/2/1985 and "not a divergence year". The true Vietnamese date is **21/1/1985**; China's is 20/2/1985. The error came from running the reference implementation at tz=8. The original `phase-05-*.md` spec had this right all along.
 - **Leap month 11 verification:** Never observed in Vietnamese records 1900–2100; theoretically possible but unverified.
 - **Pre-1900 dates:** Algorithm extrapolates but accuracy not guaranteed. Implementation must reject dates before 1800.
 
@@ -650,5 +678,5 @@ A leap month duplicates the number of the prior month:
 
 **Summary:** Algorithm fully specified with complete k→lunar_month mapping, leap month numbering, UTC+7 timezone application (single point in `getNewMoonDay()`), and verified test vectors. All vectors computed using reference implementation with round-trip verification. Tết 2007 divergence (17/2 Vietnam vs 18/2 China) confirmed as UTC+7 vs UTC+8 effect. Ready for `vn_lunar.py` implementation.
 
-**Concerns/Blockers:** None. Algorithm deterministic and well-established. All test vectors verified bidirectional (solar ↔ lunar). Previous version had prose-sourced errors in dates (1985, 2023, 2021); corrected using computed vectors from reference implementation.
+**Concerns/Blockers:** See the CORRECTION NOTICE at the top of this report. The section 5 vectors were computed at tz=8 (Chinese calendar) and several are wrong — 1985 and 2020 most importantly. The algorithm specification itself is correct and has since been verified byte-exact against Hồ Ngọc Đức's `amlich.js` over all 146,097 days of 1800–2199.
 

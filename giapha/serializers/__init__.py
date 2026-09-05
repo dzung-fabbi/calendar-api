@@ -8,6 +8,7 @@ from giapha.serializers.clan import (
     ClanSerializer,
     JoinClanSerializer,
 )
+from giapha.serializers.gio import GioItemSerializer, GioListSerializer
 from giapha.serializers.marriage import MarriageSerializer
 from giapha.serializers.person import (
     PersonReadSerializer,
@@ -22,6 +23,8 @@ __all__ = [
     'ClanMemberRoleUpdateSerializer',
     'ClanMemberSerializer',
     'ClanSerializer',
+    'GioItemSerializer',
+    'GioListSerializer',
     'JoinClanSerializer',
     'MarriageSerializer',
     'PersonReadSerializer',

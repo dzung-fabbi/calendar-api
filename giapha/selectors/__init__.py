@@ -12,6 +12,7 @@ from giapha.selectors.clan import (
     owner_count,
     roles_for_clans,
 )
+from giapha.selectors.gio import deceased_with_lunar_death
 from giapha.selectors.marriage import (
     get_marriage_or_none,
     marriages_of,
@@ -38,6 +39,7 @@ __all__ = [
     'clan_edges',
     'clan_role_for',
     'clans_for_user',
+    'deceased_with_lunar_death',
     'get_clan_or_none',
     'get_invite_by_id',
     'get_invite_for_update',
