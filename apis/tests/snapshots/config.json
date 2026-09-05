@@ -1,0 +1,22 @@
+{
+  "data": {
+    "date_config": {
+      "factor_1": "float",
+      "factor_2": "float",
+      "good_from": "float",
+      "id": "int",
+      "ugly_from": "float",
+      "very_good_from": "float"
+    },
+    "direction_config": {
+      "id": "int",
+      "value": "float"
+    },
+    "hours_config": {
+      "good": "float",
+      "id": "int",
+      "ugly": "float",
+      "very_good": "float"
+    }
+  }
+}

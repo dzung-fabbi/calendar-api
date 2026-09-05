@@ -1,0 +1,11 @@
+{
+  "data": {
+    "date_joined": "str",
+    "email": "str",
+    "first_name": "str",
+    "id": "int",
+    "last_login": "null",
+    "last_name": "str",
+    "username": "str"
+  }
+}

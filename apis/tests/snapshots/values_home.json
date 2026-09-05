@@ -1,0 +1,104 @@
+{
+  "data": {
+    "hiep_ky": {
+      "good_stars": [
+        {
+          "name": "Thiên Đức",
+          "property": "Tốt mọi việc"
+        },
+        {
+          "name": "Nguyệt Đức",
+          "property": "Tốt cho cưới hỏi"
+        }
+      ],
+      "lunar_day": "GIÁP TÝ",
+      "month": 1,
+      "no_should_things": "An táng",
+      "should_things": "Cưới hỏi,Khai trương,Xuất hành",
+      "ugly_stars": [
+        {
+          "name": "Thiên Cương",
+          "property": "Xấu mọi việc"
+        }
+      ]
+    },
+    "hour_in_days": {
+      "hour_1": [
+        {
+          "good_ugly_stars": 1,
+          "name": "Thiên Đức",
+          "property": "Tốt mọi việc"
+        },
+        {
+          "good_ugly_stars": 2,
+          "name": "Thiên Cương",
+          "property": "Xấu mọi việc"
+        }
+      ],
+      "hour_10": [],
+      "hour_11": [],
+      "hour_12": [],
+      "hour_2": [
+        {
+          "good_ugly_stars": 1,
+          "name": "Nguyệt Đức",
+          "property": "Tốt cho cưới hỏi"
+        }
+      ],
+      "hour_3": [
+        {
+          "good_ugly_stars": 2,
+          "name": "Thọ Tử",
+          "property": "Kỵ an táng"
+        }
+      ],
+      "hour_4": [],
+      "hour_5": [],
+      "hour_6": [],
+      "hour_7": [],
+      "hour_8": [],
+      "hour_9": [],
+      "lunar_day": "GIÁP TÝ"
+    },
+    "quy_nhan": [
+      {
+        "am_duong": "Dương quý",
+        "can_ngay": "Giáp",
+        "hour": "Tý",
+        "quy_nhan": "Sửu",
+        "tiet_khi": "Lập Xuân"
+      },
+      {
+        "am_duong": "Âm quý",
+        "can_ngay": "Giáp",
+        "hour": "Sửu",
+        "quy_nhan": "Tý",
+        "tiet_khi": "Lập Xuân"
+      }
+    ],
+    "tiet_khi": {
+      "end_time": "2026-02-18T10:00:00Z",
+      "start_time": "2026-02-04T10:00:00Z",
+      "tiet_khi": "Lập Xuân"
+    },
+    "tu_dai": [
+      {
+        "can_ngay": "Giáp",
+        "hour": "Tý",
+        "sao": [
+          {
+            "good_ugly_stars": 1,
+            "name": "Thiên Đức",
+            "property": "Tốt mọi việc"
+          },
+          {
+            "good_ugly_stars": 1,
+            "name": "Nguyệt Đức",
+            "property": "Tốt cho cưới hỏi"
+          }
+        ],
+        "tiet_khi": "Lập Xuân"
+      }
+    ]
+  }
+}

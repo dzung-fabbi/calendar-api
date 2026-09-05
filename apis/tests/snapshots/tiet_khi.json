@@ -1,0 +1,7 @@
+{
+  "data": {
+    "end_time": "str",
+    "start_time": "str",
+    "tiet_khi": "str"
+  }
+}

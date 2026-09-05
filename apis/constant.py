@@ -1,63 +1,15 @@
-CAN_CHI = [
-    'GIÁP TÝ',
-    'ẤT SỬU',
-    'BÍNH DẦN',
-    'ĐINH MÃO',
-    'MẬU THÌN',
-    'KỶ TỴ',
-    'CANH NGỌ',
-    'TÂN MÙI',
-    'NHÂM THÂN',
-    'QUÝ DẬU',
-    'GIÁP TUẤT',
-    'ẤT HỢI',
-    'BÍNH TÝ',
-    'ĐINH SỬU',
-    'MẬU DẦN',
-    'KỶ MÃO',
-    'CANH THÌN',
-    'TÂN TỴ',
-    'NHÂM NGỌ',
-    'QUÝ MÙI',
-    'GIÁP THÂN',
-    'ẤT DẬU',
-    'BÍNH TUẤT',
-    'ĐINH HỢI',
-    'MẬU TÝ',
-    'KỶ SỬU',
-    'CANH DẦN',
-    'TÂN MÃO',
-    'NHÂM THÌN',
-    'QUÝ TỴ',
-    'GIÁP NGỌ',
-    'ẤT MÙI',
-    'BÍNH THÂN',
-    'ĐINH DẬUu',
-    'MẬU TUẤT',
-    'KỶ HỢI',
-    'CANH TÝ',
-    'TÂN SỬU',
-    'NHÂM DẦN',
-    'QUÝ MÃO',
-    'GIÁP THÌN',
-    'ẤT TỴ',
-    'BÍNH NGỌ',
-    'ĐINH MÙI',
-    'MẬU THÂN',
-    'KỶ DẬU',
-    'CANH TUẤT',
-    'TÂN HỢI',
-    'NHÂM TÝ',
-    'QUÝ SỬU',
-    'GIÁP DẦN',
-    'ẤT MÃO',
-    'BÍNH THÌN',
-    'ĐINH TỴ',
-    'MẬU NGỌ',
-    'KỶ MÙI',
-    'CANH THÂN',
-    'TÂN DẬU',
-    'NHÂM TUẤT',
-    'QUÝ HỢI',
-]
+"""The 60-term sexagenary cycle, derived rather than transcribed.
 
+This used to be a hand-typed list of 60 strings; one of them (ĐINH DẬUu) had a
+stray character, and nothing tied it to the identical sequence in the model
+choices. Generating it from the stem and branch tables makes drift impossible.
+"""
+
+from apis.services.can_chi import CAN, CHI
+
+SEXAGENARY_CYCLE_LENGTH = 60
+
+CAN_CHI = [
+    '{} {}'.format(CAN[index % len(CAN)], CHI[index % len(CHI)]).upper()
+    for index in range(SEXAGENARY_CYCLE_LENGTH)
+]

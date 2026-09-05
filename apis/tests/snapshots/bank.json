@@ -1,0 +1,13 @@
+{
+  "data": {
+    "bank": {
+      "account_holder": "str",
+      "account_number": "str",
+      "bank": "str",
+      "branch": "str",
+      "id": "int",
+      "qr_img": "str"
+    },
+    "code": "str"
+  }
+}

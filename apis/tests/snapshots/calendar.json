@@ -1,0 +1,10 @@
+{
+  "data": [
+    {
+      "good_stars": "str",
+      "no_should_things": "str",
+      "should_things": "str",
+      "ugly_stars": "str"
+    }
+  ]
+}

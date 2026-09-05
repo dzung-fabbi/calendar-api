@@ -1,0 +1,22 @@
+{
+  "data": {
+    "date_config": {
+      "factor_1": 1.0,
+      "factor_2": 2.0,
+      "good_from": 1.0,
+      "id": 2,
+      "ugly_from": 0.5,
+      "very_good_from": 1.5
+    },
+    "direction_config": {
+      "id": 2,
+      "value": 1.0
+    },
+    "hours_config": {
+      "good": 1.0,
+      "id": 2,
+      "ugly": 0.5,
+      "very_good": 1.5
+    }
+  }
+}

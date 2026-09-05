@@ -1,0 +1,83 @@
+{
+  "data": {
+    "hiep_ky": {
+      "good_stars": [
+        {
+          "name": "str",
+          "property": "str"
+        }
+      ],
+      "lunar_day": "str",
+      "month": "int",
+      "no_should_things": "str",
+      "should_things": "str",
+      "ugly_stars": [
+        {
+          "name": "str",
+          "property": "str"
+        }
+      ]
+    },
+    "hour_in_days": {
+      "hour_1": [
+        {
+          "good_ugly_stars": "int",
+          "name": "str",
+          "property": "str"
+        }
+      ],
+      "hour_10": [],
+      "hour_11": [],
+      "hour_12": [],
+      "hour_2": [
+        {
+          "good_ugly_stars": "int",
+          "name": "str",
+          "property": "str"
+        }
+      ],
+      "hour_3": [
+        {
+          "good_ugly_stars": "int",
+          "name": "str",
+          "property": "str"
+        }
+      ],
+      "hour_4": [],
+      "hour_5": [],
+      "hour_6": [],
+      "hour_7": [],
+      "hour_8": [],
+      "hour_9": [],
+      "lunar_day": "str"
+    },
+    "quy_nhan": [
+      {
+        "am_duong": "str",
+        "can_ngay": "str",
+        "hour": "str",
+        "quy_nhan": "str",
+        "tiet_khi": "str"
+      }
+    ],
+    "tiet_khi": {
+      "end_time": "str",
+      "start_time": "str",
+      "tiet_khi": "str"
+    },
+    "tu_dai": [
+      {
+        "can_ngay": "str",
+        "hour": "str",
+        "sao": [
+          {
+            "good_ugly_stars": "int",
+            "name": "str",
+            "property": "str"
+          }
+        ],
+        "tiet_khi": "str"
+      }
+    ]
+  }
+}
