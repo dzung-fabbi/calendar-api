@@ -20,6 +20,12 @@ from giapha.serializers.gio_follow import (
     MemberBindingSerializer,
     MemberBindingWriteSerializer,
 )
+from giapha.serializers.kinship import (
+    KinshipPathSerializer,
+    KinshipPersonSerializer,
+    KinshipSerializer,
+    KinshipTermSerializer,
+)
 from giapha.serializers.marriage import MarriageSerializer
 from giapha.serializers.person import (
     PersonReadSerializer,
@@ -42,6 +48,10 @@ __all__ = [
     'GioItemSerializer',
     'GioListSerializer',
     'JoinClanSerializer',
+    'KinshipPathSerializer',
+    'KinshipPersonSerializer',
+    'KinshipSerializer',
+    'KinshipTermSerializer',
     'MarriageSerializer',
     'MemberBindingSerializer',
     'MemberBindingWriteSerializer',

@@ -13,13 +13,20 @@ from giapha.models import Person
 
 def clan_edges(clan_id):
     """`[(id, father_id, mother_id), ...]` for every non-deleted Person in
-    `clan_id`. One query, no full rows -- this is the shape phase 4
-    (generation walk) and phase 7 (kinship path) also consume, so its
-    signature must not change.
+    `clan_id`. One query, no full rows.
 
-    TWO EDGE SHAPES EXIST ON PURPOSE -- see `clan_edges_all` before unifying
-    them. This one is the *visible tree*: soft-deleted people are gone from
-    it, which is exactly right for rendering and for the generation walk.
+    ITS SIGNATURE MUST NOT CHANGE: six call sites unpack these rows as
+    exactly three positional values --
+    `selectors/tree.py`, `services/person_rules.py`, `views/person.py`,
+    `views/person_list.py`, `views/person_revision.py` and
+    `management/commands/recompute_generations.py`.
+
+    THREE EDGE SHAPES EXIST ON PURPOSE -- read `clan_edges_all` and
+    `clan_kinship_rows` before unifying any of them. This one is the
+    *visible tree*: soft-deleted people are gone from it, which is exactly
+    right for rendering and for the generation walk. Note that the giỗ
+    follow resolution deliberately consumes `clan_edges_all`, NOT this, and
+    the kinship calculator consumes only `clan_kinship_rows`.
     """
     return list(
         Person.objects.filter(clan_id=clan_id, is_deleted=False)
@@ -47,6 +54,44 @@ def clan_edges_all(clan_id):
     return list(
         Person.objects.filter(clan_id=clan_id)
         .values_list('id', 'father_id', 'mother_id')
+    )
+
+
+def clan_kinship_rows(clan_id):
+    """`[{'id', 'father_id', 'mother_id', 'birth_order', 'gioi_tinh', 'ho_ten'}, ...]`
+    for every non-deleted Person in `clan_id`. One query.
+
+    A THIRD EDGE SHAPE, ON PURPOSE -- see `clan_edges` / `clan_edges_all`
+    above before "unifying" the three. The kinship calculator needs more than
+    the parent links: `birth_order` decides bác vs chú, `gioi_tinh` decides
+    chú vs cô, and `ho_ten` names the common ancestor in the response.
+    Widening `clan_edges` instead is not an option: six call sites unpack its
+    rows as exactly three positional values (see its own docstring for the
+    list), and every one of them would break. Note that `gio_follow`'s
+    resolution reads `clan_edges_all`, not `clan_edges`.
+
+    DICTS, NOT TUPLES. Positional unpacking is precisely what made
+    `clan_edges` impossible to extend; a dict row can gain a key without
+    touching a single consumer. The cost is one dict per person instead of
+    one tuple -- irrelevant next to the query itself.
+
+    Soft-deleted people are excluded, matching `clan_edges` semantics: for a
+    *visible* answer ("what do I call this person?") a deleted ancestor
+    genuinely is gone, and letting the walk pass through them would let a
+    removed person still shape the term shown to the user.
+
+    EXEMPT FROM `settings.MAX_CLAN_PERSONS`, DELIBERATELY. Every other bulk
+    clan read caps its row count; this one must not. The cap works by
+    truncating, and a truncated row set here does not degrade the answer, it
+    FALSIFIES it: a missing ancestor turns a real relative into
+    `khong_cung_huyet_thong` with `confident: True`, which is precisely the
+    output this endpoint exists to never produce. A wrong vai vế is worse
+    than a slow request. The cost is bounded anyway -- one query, six columns,
+    and the walk is O(clan size) per request.
+    """
+    return list(
+        Person.objects.filter(clan_id=clan_id, is_deleted=False)
+        .values('id', 'father_id', 'mother_id', 'birth_order', 'gioi_tinh', 'ho_ten')
     )
 
 

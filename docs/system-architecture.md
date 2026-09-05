@@ -68,6 +68,25 @@ because a partial descendant set would let a real cycle pass the API validation 
 The one deliberate exception is `services.gio_follow.ancestors`, which fails OPEN because
 it feeds a background job rather than a write gate -- see "Push Notification Channel".
 
+**Three edge shapes exist on purpose; do not unify them.** Each answers a different
+question, and the docstrings say `DO NOT UNIFY` for a reason.
+
+| Selector | Shape | Soft-deleted rows | Used by |
+|---|---|---|---|
+| `person.clan_edges` | `(id, father_id, mother_id)` | **excluded** — the *visible tree* | tree payload, generation walk, `person_rules`, `recompute_generations` |
+| `person.clan_edges_all` | `(id, father_id, mother_id)` | **included** — *connectivity* | giỗ-follow resolution only (`views/gio_follow.py`, `remind_death_anniversary`) |
+| `person.clan_kinship_rows` | `{id, father_id, mother_id, birth_order, gioi_tinh, ho_ten}` | excluded | the xưng-hô calculator only |
+
+- `clan_edges_all` exists because a soft-deleted person is still `father_id`/`mother_id`
+  on their children: walking the filtered list stops dead at them, which once cut `cụ`,
+  `kỵ` and everything above out of every descendant's giỗ reminders. It is safe only
+  where the *answer set* is separately restricted to live people.
+- `clan_kinship_rows` exists because the calculator needs three more columns
+  (`birth_order` decides bác vs chú, `gioi_tinh` decides chú vs cô, `ho_ten` names the
+  common ancestor) and widening `clan_edges` was not an option: its consumers unpack rows
+  as exactly three positional values. It returns **dicts** precisely so it can grow a
+  column later without touching a consumer.
+
 **Authorization:** three permission classes keyed off `clan_id` in URL; role is cached
 on request (≤1 query per check). Non-members receive **404, never 403** -- a 403 would
 confirm the clan exists.
@@ -201,6 +220,132 @@ would cost that ancestor their giỗ notice for a year.
   can redirect that handset's reminders. The read direction stays safe and the write is
   authenticated. Revisit the spec before "fixing" it.
 - The service account JSON must never be committed.
+
+## Kinship Calculator (Phase 7)
+
+`GET /clans/{id}/xung-ho?a=&b=` answers "what do these two people call each other?".
+Everything below `views/kinship.py` is **pure**: two selectors load scalars, and the whole
+resolution runs in memory over those rows. No model, no migration, no new setting.
+
+### Pipeline — one module per concern
+
+```
+views/kinship.py       a defaults to ClanMember.person; validates both ids against the rows
+   |  clan_kinship_rows(clan_id)                       <-- 1 query, dict rows
+   v
+services.kinship.resolve_kinship(rows, a, b, spouses=None)
+   |
+   +-- a == b                       -> unrelated(cung_mot_nguoi)
+   |
+   +-- kinship_graph.ancestor_index(rows, a) / (rows, b)   BFS up: {id: (depth, side, via)}
+   |   kinship_graph.best_common_ancestor(...)             nearest = min(depth_a + depth_b)
+   |        found -> kinship_blood.blood_result
+   |                     kinship_lookup.resolve_term(kind, gap, side, gender, elder)
+   |                        -> TERMS / AMBIGUOUS_TERMS      (kinship_terms.py, data only)
+   |
+   +-- not found, and only then:  clan_spouse_pairs(clan_id)   <-- 1 more query, lazily
+            married to each other  -> vo / chong
+            kinship_affinal.affinal -> through B's spouse, else through A's (mirrored)
+                 kinship_marriage_rows.ranked_spouses_of     which marriage wins
+                 AFFINAL_TERMS[(blood term, spouse gender)]  (kinship_affinal_terms.py)
+            still nothing           -> unrelated(khong_cung_huyet_thong)   HTTP 200
+   |
+   v  kinship_explain.*  the Vietnamese sentence, restating only facts it was handed
+```
+
+**What decides the word:** `gap = depth_a - depth_b` (generations B is above A), plus
+`kind` (`truc` when one of the pair *is* the common ancestor, `bang` when both hang off
+it), `side` (nội/ngoại, from the first step up on that person's own walk), the gender of
+the person being named, and the seniority of the two **branches** at the common ancestor.
+The raw depth pair is reduced to `(kind, gap)` before lookup, because an uncle (`2,1`) and
+a father's cousin (`3,2`) share one word — keying on the pair would need an unbounded
+table.
+
+Each direction is resolved independently: B may be bên nội to A while A is bên ngoại to B.
+
+### Never guess — enforced by the table, not by policy
+
+`TERMS` stores an entry under a `None` slot **only where that fact genuinely does not
+change the word**. Every seniority-bearing row (`gap == 0` and `gap == 1`) is stored under
+`elder=True`/`False` only, so a missing `birth_order` cannot find one: the lookup falls
+through to `AMBIGUOUS_TERMS` and returns a hedge (`bác/chú`) with `confident: false` and a
+`reason` slug naming the field to fill in. Getting vai vế wrong is a real insult, so the
+code is built to be *unable* to produce it.
+
+- The hedge lists only options the known facts leave open (`anh/chị`, not `anh/chị/em`,
+  when B's branch is known to be the elder) — both tables are widened by one generator
+  over the same five slots, so a hedge can never contradict the confident word printed
+  beside it.
+- A hedge propagates through the in-law table as a hedge (`bác/chú` → `bác gái/thím`).
+- Where one word covers both genders (`bác` for an elder sibling of either parent), a
+  missing `gioi_tinh` still answers confidently — hedging there would throw away
+  certainty and buy no honesty.
+- `common_ancestor` is `null` and all three `path` fields are `null` on every in-law
+  answer: the only walk that exists there runs between A and B's *spouse*, so `b_up`
+  would count generations for someone not descended from that ancestor at all.
+
+### Which marriage the answer routes through
+
+`clan_spouse_pairs` keeps `goa` rows (a widow stays her late husband's family's thím) and
+drops `ly_hon`, so one person can have several live marriage rows.
+`kinship_marriage_rows.ranked_spouses_of` states the order once:
+
+1. a marriage that is **not** `goa` outranks one that is;
+2. among equals, the lower `Marriage.order` (vợ cả before vợ lẽ; `None` reads as 1);
+3. the id, purely to make the list stable.
+
+**The id is the tie-break, never the decision.** `rank` is steps 1–2 only, so when two
+equal-rank candidates disagree, `kinship_affinal` hedges with
+`nhieu_hon_nhan_ngang_hang` instead of letting autoincrement — i.e. data-entry order —
+decide. Not hypothetical: ranking by id once routed the wife of a younger brother through
+her dead elder husband and told her to call his elder brother `em`.
+
+Affinity is walked from **both** sides but only **one hop**: B married in (the ordinary
+"what do I call my uncle's wife?") *and* A married in (the con dâu asking about her
+husband's family — the likeliest caller, since `a` defaults to her own binding). A person
+who married in borrows their spouse's own word, with one substitution:
+`MARRIED_IN_SUBSTITUTES` strips `nội`/`ngoại`, because those assert descent the speaker
+does not have (`ông nội` → `ông`).
+
+### A link without a word is not "no link"
+
+`khong_cung_huyet_thong` (`confident: true`) asserts there is no relation at all and is
+reached only after both marriage walks came back empty. A marriage that *was* found but
+has no everyday Vietnamese word answers `term: null, confident: false,
+khong_co_tu_xung_ho_thong_dung`, naming the spouse it went through. Merging the two would
+tell a user their own stepmother is unrelated to them.
+
+### `reason` is a wire contract
+
+Every `reason` is an **ASCII slug** — it is the field a client branches on. Vietnamese
+prose reaches a user only through `explain`; `REASON_LABELS` in `kinship_terms.py` is the
+single place the two meet. Half these values used to be diacritic Vietnamese that a mobile
+client would have had to compare verbatim.
+
+### Traversal safety
+
+`ancestor_index` fails **OPEN** (returns what it has) — this is a read, and a 500 helps
+nobody; contrast `person_rules.descendants`, which fails closed because it gates writes.
+Its safety counter cannot actually fire: `parent_id in index` admits each person once, so
+the loop pops at most `len(rows) + 1` times against a budget of `2 * len(rows) + 10`. The
+counter is retained because that same `parent_id in index` check is the cycle guard, and
+Django admin writes bypass `person_rules.validate_no_cycle`. A *truncated* walk would not
+be harmless — it can surface a farther common ancestor and hence a confidently wrong
+`gap`, not a null.
+
+**`clan_kinship_rows` is exempt from `settings.MAX_CLAN_PERSONS`**, alone among the bulk
+clan reads. The cap truncates, and a truncated row set here does not degrade the answer,
+it falsifies it: a dropped ancestor turns a real relative into `khong_cung_huyet_thong`
+with `confident: true`. Cost is bounded anyway — one query, six columns, O(clan size).
+
+### Known gaps (deliberate, not oversights)
+
+| Gap | Behaviour |
+|---|---|
+| `parent_kind` (`ruot`/`nuoi`/`ke`) is ignored | an adopted child is addressed exactly like a natural one — distinguishing would be the surprising behaviour |
+| stepmother absent from `AFFINAL_TERMS` (`('bố','nu')`) | falls to the hedge; real usage varies (mẹ / dì / mẹ kế) and picking one is the insult this module exists to avoid |
+| both parties married in | `khong_cung_huyet_thong` — naming it (chị dâu = wife of my husband's brother) needs two marriage hops plus a routing rule; out of scope for this phase |
+| Northern dialect only | Southern/Central usage differs; a regional variant means a second table keyed by region, not edits to this one |
 
 ## Dual Lunar Calendar Implementation
 

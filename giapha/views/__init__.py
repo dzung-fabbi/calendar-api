@@ -14,6 +14,7 @@ from giapha.views.gio_follow import (
     ClanGioFollowDetailAPIView,
     ClanGioFollowListAPIView,
 )
+from giapha.views.kinship import ClanKinshipAPIView
 from giapha.views.marriage import MarriageDetailAPIView, MarriageListCreateAPIView
 from giapha.views.member_binding import ClanMemberBindingAPIView
 from giapha.views.person import PersonDetailAPIView
@@ -28,6 +29,7 @@ __all__ = [
     'ClanGioFollowListAPIView',
     'ClanInviteDetailAPIView',
     'ClanInviteListCreateAPIView',
+    'ClanKinshipAPIView',
     'ClanListCreateAPIView',
     'ClanMemberBindingAPIView',
     'ClanMemberDetailAPIView',

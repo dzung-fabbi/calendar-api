@@ -7,6 +7,7 @@ from giapha.views import (
     ClanGioFollowListAPIView,
     ClanInviteDetailAPIView,
     ClanInviteListCreateAPIView,
+    ClanKinshipAPIView,
     ClanListCreateAPIView,
     ClanMemberBindingAPIView,
     ClanMemberDetailAPIView,
@@ -56,6 +57,9 @@ urlpatterns = [
 
     # Not clan-scoped on purpose -- a device token belongs to the user.
     path('devices', DeviceTokenAPIView.as_view(), name='device-token'),
+
+    # Máy tính xưng hô. `a` mặc định là chính người gọi (ClanMember.person).
+    path('clans/<int:clan_id>/xung-ho', ClanKinshipAPIView.as_view(), name='clan-xung-ho'),
 
     path('clans/<int:clan_id>/tree', ClanTreeAPIView.as_view(), name='clan-tree'),
 

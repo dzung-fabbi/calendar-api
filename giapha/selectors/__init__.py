@@ -23,6 +23,7 @@ from giapha.selectors.gio_follow import (
     person_claimed_by_other,
 )
 from giapha.selectors.marriage import (
+    clan_spouse_pairs,
     get_marriage_or_none,
     marriages_of,
     next_order_for_husband,
@@ -35,6 +36,7 @@ from giapha.selectors.person import (
     children_count,
     clan_edges,
     clan_edges_all,
+    clan_kinship_rows,
     get_person_any,
     get_person_or_none,
     persons_of,
@@ -50,7 +52,9 @@ __all__ = [
     'children_count',
     'clan_edges',
     'clan_edges_all',
+    'clan_kinship_rows',
     'clan_role_for',
+    'clan_spouse_pairs',
     'clans_for_user',
     'deceased_with_lunar_death',
     'follow_rows_for_user',

@@ -65,6 +65,44 @@ falls back to day-29 in a 29-day month). Permission boundary: non-members receiv
   is_active}}` — never the token. `DELETE {token}` filters on `request.user` and answers
   204 either way.
 
+**máy tính xưng hô (kinship calculator) — phase 7:**
+
+| Route | Methods | View | Auth | Queries |
+|---|---|---|---|---|
+| `clans/{clan_id}/xung-ho?a=&b=` | GET | `views/kinship.py` | `IsAuthenticated` + `IsClanMember` | 2 / 3 / 4 (see below) |
+
+- **`a` is optional**; it defaults to the caller's own `ClanMember.person` binding (phase 6).
+  `b` is required. An unbound caller who omits `a` gets **400** telling them to set
+  `/toi-la` (never a guess). A stale binding gets its own 400 message, not "bad `a`".
+  Non-integer id, id from another clan, or a soft-deleted person → 400. Non-members → 404.
+- Response: `a_calls_b`, `b_calls_a` (each `{term, confident, reason}`), `common_ancestor`
+  (`{id, ho_ten}` or `null`), `path` (`{a_up, b_up, side}`), `explain`.
+  `path` is **always an object** — on any non-blood answer all three of its fields are
+  `null`, the object itself is not.
+- **No blood relation is HTTP 200 with `term: null`**, not an error. `reason` says which
+  kind of "no word" it is; `confident` is `true` for "there is genuinely no link".
+- `reason` is always a **machine-readable ASCII slug**; the Vietnamese wording for a
+  reader is in `explain` only. Slugs: `khong_cung_huyet_thong`, `cung_mot_nguoi`,
+  `thieu_birth_order`, `thieu_gioi_tinh`, `khong_co_tu_xung_ho_thong_dung`,
+  `nhieu_hon_nhan_ngang_hang`, `ngoai_bang_tu_vung`.
+- **Query budget — 2 common, 4 worst case** (each pinned by `assertNumQueries` in
+  `tests/test_kinship_api.py` *alongside* the answer produced, so a count cannot pass
+  vacuously on a 400):
+
+  | Request | Queries |
+  |---|---|
+  | explicit `a`, pair has a blood link | 2 (cached role check + `clan_kinship_rows`) |
+  | `a` omitted (binding lookup) | 3 |
+  | no blood link (lazy `clan_spouse_pairs`) | 3 |
+  | `a` omitted **and** no blood link — the ordinary request of a member who married in | 4 |
+
+  The spec asked for ≤2; the two optional paths each cost one more, deliberately. Neither
+  query grows with clan size.
+- No model, no migration, no new setting. `clan_kinship_rows` is **exempt from
+  `settings.MAX_CLAN_PERSONS`** on purpose — truncating rows would not degrade the answer,
+  it would falsify it (a missing ancestor turns a real relative into
+  `khong_cung_huyet_thong` with `confident: true`).
+
 ## Query cost, before and after the refactor
 
 | Endpoint | Before | After |
@@ -133,9 +171,48 @@ layer; only the resolution, dedup and failure-handling logic is proven.
 **Timezone:** the command uses `services.gio.today_vn()`, never `timezone.localdate()` —
 `settings.TIME_ZONE` is `'UTC'` with `USE_TZ=True`.
 
+## Giapha kinship calculator (Phase 7)
+
+"Máy tính xưng hô" — what two people in a clan call each other. **No model and no
+migration**: the answer is computed from rows already in the tree.
+
+**New modules** — every `services/kinship*` file is pure (no ORM, no `request`), so
+`tests/test_kinship*.py` run on `SimpleTestCase`:
+
+| Module | Owns |
+|---|---|
+| `services/kinship.py` | entry point `resolve_kinship(rows, a_id, b_id, spouses=None)`; picks blood vs marriage |
+| `services/kinship_graph.py` | `ancestor_index` (BFS up, records depth/side/via), `best_common_ancestor`, `lowest_common_ancestor` |
+| `services/kinship_blood.py` | the answer for two blood relatives; owns the response **shape** (`result`, `unrelated`, `EMPTY_PATH`) |
+| `services/kinship_lookup.py` | facts → word: table widening, `is_elder`, `gender_of`, `resolve_term` |
+| `services/kinship_terms.py` | blood vocabulary + `reason` slugs + `REASON_LABELS`. **Data only** |
+| `services/kinship_affinal_terms.py` | in-law vocabulary, `MARRIED_IN_SUBSTITUTES`, `SPOUSE_TERMS`. **Data only** |
+| `services/kinship_affinal.py` | the walk through a `Marriage` edge, both directions |
+| `services/kinship_marriage_rows.py` | *which* marriage to answer through (`ranked_spouses_of`, `spouses_of`) |
+| `services/kinship_explain.py` | the Vietnamese sentence; restates only facts passed in |
+| `serializers/kinship.py`, `views/kinship.py` | response shape / HTTP |
+
+**New selectors** (one query each, scalars/dicts only — the services are pure):
+
+- `selectors/person.clan_kinship_rows(clan_id)` → `[{id, father_id, mother_id, birth_order,
+  gioi_tinh, ho_ten}]`, non-deleted only. **Dicts, not tuples**, so it can gain a column
+  without breaking a consumer.
+- `selectors/marriage.clan_spouse_pairs(clan_id)` → `[(husband_id, wife_id, status, order)]`,
+  both partners non-deleted, `ly_hon` excluded and **`goa` kept** (a widow stays her late
+  husband's family's thím; a divorced wife does not). `status`/`order` travel with the pair
+  because the ranking rule needs them.
+
+`clan_edges` and `clan_edges_all` were **not** changed — see
+`docs/system-architecture.md` → "Three edge shapes, on purpose".
+
+**Vocabulary is Northern dialect (miền Bắc) only.** Elder sibling of *either* parent is
+`bác`; `chú`/`cô` = father's younger brother/sister, `cậu`/`dì` = mother's. Southern and
+Central usage differs; regional variants are out of scope and would be a second table, not
+edits to this one.
+
 ## Test suites
 
-**Total: 470 tests, 4 skipped** (50 `apis/` + 420 `giapha/`). The 4 skips are the tree
+**Total: 579 tests, 4 skipped** (50 `apis/` + 529 `giapha/`). The 4 skips are the tree
 benchmarks, which need `BENCHMARK_TREE_PERFORMANCE=1`.
 
 ### apis/tests/
@@ -154,6 +231,14 @@ benchmarks, which need `BENCHMARK_TREE_PERFORMANCE=1`.
 - Permission and invite tests validate 404 (not 403), expiry, role-grant patterns.
 - Revision snapshot and restore tests with tree re-validation.
 - `test_gio_follow_service.py` runs on `SimpleTestCase` (edge tuples, no database).
+- Kinship (phase 7), 109 tests over three files: `test_kinship.py` (82, `SimpleTestCase`,
+  the tables and the walks cell by cell), `test_kinship_api.py` (18, HTTP + the query
+  budget asserted next to the answer produced), and `test_kinship_reciprocity.py` (9) —
+  a property sweep over every pair in a purpose-built clan: if A calls B *X* then B must
+  call A the documented counterpart of *X*. Its `RECIPROCAL` / `BY_HAND` /
+  `HEDGE_RECIPROCAL` tables are **hand-written and not derived from `TERMS`**; that is the
+  entire point, since a table checked against itself checks nothing. It also asserts every
+  entry in `TERMS` is reached by some pair, so a new row nobody can reach is caught.
 - `test_fcm_service.py` and `test_remind_command.py` patch `requests.post` /
   `_mint_token` / `send_multicast` in **every** test — the suite can never reach
   `fcm.googleapis.com`, and therefore never proves real delivery.

@@ -61,6 +61,27 @@ Both `apis/` and `giapha/` follow these standards. Code is **never** shared betw
   of a batch. `services/fcm_auth.py` uses `None` for the first and
   `FcmTransientError` for the second.
 
+## Data tables and honest answers
+
+Introduced by the xưng hô calculator (phase 7); applies to any lookup that maps facts
+to a user-visible claim.
+
+- **A vocabulary/config table is its own module with no logic in it.**
+  `services/kinship_terms.py` and `services/kinship_affinal_terms.py` hold data only;
+  `services/kinship_lookup.py` holds the rules that read them. Reviewing a word is then
+  reading one dict, not tracing a branch.
+- **`None` in a table key means "this fact does not change the answer", never "the fact is
+  missing".** A row whose answer depends on a fact is stored only under that fact's real
+  values, so the answer is *unreachable* without the data and the lookup falls through to
+  an explicit hedge. Enforcing it structurally beats a policy comment: no reviewer has to
+  notice a guess that the table cannot express.
+- **When the data genuinely does not decide, hedge — do not let an id decide.** An
+  autoincrement id is data-entry order, not a fact about the world; it is a tie-break for
+  stable output only. See `kinship_marriage_rows.ranked_spouses_of`, whose `rank` excludes
+  the id precisely so the caller can tell when nothing real separated two candidates.
+- **A hedge names only the options the known facts leave open**, or it contradicts the
+  confident field printed next to it.
+
 ## Migrations
 
 - Restructuring code must not produce a migration. The gate is:
@@ -72,6 +93,14 @@ Both `apis/` and `giapha/` follow these standards. Code is **never** shared betw
 - Never `fields = '__all__'` on a model holding credentials or permission flags.
   Whitelist explicitly.
 - Anything scoped to a user filters on `request.user`, never on a client-supplied id.
+- **A field a client branches on is a machine-readable ASCII slug; human text goes in a
+  separate field.** `reason` on the xưng hô response is a slug
+  (`thieu_birth_order`), never Vietnamese prose — diacritic strings compared verbatim by a
+  mobile client are not a wire format anyone would choose. The user-facing wording is
+  mapped once (`kinship_terms.REASON_LABELS`) and reaches the reader through `explain`.
+- **"No answer" is not an error.** Where the honest result is "there is no word for this",
+  the endpoint answers **200** with a null value plus the reason, not a 4xx. A 4xx would
+  make a client treat a correct finding as a failure.
 - **A credential is write-only.** An FCM device token is accepted in a request body,
   never echoed in a response, and never written whole into a log line — log a short
   prefix plus a length (`services/fcm._redact`).

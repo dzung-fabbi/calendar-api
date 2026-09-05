@@ -1,9 +1,10 @@
 ---
 title: "Module Gia phả dòng họ"
 description: "Django app `giapha/` — cây gia phả, lịch giỗ âm lịch VN, push nhắc giỗ, máy tính xưng hô. Backend/API only."
-status: pending
+status: in-progress
 priority: P1
 branch: "master"
+status_note: "7/10 phases shipped (1-7); còn 8 (chặn S3), 9, 10"
 tags: [giapha, backend, api, lunar]
 blockedBy: []
 blocks: []
@@ -45,18 +46,18 @@ Nguồn quyết định: [`plans/reports/brainstorm-260905-1053-gia-pha-dong-ho.
 | 4 | [Tree endpoint va generation](./phase-04-tree-endpoint-va-generation.md) | Completed |
 | 5 | [VN lunar va lich gio](./phase-05-vn-lunar-va-lich-gio.md) | Completed |
 | 6 | [FCM push va nhac gio](./phase-06-fcm-push-va-nhac-gio.md) | Completed |
-| 7 | [May tinh xung ho](./phase-07-may-tinh-xung-ho.md) | Pending |
+| 7 | [May tinh xung ho](./phase-07-may-tinh-xung-ho.md) | Completed |
 | 8 | [Presigned upload anh](./phase-08-presigned-upload-anh.md) | Pending |
 | 9 | [Chia se cong khai](./phase-09-chia-se-cong-khai.md) | Pending |
 | 10 | [Test hardening va docs](./phase-10-test-hardening-va-docs.md) | Pending |
 
 ## Tiến độ
 
-**6/10 phases completed** (phases 1–6 shipped, phases 7–10 pending). **470 tests pass / 4 skipped**. Phase 5 thêm `GET /clans/{id}/lich-gio`, `services/vn_lunar.py` (UTC+7), `services/gio.py`, `services/can_chi.py`.
+**7/10 phases completed** (1–7 shipped). **579 tests pass / 4 skipped.** Còn lại: **phase 8** (chặn bởi credential S3), **9**, **10**.
 
-Phase 6 (2026-09-05) thêm `ClanMember.person`, `GioFollow`/`DeviceToken`/`GioNotificationLog`, endpoint `toi-la` + `gio-follows` + `/devices`, `services/fcm.py` + `fcm_auth.py` (HTTP v1), command `remind_death_anniversary`. Review 8.5/10, shippable. **Đúng một tiêu chí còn treo: gửi push THẬT tới máy thử — vẫn chặn bởi Firebase service account JSON**, chưa ai chạy với Firebase project thật.
+Phase 6: `ClanMember.person`, `GioFollow`/`DeviceToken`/`GioNotificationLog`, `toi-la` + `gio-follows` + `/devices`, `services/fcm*.py` (HTTP v1), command `remind_death_anniversary`. **Đúng một tiêu chí còn treo: gửi push THẬT tới máy thử** — chặn bởi Firebase service account JSON.
 
-Phase 7 (máy tính xưng hô) **đã gỡ chặn một nửa**: `ClanMember.person` — cái binding "tôi là ai trong cây" mà phase 7 cần — đã ship ở phase 6.
+Phase 7 (2026-09-05): `GET /clans/{id}/xung-ho`, 8 service module `kinship*`, selector mới `clan_kinship_rows` + `clan_spouse_pairs`. **Không model, không migration.** Review 6/10 (2 Critical: thang bàng hệ lệch bậc, vợ ruột trả về `chị`) → fix → verify 8/10 (1 High mới: đi qua vợ/chồng nào do id autoincrement quyết) → fix → xong. Chốt an toàn: test property đối ứng viết tay, độc lập `TERMS`, đã mutation-verify. **Query budget spec ≤2 KHÔNG đạt — thực tế 2–4**, chi tiết trong phase file.
 
 ## Thứ tự phụ thuộc
 
@@ -101,19 +102,20 @@ Phase 5 chỉ cần model `Person` (phase 3), không cần cây. Phase 7/8/9 đ�
 
 ## Đã gỡ chặn (2026-09-05)
 
-- **Thuật toán âm lịch Hồ Ngọc Đức** — **đã implement + kiểm chứng** (phase 5). Công thức nay nằm trong code: `giapha/services/vn_lunar.py`, test `giapha/tests/test_vn_lunar.py`. Differential với `amlich.js` gốc: **khớp toàn bộ 146.097 ngày 1800–2199, hai chiều, 0 sai lệch**; đối sánh chéo `lunarcalendar` tz=8 (1950–2050): 0 sai lệch.
+- **Thuật toán âm lịch Hồ Ngọc Đức** — đã implement + kiểm chứng (phase 5). `giapha/services/vn_lunar.py`. Differential với `amlich.js` gốc: khớp toàn bộ **146.097 ngày 1800–2199**, hai chiều, 0 sai lệch.
 
-  ⚠️ **ĐÍNH CHÍNH (2026-09-05):** dòng cũ ở đây ghi "**1985 KHÔNG lệch** (cả hai 20/2)" — **SAI**. Tết VN 1985 = **21/01/1985**, TQ = **20/02/1985**, lệch **cả một tháng** (VN đặt nhuận tháng 2 Ất Sửu, TQ đặt nhuận tháng 10 Giáp Tý 1984). Các năm lệch VN/TQ: **1968, 1969, 1985, 2007**. Nguồn sai: báo cáo researcher chạy reference implementation ở **tz=8** (tức lịch TQ) — báo cáo đó nay đã có banner đính chính ở đầu file. Bản `phase-05-*.md` gốc ghi đúng ngay từ đầu. **Đừng "sửa" 1985 về 20/2.**
+  ⚠️ **ĐÍNH CHÍNH:** Tết VN 1985 = **21/01/1985**, TQ = **20/02/1985** — lệch **cả một tháng**. Các năm lệch VN/TQ: **1968, 1969, 1985, 2007**. Một báo cáo researcher từng ghi sai vì chạy reference ở tz=8 (tức lịch TQ). **Đừng "sửa" 1985 về 20/2.**
 - **Hiệu năng `GET /tree`** — đã đo, đạt. Xem phase 4.
+- **Xưng hô (phase 7)** — binding `ClanMember.person` cần cho phase 7 đã ship ở phase 6; phase 7 nay xong.
 
 ## Câu hỏi mở (còn lại)
 
-Câu hỏi #2/#3/#4 đã chốt — xem bảng "Quyết định đã chốt (2026-09-05)" ở trên (không lặp lại ở đây).
+Ba câu hỏi của đợt đầu (nhắc giỗ gửi cho ai / index công khai / S3 vs R2) đã chốt — xem bảng "Quyết định đã chốt (2026-09-05)" ở trên. Đánh số dưới đây độc lập với bảng đó.
 
 ### Còn lại (chuyển sang phase tiếp)
 
 1. ~~**Ánh xạ `k` (Sóc) → số tháng âm lịch chưa chốt.**~~ **ĐÃ GIẢI QUYẾT (phase 5).** Đã implement + differential 146.097 ngày với `amlich.js` gốc, 0 sai lệch.
-2. **Từ xưng hô theo vùng miền.** MVP dùng chuẩn miền Bắc. Có cần tuỳ chọn Nam/Trung không? (phase 7)
+2. ~~**Từ xưng hô theo vùng miền.** Có cần tuỳ chọn Nam/Trung không?~~ **ĐÃ CHỐT (phase 7): chuẩn miền BẮC nghiêm**, biến thể vùng miền ngoài phạm vi. Cụ thể: anh/chị của **cả cha lẫn mẹ** → `bác`; `chú`/`cô` chỉ cho em của cha, `cậu`/`dì` chỉ cho em của mẹ. Người dùng miền Nam sẽ đọc là sai — chấp nhận.
 3. **Trần 5.000 người/clan** là phỏng đoán. Dòng họ 20.000 người sẽ buộc đổi sang materialized path (đổi kiến trúc phase 4).
 4. **Chính sách lưu trữ:** ai được xoá dòng họ, giữ dữ liệu bao lâu sau khi xoá? Chưa xác định.
 5. **Tên huý chữ Hán-Nôm** có cần lưu không? Ảnh hưởng collation cột (`utf8_unicode_ci` hiện tại).
@@ -137,6 +139,15 @@ Câu hỏi #2/#3/#4 đã chốt — xem bảng "Quyết định đã chốt (202
 17. **Đổi `gio_remind_before_days` giữa năm làm nhảy qua ngày đến hạn** của bất kỳ ai rơi vào khoảng bị nhảy — người đó mất luôn lượt nhắc năm ấy. Retry của H1 **không cứu được**: họ chưa bao giờ *đến hạn*. Cần nới cửa sổ `due_rows` hoặc cảnh báo ở admin.
 18. `docker-compose.yml` service `web` **đã forward** `FIREBASE_CREDENTIALS_PATH`/`_JSON` vào container (fix session này). Trước đó push thật sẽ im lặng no-op.
 19. **`apis/management/commands/remind_appointment_date.py` vẫn dùng `timezone.localdate()`** — đúng lỗi lệch một ngày mà phase 6 đã né bằng `today_vn()`. Ngoài phạm vi phase 6, nhưng **chủ dự án cần quyết định có sửa không**.
+
+### Mới phát sinh từ phase 7 (2026-09-05)
+
+20. **`parent_kind` (`ruot`/`nuoi`/`ke`) bị bỏ qua** — con nuôi nhận đúng từ như con ruột. Gần như chắc là điều người dùng muốn (phân biệt mới là hành vi gây bất ngờ), nhưng **chưa ai chốt**; hiện là giả định ngầm trong code.
+21. **Mẹ kế cố tình KHÔNG có trong bảng affinal** — cách gọi thật sự khác nhau (`mẹ`/`dì`/`mẹ kế`), chọn một là đoán. Nên rơi vào hedge "có liên kết, không có từ". Nửa máy-đọc-được của câu trả lời đó rỗng (`common_ancestor`/`path` đã null): thêm field **`via: {id, ho_ten}`** thì UI render được "vợ của Bố bạn" rồi để người dùng tự chọn. Chưa làm.
+22. **Hai người CÙNG là dâu/rể** (vd. chị dâu = vợ của anh chồng) → `khong_cung_huyet_thong`. Cần hai bước hôn nhân + luật chọn đi qua vợ/chồng nào. Đã ghim bằng test, đã ghi docstring, chưa làm.
+23. **`nhieu_hon_nhan_ngang_hang` có thể thành nhiễu.** Hedge này bắn khi hai hôn nhân cùng rank cho ra hai từ khác nhau — mà `Marriage.order` là **per-husband** và mặc định 1, nên hai đời chồng của một người phụ nữ đều mang `order=1`. Luật unique `order` theo từng người sẽ xoá cả lớp lỗi này — **đổi model**, ngoài phạm vi phase 7.
+24. **N5 là quyết định sản phẩm do người implement tự chốt, không phải chủ dự án.** Con dâu gọi ông nội chồng là **`ông`** chứ không phải `ông nội` (lý do: `nội`/`ngoại` khẳng định huyết thống mà người đó không có; endpoint trả **cách xưng hô**, mà "ông ơi" thì ai cũng nói vậy). Nếu chủ dự án không đồng ý: xoá 4 hàng `MARRIED_IN_SUBSTITUTES`, một test lật.
+25. **Điểm mù của test đối ứng đã bịt một phần, chưa hết.** Sweep chỉ ràng buộc độ sâu thang; chọn từ ở gap 0/1 do bảng `BY_HAND` giữ, và sweep hedge dùng fixture riêng — **cả hai đều mới hơn và ít trận mạc hơn** sweep từ máu mủ. Đừng coi file đối ứng là bảo chứng cho toàn bộ từ vựng.
 
 ### Deferred (low-risk, documentable)
 
