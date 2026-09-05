@@ -3,12 +3,16 @@ from django.urls import path
 from giapha.views import (
     ClanDetailAPIView,
     ClanGioCalendarAPIView,
+    ClanGioFollowDetailAPIView,
+    ClanGioFollowListAPIView,
     ClanInviteDetailAPIView,
     ClanInviteListCreateAPIView,
     ClanListCreateAPIView,
+    ClanMemberBindingAPIView,
     ClanMemberDetailAPIView,
     ClanMembersAPIView,
     ClanTreeAPIView,
+    DeviceTokenAPIView,
     JoinClanAPIView,
     MarriageDetailAPIView,
     MarriageListCreateAPIView,
@@ -36,6 +40,22 @@ urlpatterns = [
     path('join', JoinClanAPIView.as_view(), name='clan-join'),
 
     path('clans/<int:clan_id>/lich-gio', ClanGioCalendarAPIView.as_view(), name='clan-lich-gio'),
+
+    # "Tôi là ai trong cây" -- the binding every default reminder depends on.
+    path('clans/<int:clan_id>/toi-la', ClanMemberBindingAPIView.as_view(), name='clan-toi-la'),
+    path(
+        'clans/<int:clan_id>/gio-follows',
+        ClanGioFollowListAPIView.as_view(),
+        name='clan-gio-follows',
+    ),
+    path(
+        'clans/<int:clan_id>/gio-follows/<int:person_id>',
+        ClanGioFollowDetailAPIView.as_view(),
+        name='clan-gio-follow-detail',
+    ),
+
+    # Not clan-scoped on purpose -- a device token belongs to the user.
+    path('devices', DeviceTokenAPIView.as_view(), name='device-token'),
 
     path('clans/<int:clan_id>/tree', ClanTreeAPIView.as_view(), name='clan-tree'),
 

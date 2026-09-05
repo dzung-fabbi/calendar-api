@@ -187,6 +187,13 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
     'https://www.googleapis.com/auth/userinfo.profile',
 ]
 
+# Firebase Cloud Messaging service account (giapha nhắc giỗ). Declared here so
+# the value is configurable the same way as everything else and reachable from
+# `override_settings`; `giapha.services.fcm_auth` still falls back to the raw
+# environment when these are empty. Never commit the JSON itself.
+FIREBASE_CREDENTIALS_PATH = os.environ.get('FIREBASE_CREDENTIALS_PATH', '')
+FIREBASE_CREDENTIALS_JSON = os.environ.get('FIREBASE_CREDENTIALS_JSON', '')
+
 # Define SOCIAL_AUTH_FACEBOOK_SCOPE to get extra permissions from Facebook.
 # Email is not sent by default, to get it, you must request the email permission.
 SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']

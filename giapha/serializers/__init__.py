@@ -8,7 +8,18 @@ from giapha.serializers.clan import (
     ClanSerializer,
     JoinClanSerializer,
 )
+from giapha.serializers.device import (
+    DeviceTokenDeleteSerializer,
+    DeviceTokenRegisterSerializer,
+)
 from giapha.serializers.gio import GioItemSerializer, GioListSerializer
+from giapha.serializers.gio_follow import (
+    GioFollowItemSerializer,
+    GioFollowListSerializer,
+    GioFollowWriteSerializer,
+    MemberBindingSerializer,
+    MemberBindingWriteSerializer,
+)
 from giapha.serializers.marriage import MarriageSerializer
 from giapha.serializers.person import (
     PersonReadSerializer,
@@ -23,10 +34,17 @@ __all__ = [
     'ClanMemberRoleUpdateSerializer',
     'ClanMemberSerializer',
     'ClanSerializer',
+    'DeviceTokenDeleteSerializer',
+    'DeviceTokenRegisterSerializer',
+    'GioFollowItemSerializer',
+    'GioFollowListSerializer',
+    'GioFollowWriteSerializer',
     'GioItemSerializer',
     'GioListSerializer',
     'JoinClanSerializer',
     'MarriageSerializer',
+    'MemberBindingSerializer',
+    'MemberBindingWriteSerializer',
     'PersonReadSerializer',
     'PersonRevisionSerializer',
     'PersonWriteSerializer',

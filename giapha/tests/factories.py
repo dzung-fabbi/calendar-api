@@ -43,3 +43,17 @@ def build_person(clan, ho_ten='Người thử nghiệm', gioi_tinh='nam', **over
     instances) or any other model field as an override.
     """
     return Person.objects.create(clan=clan, ho_ten=ho_ten, gioi_tinh=gioi_tinh, **overrides)
+
+
+def bind_member(clan, user, person):
+    """Say "in `clan`, `user` is `person`" -- `ClanMember.person`.
+
+    The binding is what gives a user a direct line, so every giỗ-reminder
+    test that expects a default recipient needs one. Returns the updated
+    `ClanMember`; raises `ClanMember.DoesNotExist` if `user` is not a member,
+    because a test binding a non-member is a broken fixture, not a scenario.
+    """
+    member = ClanMember.objects.get(clan=clan, user=user)
+    member.person = person
+    member.save(update_fields=['person'])
+    return member

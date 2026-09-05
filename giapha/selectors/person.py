@@ -16,9 +16,36 @@ def clan_edges(clan_id):
     `clan_id`. One query, no full rows -- this is the shape phase 4
     (generation walk) and phase 7 (kinship path) also consume, so its
     signature must not change.
+
+    TWO EDGE SHAPES EXIST ON PURPOSE -- see `clan_edges_all` before unifying
+    them. This one is the *visible tree*: soft-deleted people are gone from
+    it, which is exactly right for rendering and for the generation walk.
     """
     return list(
         Person.objects.filter(clan_id=clan_id, is_deleted=False)
+        .values_list('id', 'father_id', 'mother_id')
+    )
+
+
+def clan_edges_all(clan_id):
+    """`clan_edges` INCLUDING soft-deleted rows -- the *connectivity* shape.
+
+    DO NOT UNIFY THIS WITH `clan_edges`. A soft-deleted person is still the
+    `father_id`/`mother_id` of their children, so walking the filtered edge
+    list stops dead at them: soft-deleting one mistakenly-duplicated `ông`
+    silently cut `cụ`, `kỵ` and everything above out of every descendant's
+    giỗ reminders. Traversal must therefore pass THROUGH a soft-deleted
+    person.
+
+    That is safe only where the *answer* is separately restricted to
+    non-deleted people -- currently the giỗ-follow resolution, whose
+    candidate set comes from `selectors.gio.deceased_with_lunar_death`
+    (`is_deleted=False`), so nobody is ever notified ABOUT a soft-deleted
+    person. Every other caller (tree rendering, generation walk, phase 7
+    kinship) wants `clan_edges` and its "deleted means gone" semantics.
+    """
+    return list(
+        Person.objects.filter(clan_id=clan_id)
         .values_list('id', 'father_id', 'mother_id')
     )
 
