@@ -8,6 +8,7 @@ import datetime as dt
 from django.test import SimpleTestCase
 
 from giapha.services.tree import (
+    NODE_FIELDS,
     compute_generations,
     marriage_edges_from_rows,
     node_from_row,
@@ -137,6 +138,19 @@ class NodeFromRowTests(SimpleTestCase):
         node = node_from_row(_row(1))
         for leaked_field in ('tieu_su', 'que_quan', 'mo_phan_lat', 'mo_phan_lng'):
             self.assertNotIn(leaked_field, node)
+
+    def test_node_shape_matches_node_fields_contract_for_living_person(self):
+        """`TreeNodeSerializer` is a passthrough (no per-field declarations),
+        so `NODE_FIELDS` is the only thing left guarding the `/tree` node
+        shape. This must hold for both a living and a dead row (`death_lunar`
+        and `death_year` are populated differently between the two).
+        """
+        node = node_from_row(_row(1))
+        self.assertEqual(set(NODE_FIELDS), set(node.keys()))
+
+    def test_node_shape_matches_node_fields_contract_for_dead_person(self):
+        node = node_from_row(_row(1, death_solar=dt.date(1975, 4, 30)))
+        self.assertEqual(set(NODE_FIELDS), set(node.keys()))
 
 
 class ParentEdgesFromRowsTests(SimpleTestCase):

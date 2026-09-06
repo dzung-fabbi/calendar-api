@@ -14,6 +14,19 @@ hanging on it.
 
 from collections import deque
 
+# The exact `nodes[]` entry shape returned by `node_from_row` below. This is
+# now the ONE place the `/tree` node shape is declared -- `serializers.tree.
+# TreeNodeSerializer` is a passthrough (no per-field declarations) precisely
+# because that endpoint requires `IsClanMember` auth, so there is no
+# whitelist-safety reason to re-declare fields there. `tests/test_tree_
+# service.py` asserts `node_from_row(...).keys() == set(NODE_FIELDS)` for both
+# a living and a dead row, which is what used to be guaranteed implicitly by
+# the serializer's field list.
+NODE_FIELDS = (
+    'id', 'ho_ten', 'ten_huy', 'gioi_tinh', 'generation', 'branch', 'is_truong',
+    'birth_order', 'is_living', 'birth_year', 'death_year', 'death_lunar', 'has_photo',
+)
+
 
 def _children_of(edges):
     """`{parent_id: {child_id, ...}}` built from `edges`, considering both
