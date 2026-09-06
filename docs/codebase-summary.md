@@ -28,6 +28,18 @@ Routes: clan CRUD, person CRUD, marriages, invites, tree fetch, membership join,
 All tree operations enforce the [**3-query contract**](#giapha-design-decisions). Route
 prefix `/api/gia-pha/` is throttled on `/join` only (`giapha-join` scope: 10/hour).
 
+**auth endpoints (`djangopj/auth_token_views.py`, mounted at `/auth/` outside both apps):**
+
+| Route | Methods | Auth |
+|---|---|---|
+| `/auth/token` | POST | `AllowAny` -- credentials are in the body (grants: `password`, `refresh_token`) |
+| `/auth/revoke-token` | POST | `AllowAny` -- `client_id`/`client_secret`/`token` in the body |
+
+Both accept form-encoded (`application/x-www-form-urlencoded`) or JSON bodies; the trailing
+slash is optional. Neither runs an authenticator (`authentication_classes = ()`), so a stale
+`Bearer` header cannot 401 a token refresh. Facebook/Google login was removed -- these two are
+all that remains of the old `drf_social_oauth2` mount.
+
 **giỗ (death anniversary) endpoint:**
 
 | Route | View | Auth | Queries | Window |

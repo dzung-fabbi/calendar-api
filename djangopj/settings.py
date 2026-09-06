@@ -30,8 +30,9 @@ def env_list(name, default=''):
 DEBUG = env_flag('DJANGO_DEBUG', False)
 
 # Secrets come from the environment. See .env.example. The previously
-# committed key, database password and OAuth secrets must be treated as
-# compromised and rotated -- they remain in the git history.
+# committed key and database password must be treated as compromised and
+# rotated -- they remain in the git history, as do the Facebook/Google app
+# secrets that social login used before it was removed.
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', '')
 if not SECRET_KEY:
     if not DEBUG:
@@ -56,8 +57,6 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'oauth2_provider',
-    'social_django',
-    'drf_social_oauth2',
     'django_object_actions',
 ]
 
@@ -88,8 +87,6 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'social_django.context_processors.backends',
-                'social_django.context_processors.login_redirect',
             ],
         },
     },
@@ -155,7 +152,6 @@ CORS_ALLOW_ALL_ORIGINS = not CORS_ALLOWED_ORIGINS
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'oauth2_provider.contrib.rest_framework.OAuth2Authentication',  # django-oauth-toolkit >= 1.0.0
-        'drf_social_oauth2.authentication.SocialAuthentication',
     ),
     # No `DEFAULT_THROTTLE_CLASSES` -- deliberate, `apis/` has none and this
     # must not change project-wide. `giapha.views.clan_membership.JoinClanAPIView`
@@ -193,26 +189,12 @@ REST_FRAMEWORK = {
     'NUM_PROXIES': int(os.environ.get('DJANGO_NUM_PROXIES', '0')),
 }
 
+# Facebook/Google login was removed. `grant_type=password` against
+# `/auth/token` (see djangopj/auth_token_views.py) is the only login flow left,
+# and django-oauth-toolkit's validator serves it through plain `authenticate()`.
 AUTHENTICATION_BACKENDS = (
-    'drf_social_oauth2.backends.DjangoOAuth2',
     'django.contrib.auth.backends.ModelBackend',
-    'social_core.backends.facebook.FacebookAppOAuth2',
-    'social_core.backends.facebook.FacebookOAuth2',
-    'social_core.backends.google.GoogleOAuth2',
 )
-
-# Facebook configuration
-SOCIAL_AUTH_FACEBOOK_KEY = os.environ.get('SOCIAL_AUTH_FACEBOOK_KEY', '')
-SOCIAL_AUTH_FACEBOOK_SECRET = os.environ.get('SOCIAL_AUTH_FACEBOOK_SECRET', '')
-
-# Google configuration
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.environ.get('SOCIAL_AUTH_GOOGLE_OAUTH2_KEY', '')
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.environ.get('SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET', '')
-
-SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
-    'https://www.googleapis.com/auth/userinfo.email',
-    'https://www.googleapis.com/auth/userinfo.profile',
-]
 
 # Firebase Cloud Messaging service account (giapha nhắc giỗ). Declared here so
 # the value is configurable the same way as everything else and reachable from
@@ -231,13 +213,6 @@ S3_BUCKET = os.environ.get('S3_BUCKET', '')
 S3_ACCESS_KEY_ID = os.environ.get('S3_ACCESS_KEY_ID', '')
 S3_SECRET_ACCESS_KEY = os.environ.get('S3_SECRET_ACCESS_KEY', '')
 S3_REGION = os.environ.get('S3_REGION', '')
-
-# Define SOCIAL_AUTH_FACEBOOK_SCOPE to get extra permissions from Facebook.
-# Email is not sent by default, to get it, you must request the email permission.
-SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
-SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
-    'fields': 'id, name, email'
-}
 
 # HTTPS hardening. Off by default because turning SSL redirect on behind a
 # proxy that does not forward the scheme causes a redirect loop; switch these

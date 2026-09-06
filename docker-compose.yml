@@ -23,10 +23,6 @@ services:
       DB_PASSWORD: ${DB_PASSWORD:-root}
       DB_HOST: db
       DB_PORT: "3306"
-      SOCIAL_AUTH_FACEBOOK_KEY: ${SOCIAL_AUTH_FACEBOOK_KEY:-}
-      SOCIAL_AUTH_FACEBOOK_SECRET: ${SOCIAL_AUTH_FACEBOOK_SECRET:-}
-      SOCIAL_AUTH_GOOGLE_OAUTH2_KEY: ${SOCIAL_AUTH_GOOGLE_OAUTH2_KEY:-}
-      SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET: ${SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET:-}
       # Without these, `manage.py remind_death_anniversary` runs clean but
       # delivers nothing -- it warns and exits 0 when credentials are absent.
       FIREBASE_CREDENTIALS_PATH: ${FIREBASE_CREDENTIALS_PATH:-}

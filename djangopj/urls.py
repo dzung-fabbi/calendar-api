@@ -17,9 +17,15 @@ from django.conf.urls import url
 from django.contrib import admin
 from django.urls import path, include
 
+from djangopj.auth_token_views import RevokeTokenView, TokenView
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('apis.urls')),
     path('api/gia-pha/', include('giapha.urls')),
-    url(r'^auth/', include('drf_social_oauth2.urls', namespace='drf'))
+    # Facebook/Google login was removed; these two are all that is left of the
+    # old `drf_social_oauth2.urls` mount. `/?$` preserves the optional trailing
+    # slash that package allowed -- shipped clients call `/auth/token` bare.
+    url(r'^auth/token/?$', TokenView.as_view(), name='auth-token'),
+    url(r'^auth/revoke-token/?$', RevokeTokenView.as_view(), name='auth-revoke-token'),
 ]

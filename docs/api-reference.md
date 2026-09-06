@@ -9,14 +9,16 @@ Tất cả endpoint cần token OAuth2 bearer (trừ public endpoint ghi chú ri
 Authorization: Bearer {access_token}
 ```
 
-Endpoint auth (từ `drf_social_oauth2.urls`, mount ở `/auth/` — dấu `/` cuối là tuỳ chọn):
+Endpoint auth (từ `djangopj/auth_token_views.py` trên `django-oauth-toolkit`, mount ở `/auth/` — dấu `/` cuối là tuỳ chọn):
 
 | Endpoint | Dùng khi |
 |---|---|
-| `POST /auth/token` | Lấy token bằng username/password (grant `password`) |
-| `POST /auth/convert-token` | **Đổi** access token của Facebook/Google sang token của app. Đây là endpoint client mobile/web dùng khi đăng nhập social — project đã cấu hình sẵn cả hai provider |
+| `POST /auth/token` | Lấy token bằng username/password (grant `password`) hoặc làm mới token (grant `refresh_token`) |
 | `POST /auth/revoke-token` | Thu hồi token (logout) |
-| `/auth/login/{provider}/` | Luồng OAuth redirect qua `social_django` (dùng cho web, không dùng cho API client) |
+
+**Ghi chú:**
+- Cả hai endpoint chấp nhận body dạng `application/x-www-form-urlencoded` hoặc JSON (`application/json`).
+- Endpoint sau đây **đã bị xóa** và trả về 404: `/auth/convert-token`, `/auth/login/{provider}/`, `/auth/authorize`, `/auth/invalidate-sessions`, `/auth/invalidate-refresh-tokens`, `/auth/disconnect-backend`. **Đăng nhập Facebook/Google không còn được hỗ trợ.**
 
 ### Bao Đóng Response
 
