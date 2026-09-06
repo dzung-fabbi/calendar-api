@@ -3,6 +3,8 @@
 Vietnamese almanac (`apis/`) and family genealogy (`giapha/`) backend, built on Django 3.1
 and MySQL 5.7. See `docs/` for system architecture, deployment, and codebase standards.
 
+API reference for the `giapha` module (26 endpoints, Vietnamese): `docs/api-reference.md`.
+
 ## Local development
 
 ```bash

@@ -1,5 +1,7 @@
 # Codebase Summary
 
+> Full request/response reference for `giapha/` (auth, error catalogue, per-endpoint fields, client gotchas): `docs/api-reference.md`. The table below is a map, not a contract.
+
 ## Endpoints
 
 ### apis/ (`/api/`, all public except noted)
