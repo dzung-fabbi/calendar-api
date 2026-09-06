@@ -24,6 +24,22 @@ class ClanSerializer(serializers.ModelSerializer):
 
     `public_slug` is stripped from the output for anyone but the clan's
     owner -- viewers and editors must not see it (phase-9 public page slug).
+
+    `visibility` is READ-ONLY here (security fix, phase-9 review H2):
+    `POST`/`DELETE /clans/{id}/public-link` (`views.clan.
+    ClanPublicLinkAPIView`) are the ONLY sanctioned way to flip it, because
+    that view's `atomic()` block keeps `visibility` and `public_slug` in
+    lockstep -- enable always mints a fresh slug, revoke always clears the
+    old one. A writable `visibility` here let `PATCH /clans/{id}` toggle
+    sharing through a second, unguarded path: `PATCH {"visibility":
+    "private"}` never touched `public_slug`, so a later `PATCH
+    {"visibility":"public_link"}` re-armed the SAME leaked slug instead of
+    minting a new one -- silently defeating the "revoke means the old link
+    is dead forever" guarantee. It also let a clan reach
+    `visibility='public_link'` with `public_slug=NULL`, the exact half-state
+    `ClanPublicLinkAPIView`'s `atomic()` exists to prevent. No client
+    depends on setting `visibility` via `PATCH` (nothing but the toggle view
+    ever did it correctly).
     """
 
     class Meta:
@@ -32,7 +48,7 @@ class ClanSerializer(serializers.ModelSerializer):
             'id', 'ten_ho', 'thuy_to', 'mo_ta', 'visibility',
             'public_slug', 'hide_living_details', 'created_at', 'updated_at',
         )
-        read_only_fields = ('id', 'public_slug', 'created_at', 'updated_at')
+        read_only_fields = ('id', 'visibility', 'public_slug', 'created_at', 'updated_at')
 
     def to_representation(self, instance):
         data = super().to_representation(instance)

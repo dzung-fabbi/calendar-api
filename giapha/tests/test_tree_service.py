@@ -22,6 +22,7 @@ def _row(person_id, father_id=None, mother_id=None, parent_kind='ruot', **overri
         'generation': None, 'branch': '', 'is_truong': False, 'birth_order': None,
         'birth_solar': None, 'death_solar': None, 'death_lunar_day': None, 'death_lunar_month': None,
         'death_lunar_leap': False, 'father_id': father_id, 'mother_id': mother_id, 'parent_kind': parent_kind,
+        'photo_key': '',
     }
     base.update(overrides)
     return base

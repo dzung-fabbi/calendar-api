@@ -32,6 +32,12 @@ from giapha.serializers.person import (
     PersonRevisionSerializer,
     PersonWriteSerializer,
 )
+from giapha.serializers.photo import (
+    PhotoConfirmSerializer,
+    PhotoUploadUrlRequestSerializer,
+    PhotoUrlsRequestSerializer,
+)
+from giapha.serializers.public import PublicPersonSerializer, PublicTreeSerializer
 from giapha.serializers.tree import TreeSerializer
 
 __all__ = [
@@ -58,5 +64,10 @@ __all__ = [
     'PersonReadSerializer',
     'PersonRevisionSerializer',
     'PersonWriteSerializer',
+    'PhotoConfirmSerializer',
+    'PhotoUploadUrlRequestSerializer',
+    'PhotoUrlsRequestSerializer',
+    'PublicPersonSerializer',
+    'PublicTreeSerializer',
     'TreeSerializer',
 ]

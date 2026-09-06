@@ -31,9 +31,13 @@ INVITE_ROLE = (
     ('viewer', 'Người xem'),
 )
 
+# 'public' (bare) was never used anywhere but this tuple -- phase 9 replaces
+# it with 'public_link', the actual state a clan is in once the owner mints
+# a `Clan.public_slug`: a link exists, but there is no untargeted "public"
+# mode where the clan is discoverable without one.
 VISIBILITY = (
     ('private', 'Riêng tư'),
-    ('public', 'Công khai'),
+    ('public_link', 'Công khai qua link'),
 )
 
 MARRIAGE_STATUS = (

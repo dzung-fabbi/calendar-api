@@ -12,6 +12,10 @@ from giapha.views import (
     ClanMemberBindingAPIView,
     ClanMemberDetailAPIView,
     ClanMembersAPIView,
+    ClanPhotoUrlsAPIView,
+    ClanPublicLinkAPIView,
+    ClanPublicPersonDetailAPIView,
+    ClanPublicTreeAPIView,
     ClanTreeAPIView,
     DeviceTokenAPIView,
     JoinClanAPIView,
@@ -19,6 +23,8 @@ from giapha.views import (
     MarriageListCreateAPIView,
     PersonDetailAPIView,
     PersonListCreateAPIView,
+    PersonPhotoAPIView,
+    PersonPhotoUploadUrlAPIView,
     PersonRestoreAPIView,
     PersonRevisionListAPIView,
 )
@@ -80,10 +86,35 @@ urlpatterns = [
         name='person-restore',
     ),
 
+    # Presigned S3/R2 photo upload (phase 8). No bytes ever cross Django --
+    # see `giapha/services/storage.py` / `giapha/views/photo.py`.
+    path(
+        'clans/<int:clan_id>/persons/<int:person_id>/photo-upload-url',
+        PersonPhotoUploadUrlAPIView.as_view(),
+        name='person-photo-upload-url',
+    ),
+    path(
+        'clans/<int:clan_id>/persons/<int:person_id>/photo',
+        PersonPhotoAPIView.as_view(),
+        name='person-photo',
+    ),
+    path('clans/<int:clan_id>/photo-urls', ClanPhotoUrlsAPIView.as_view(), name='clan-photo-urls'),
+
     path('clans/<int:clan_id>/marriages', MarriageListCreateAPIView.as_view(), name='marriage-list-create'),
     path(
         'clans/<int:clan_id>/marriages/<int:marriage_id>',
         MarriageDetailAPIView.as_view(),
         name='marriage-detail',
+    ),
+
+    # Phase 9 -- chia sẻ công khai. Owner-only toggle lives under
+    # `clans/{clan_id}/...` (auth); the two `public/{slug}/...` routes below
+    # are the no-auth surface a slug actually resolves to.
+    path('clans/<int:clan_id>/public-link', ClanPublicLinkAPIView.as_view(), name='clan-public-link'),
+    path('public/<str:slug>/tree', ClanPublicTreeAPIView.as_view(), name='public-clan-tree'),
+    path(
+        'public/<str:slug>/persons/<int:person_id>',
+        ClanPublicPersonDetailAPIView.as_view(),
+        name='public-person-detail',
     ),
 ]

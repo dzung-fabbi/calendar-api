@@ -27,7 +27,9 @@ class TreeNodeSerializer(serializers.Serializer):
     birth_year = serializers.IntegerField(allow_null=True)
     death_year = serializers.IntegerField(allow_null=True)
     death_lunar = serializers.DictField(allow_null=True)
-    photo_url = serializers.CharField(allow_null=True)
+    # Bool only, never a presigned URL -- see `services.tree.node_from_row`
+    # and the phase-08 spec ("cây chỉ trả has_photo").
+    has_photo = serializers.BooleanField()
 
 
 class TreeEdgeSerializer(serializers.Serializer):

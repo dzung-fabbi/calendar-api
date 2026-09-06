@@ -59,7 +59,9 @@ class PersonDetailAPIView(APIView):
         person = get_person_or_none(clan_id, person_id)
         if person is None:
             raise NotFound(PERSON_NOT_FOUND)
-        return Response({'data': PersonReadSerializer(person).data})
+        # `with_photo_url`: this is the detail response the phase-08 spec
+        # scopes `photo_url` to (H3) -- see `PersonReadSerializer.get_photo_url`.
+        return Response({'data': PersonReadSerializer(person, context={'with_photo_url': True}).data})
 
     def patch(self, request, clan_id, person_id):
         person = get_person_or_none(clan_id, person_id)
@@ -103,7 +105,7 @@ class PersonDetailAPIView(APIView):
                 recompute_descendant_generations(clan_id, person.id)
                 person.refresh_from_db(fields=['generation'])
 
-        return Response({'data': PersonReadSerializer(person).data})
+        return Response({'data': PersonReadSerializer(person, context={'with_photo_url': True}).data})
 
     def delete(self, request, clan_id, person_id):
         person = get_person_or_none(clan_id, person_id)

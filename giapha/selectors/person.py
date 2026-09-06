@@ -157,6 +157,20 @@ def active_person_count(clan_id):
     return Person.objects.filter(clan_id=clan_id, is_deleted=False).count()
 
 
+def photo_keys_for(clan_id, person_ids):
+    """`{id: photo_key}` for every non-deleted Person among `person_ids` that
+    belongs to `clan_id`. An id from another clan, or one that doesn't exist
+    (or is soft-deleted), is silently absent from the result rather than
+    raising -- `views.photo.ClanPhotoUrlsAPIView` relies on this so a client
+    mixing in ids from a clan it also belongs to just gets those ids dropped,
+    never another clan's photo.
+    """
+    return dict(
+        Person.objects.filter(clan_id=clan_id, id__in=person_ids, is_deleted=False)
+        .values_list('id', 'photo_key')
+    )
+
+
 def children_count(person_id):
     """Number of Persons -- soft-deleted or not -- that reference `person_id`
     as father or mother. Deliberately counts soft-deleted children too

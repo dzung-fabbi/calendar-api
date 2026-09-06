@@ -137,8 +137,21 @@ def node_from_row(row):
             if death_lunar_day is not None and death_lunar_month is not None
             else None
         ),
-        # Photo URL construction lands with upload handling in phase 8.
-        'photo_url': None,
+        # `/tree` NEVER mints a presigned URL (phase 8 spec). NOT because it
+        # would be a network request -- `generate_presigned_url` is a local
+        # HMAC computation, no socket involved, ~0.3ms -- but because it's
+        # still ~0.3ms of CPU plus ~500 bytes of payload for EVERY node on
+        # EVERY tree load, for a URL most nodes on a large tree won't be
+        # looked at. Worse, a presigned GET's 1-hour TTL starts counting
+        # down the moment it's minted, not when the client actually uses it
+        # -- pre-generating one per node on tree load means most of that
+        # hour is spent before anyone scrolls to that person, so by the
+        # time a client wants the photo, a meaningful fraction of nodes
+        # would already need a fresh URL anyway. Only a bool rides along;
+        # the real URL comes from `GET /persons/{pid}` or the batched
+        # `POST /photo-urls` when the client actually needs it, minted at
+        # the moment it's needed.
+        'has_photo': bool(row['photo_key']),
     }
 
 

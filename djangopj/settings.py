@@ -160,10 +160,37 @@ REST_FRAMEWORK = {
     # No `DEFAULT_THROTTLE_CLASSES` -- deliberate, `apis/` has none and this
     # must not change project-wide. `giapha.views.clan_membership.JoinClanAPIView`
     # opts itself into the 'giapha-join' scope to blunt invite-code brute
-    # forcing; every other view stays unthrottled.
+    # forcing; `giapha.views.public.ClanPublicTreeAPIView`/
+    # `ClanPublicPersonDetailAPIView` opt into 'giapha-public' for the same
+    # reason (no-auth means no per-user bucket exists at all otherwise);
+    # every other view stays unthrottled.
+    #
+    # NEITHER RATE IS A HARD GUARANTEE against scraping or brute-forcing --
+    # both are PER-IP buckets (DRF's `BaseThrottle.get_ident`), and "per-IP"
+    # is only meaningful once `NUM_PROXIES` below matches how many trusted
+    # reverse proxies actually sit in front of Django. A single attacker can
+    # still exhaust an invite code's 40-bit keyspace across enough distinct
+    # source IPs (or a botnet); these rates raise the cost of a
+    # single-source attack, they do not remove the underlying keyspace as
+    # the only real defence.
     'DEFAULT_THROTTLE_RATES': {
         'giapha-join': '10/hour',
+        'giapha-public': '60/hour',
     },
+    # How many reverse proxies in front of Django are TRUSTED to append to
+    # `X-Forwarded-For` (DRF's `BaseThrottle.get_ident`; see
+    # https://www.django-rest-framework.org/api-guide/throttling/#how-clients-are-identified).
+    # Left unset (DRF default `None`), DRF uses the ENTIRE raw header as the
+    # throttle bucket key -- a caller can put ANY string there and pick
+    # their own bucket, making both 'giapha-join' and 'giapha-public' above
+    # a no-op (proven: 70 requests with a rotating `X-Forwarded-For` value,
+    # zero 429s). `0` (this project's current default -- see
+    # `.env.example`) means Django is edge-facing and the header is IGNORED
+    # entirely, falling back to `REMOTE_ADDR`; set it to the real proxy
+    # count once one is confirmed in front (nginx/Cloudflare/etc.) -- too
+    # low still lets a client forge a bucket, too high collapses every
+    # client behind the same proxy IP into one bucket.
+    'NUM_PROXIES': int(os.environ.get('DJANGO_NUM_PROXIES', '0')),
 }
 
 AUTHENTICATION_BACKENDS = (
@@ -193,6 +220,17 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
 # environment when these are empty. Never commit the JSON itself.
 FIREBASE_CREDENTIALS_PATH = os.environ.get('FIREBASE_CREDENTIALS_PATH', '')
 FIREBASE_CREDENTIALS_JSON = os.environ.get('FIREBASE_CREDENTIALS_JSON', '')
+
+# Object storage (S3/R2) for gia phả photo uploads (phase 8). Declared here
+# for the same reason as the FIREBASE_* pair above: reachable from
+# `override_settings`, and `giapha.services.storage` still falls back to the
+# raw environment when these are empty. Leaving all five unset is a valid
+# deployment state -- the photo endpoints answer 503, nothing else breaks.
+S3_ENDPOINT_URL = os.environ.get('S3_ENDPOINT_URL', '')
+S3_BUCKET = os.environ.get('S3_BUCKET', '')
+S3_ACCESS_KEY_ID = os.environ.get('S3_ACCESS_KEY_ID', '')
+S3_SECRET_ACCESS_KEY = os.environ.get('S3_SECRET_ACCESS_KEY', '')
+S3_REGION = os.environ.get('S3_REGION', '')
 
 # Define SOCIAL_AUTH_FACEBOOK_SCOPE to get extra permissions from Facebook.
 # Email is not sent by default, to get it, you must request the email permission.

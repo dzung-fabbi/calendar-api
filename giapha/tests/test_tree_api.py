@@ -103,7 +103,7 @@ class TreeShapeTests(TestCase):
         node = client_for(self.fixture['viewer']).get(tree_url(self.clan.id)).json()['nodes'][0]
         for field in ('id', 'ho_ten', 'ten_huy', 'gioi_tinh', 'generation', 'branch',
                       'is_truong', 'birth_order', 'is_living', 'birth_year', 'death_year',
-                      'death_lunar', 'photo_url'):
+                      'death_lunar', 'has_photo'):
             self.assertIn(field, node)
         for leaked in ('tieu_su', 'que_quan', 'mo_phan_lat', 'mo_phan_lng', 'x', 'y'):
             self.assertNotIn(leaked, node)

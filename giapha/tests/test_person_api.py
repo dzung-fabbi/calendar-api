@@ -5,6 +5,7 @@ up correctly, plus the permission matrix and soft-delete behaviour.
 """
 
 import datetime as dt
+import json
 
 from django.test import TestCase, override_settings
 from django.urls import reverse
@@ -370,6 +371,30 @@ class PersonRevisionTests(TestCase):
         person.refresh_from_db()
         self.assertTrue(person.is_deleted, 'restore must not silently resurrect a soft-deleted person')
         self.assertEqual('Quê cũ', person.que_quan, 'non-deletion content must still restore correctly')
+
+    def test_restore_does_not_reattach_a_foreign_photo_key(self):
+        """C1 (critical), end-to-end through the actual restore endpoint:
+        `photo_key` is now excluded from BOTH `snapshot()` and `restore()`
+        (`services.revision._EXCLUDED_FIELDS`; see `test_revision_service.py`
+        for the direct unit coverage of that filter). This revision's
+        payload is hand-built (`PersonRevision.objects.create` directly,
+        bypassing `record()`/`snapshot()`) with a `photo_key` belonging to
+        another clan/person entirely, simulating a revision recorded before
+        this fix existed -- proving the endpoint itself, not just the pure
+        function, never re-attaches it.
+        """
+        person = build_person(self.clan, ho_ten='Chưa từng có ảnh')
+        foreign_payload = json.dumps({'photo_key': 'giapha/999/999/stolen.jpg'})
+        revision = PersonRevision.objects.create(
+            person=person, actor=self.fixture['editor'], action='update', payload_json=foreign_payload,
+        )
+
+        response = client_for(self.fixture['editor']).post(
+            restore_url(self.clan.id, person.id, revision.id)
+        )
+        self.assertEqual(200, response.status_code)
+        person.refresh_from_db()
+        self.assertEqual('', person.photo_key)
 
     def test_restore_reruns_cycle_validation_against_the_current_tree(self):
         """H3, reproducing the reviewer's exact end-to-end sequence:

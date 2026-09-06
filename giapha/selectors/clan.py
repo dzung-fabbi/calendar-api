@@ -11,6 +11,31 @@ def get_clan_or_none(clan_id):
     return Clan.objects.filter(id=clan_id, is_deleted=False).first()
 
 
+def get_clan_by_public_slug(slug):
+    """Resolves the phase-9 public share link. Only a clan that is BOTH not
+    soft-deleted AND currently `visibility == 'public_link'` matches -- a
+    slug left over from a revoked link, or a clan an owner has since made
+    private again, must behave exactly like an unknown slug (`None` here,
+    a 404 above), never a different response that would confirm the clan
+    still exists.
+
+    CASE-SENSITIVE by construction, not by luck: MySQL's `utf8_unicode_ci`
+    collation makes the `WHERE public_slug = slug` comparison itself
+    case-INSENSITIVE, so the query can return a clan whose real slug only
+    matches `slug` up to case. `services.public_slug.generate_public_slug`
+    promises ~2^115 bits of entropy against guessing -- a promise that is
+    quietly false if an upper-cased mangling of a slug (e.g. a copy-paste
+    through a case-folding client, or a stale link reissued after a revoke)
+    still resolves. The exact-match check below is Python-side and
+    case-sensitive regardless of collation; it costs a second string
+    comparison per lookup, never a second query.
+    """
+    clan = Clan.objects.filter(public_slug=slug, visibility='public_link', is_deleted=False).first()
+    if clan is None or clan.public_slug != slug:
+        return None
+    return clan
+
+
 def clans_for_user(user):
     """Clans `user` belongs to, most recently joined first."""
     return (
