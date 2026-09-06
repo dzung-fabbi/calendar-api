@@ -1,0 +1,6 @@
+{
+  "data": {
+    "is_active": "bool",
+    "platform": "str"
+  }
+}

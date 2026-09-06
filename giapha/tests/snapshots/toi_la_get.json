@@ -1,0 +1,6 @@
+{
+  "data": {
+    "ho_ten": "str",
+    "person_id": "int"
+  }
+}

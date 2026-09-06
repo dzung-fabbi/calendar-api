@@ -1,0 +1,14 @@
+{
+  "count": "int",
+  "data": [
+    {
+      "action": "str",
+      "actor_username": "str",
+      "created_at": "str",
+      "id": "int",
+      "payload_json": "str"
+    }
+  ],
+  "next": "null",
+  "previous": "null"
+}

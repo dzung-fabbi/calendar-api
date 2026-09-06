@@ -31,6 +31,110 @@ belongs there; what it may not do is write a model. See "Push Notification Chann
 **Decoupling rule:** `giapha/` and `apis/` share no imports; code is duplicated if needed.
 This is enforced to allow independent evolution.
 
+## Directory structure (giapha/)
+
+```
+giapha/
+├── models/
+│   ├── __init__.py
+│   ├── clan.py
+│   ├── person.py
+│   ├── marriage.py
+│   ├── member.py              # ClanMember (person binding for reminders)
+│   ├── invite.py              # ClanInvite
+│   ├── notification.py        # GioFollow, DeviceToken, GioNotificationLog
+│   └── photo.py               # Photo references and CORS config
+├── selectors/
+│   ├── person.py              # clan_edges, clan_edges_all, clan_kinship_rows
+│   ├── gio.py                 # deceased_with_lunar_death (death anniversary queries)
+│   ├── kinship.py             # clan_kinship_rows, clan_spouse_pairs
+│   └── gio_follow.py          # overrides_for_clan, active_tokens_for
+├── services/
+│   ├── vn_lunar.py            # VIETNAMESE lunar calendar UTC+7 (deliberate split from apis)
+│   ├── gio.py                 # giỗ (death anniversary) date computation
+│   ├── can_chi.py             # Heavenly Stems / Earthly Branches (10-line copy from apis)
+│   ├── gio_follow.py          # Ancestor resolution for reminders
+│   ├── person_rules.py        # Validation: cycle detection, generation propagation
+│   ├── kinship_*.py           # Kinship calculation (7 modules, phase 7)
+│   ├── fcm.py                 # Firebase Cloud Messaging (HTTP v1, unverified end-to-end)
+│   └── storage.py             # S3/R2 presigned URLs (unverified end-to-end)
+├── views/
+│   ├── clan.py
+│   ├── person.py
+│   ├── marriage.py
+│   ├── gio.py                 # GET /clans/{id}/lich-gio
+│   ├── gio_follow.py          # Follow overrides
+│   ├── member_binding.py      # /toi-la endpoint
+│   ├── device.py              # /devices token management
+│   ├── kinship.py             # GET /clans/{id}/xung-ho
+│   ├── invite.py
+│   ├── photo.py               # /photo-upload-url, /photo, /photo-urls
+│   ├── public.py              # Public share endpoint (noindex header)
+│   └── params.py              # Common parameter parsing
+├── serializers/
+│   └── ...
+├── admin/
+│   └── ...
+├── management/
+│   └── commands/
+│       └── remind_death_anniversary.py   # Nightly cron job
+├── migrations/
+│   └── ...
+└── tests/
+    ├── factories.py           # Fixture builders
+    ├── snapshots/
+    │   └── query_budgets.json # Query count assertions
+    ├── test_api_snapshots.py  # Response shape validation
+    ├── test_query_counts.py   # Query ceiling enforcement
+    ├── test_security.py       # Authorization, PII isolation
+    └── test_*.py              # Unit and integration tests
+```
+
+## The lunar calendar split: Vietnamese vs. Chinese
+
+**`apis/` uses `lunarcalendar` (Chinese, UTC+8). `giapha/` uses `vn_lunar.py` (Vietnamese, UTC+7).
+This split is DELIBERATE and VERIFIED. Do not unify them.**
+
+The two calendars diverge whenever a new moon falls near the UTC day boundary:
+
+| Year | Vietnamese | Chinese | Divergence |
+|---|---|---|---|
+| 1968 | 29/01 | 30/01 | 1 day |
+| 1969 | 17/02 | 18/02 | 1 day |
+| 1985 | **21/01** | **20/02** | **Full month** (leap month placement differs) |
+| 2007 | 17/02 | 18/02 | 1 day |
+
+A giỗ (death anniversary) calculated against the wrong calendar puts the ceremony on the
+wrong day, defeating the entire purpose of a genealogy app. `vn_lunar.py` implements Hồ Ngọc
+Đức's algorithm (the Vietnamese standard reference) and has been verified against the original
+`amlich.js` across all 146,097 days from 1800–2199 with zero discrepancies.
+
+`apis/` keeps `lunarcalendar` because its almanac snapshots depend on it; `giapha/` must not
+import it. If pressure arises to "fix" the 1985 date to Feb, that is the signal that this doc
+failed — the date **is correct**: Vietnamese families held giỗ on 21/01/1985, not 20/02. The
+calendar belongs to the cultural context, not to the astronomical one.
+
+### Known limitations (documented, not bugs)
+
+**Lunar calendar timezone before 1968.** `vn_lunar.py` hard-codes `TIMEZONE = 7` (UTC+7).
+Vietnam actually used UTC+8 in 1943–45, 1947–55, and 1960–67. Dates before 1968 are off by
+~8 hours, enough to flip the lunar month near a new moon. Does not affect `GET /lich-gio`
+(only scans forward). **Will** affect any future "enter ancestor's solar death date" feature
+for pre-1968 ancestors — exactly this app's subject matter. Flagged as a deferred enhancement
+(needs a timezone lookup table). See `docs/deployment-guide.md` and
+`plans/260905-1053-gia-pha-dong-ho/plan.md` (open question 10).
+
+**Clan size limit: 5,000 persons.** Python tree walk uses no SQL recursion (MySQL 5.7 has
+none). Setting `MAX_CLAN_PERSONS = 5000` in `djangopj/settings.py` is the architectural
+limit; going beyond requires materialized path or closure table (out of scope). Hit this
+limit only when a user reports a clan larger than 5,000 members and demonstrates the need.
+
+**End-to-end delivery unverified: FCM push and S3/R2 upload.** Every test mocks the Firebase
+and boto3 layers. Recipient resolution, de-duplication, failure classification are proven;
+that a real handset receives a push or that a real bucket accepts an upload is not. See
+`docs/deployment-guide.md` for smoke-test procedures when connecting to live services for
+the first time.
+
 ## Data model shape (apis/)
 
 The schema is unusually wide: the twelve hours of a day and the twelve months

@@ -1,0 +1,13 @@
+{
+  "data": {
+    "created_at": "str",
+    "hide_living_details": "bool",
+    "id": "int",
+    "mo_ta": "str",
+    "public_slug": "null",
+    "ten_ho": "str",
+    "thuy_to": "str",
+    "updated_at": "str",
+    "visibility": "str"
+  }
+}

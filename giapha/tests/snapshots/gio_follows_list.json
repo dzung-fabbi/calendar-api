@@ -1,0 +1,18 @@
+{
+  "bound": "bool",
+  "items": [
+    {
+      "followed": "bool",
+      "generation": "null",
+      "ho_ten": "str",
+      "lunar": {
+        "day": "int",
+        "month": "int"
+      },
+      "person_id": "int",
+      "source": "str",
+      "thuy_hieu": "str"
+    }
+  ],
+  "truncated": "bool"
+}

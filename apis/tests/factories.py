@@ -65,29 +65,40 @@ NO_SHOULD_THINGS = "An táng"
 
 
 def build_fixture():
-    """Create the full reference dataset. Returns the objects tests need."""
-    category = CategoryStars.objects.create(name="Hệ sao thử nghiệm")
+    """Create the full reference dataset. Returns the objects tests need.
+
+    Every row's primary key is pinned explicitly (via ``id=``). MySQL
+    AUTO_INCREMENT counters are not transactional -- they survive the
+    per-TestCase rollback -- so an implicit id here would depend on how many
+    rows every *other* test (in this app or in ``giapha``, which shares the
+    ``auth_user`` table) happened to insert first. ``assert_value_matches``
+    golden files hardcode these ids, so an implicit id makes the value tests
+    order-dependent instead of behaviour-dependent. Explicit ids sidestep the
+    counter entirely: MySQL accepts an explicit value for an auto-increment
+    column regardless of the counter's current position.
+    """
+    category = CategoryStars.objects.create(id=2, name="Hệ sao thử nghiệm")
 
     good_stars = [
         Sao.objects.create(
-            name="Thiên Đức", property="Tốt mọi việc", good_ugly_stars=1,
+            id=5, name="Thiên Đức", property="Tốt mọi việc", good_ugly_stars=1,
             is_mountain=1, category=category, calendar=1, level=1.0,
             level_year=1.0, level_month=1.0, level_day=1.0, level_hours=1.0,
             point=10.0,
         ),
         # No category: exercises the None branch of SaoSerializer.get_category.
         Sao.objects.create(
-            name="Nguyệt Đức", property="Tốt cho cưới hỏi", good_ugly_stars=1,
+            id=6, name="Nguyệt Đức", property="Tốt cho cưới hỏi", good_ugly_stars=1,
             is_mountain=2, category=None, calendar=2, level=2.0, point=8.0,
         ),
     ]
     ugly_stars = [
         Sao.objects.create(
-            name="Thiên Cương", property="Xấu mọi việc", good_ugly_stars=2,
+            id=7, name="Thiên Cương", property="Xấu mọi việc", good_ugly_stars=2,
             is_mountain=1, category=category, calendar=1, level=1.0, point=-5.0,
         ),
         Sao.objects.create(
-            name="Thọ Tử", property="Kỵ an táng", good_ugly_stars=2,
+            id=8, name="Thọ Tử", property="Kỵ an táng", good_ugly_stars=2,
             is_mountain=2, category=None, calendar=1, level=1.0, point=-3.0,
         ),
     ]
@@ -101,11 +112,11 @@ def build_fixture():
     _build_configs()
 
     user = User.objects.create_user(
-        username="tester", email="tester@example.com", password="pw",
+        id=2, username="tester", email="tester@example.com", password="pw",
         first_name="Test", last_name="User",
     )
     AppointmentDate.objects.create(
-        name="Giỗ tổ", date=dt.date(2026, 4, 18),
+        id=2, name="Giỗ tổ", date=dt.date(2026, 4, 18),
         before_days=dt.timedelta(days=3), user=user,
     )
 
@@ -203,12 +214,14 @@ def _build_than_sat(good_stars, ugly_stars):
 
 
 def _build_configs():
+    # ids pinned for the same reason as build_fixture() above: these rows are
+    # asserted by exact value in values_config.json.
     DateConfig.objects.create(
-        very_good_from=1.5, good_from=1.0, ugly_from=0.5,
+        id=2, very_good_from=1.5, good_from=1.0, ugly_from=0.5,
         factor_1=1.0, factor_2=2.0,
     )
-    HoursConfig.objects.create(very_good=1.5, good=1.0, ugly=0.5)
-    DirectionConfig.objects.create(value=1.0)
+    HoursConfig.objects.create(id=2, very_good=1.5, good=1.0, ugly=0.5)
+    DirectionConfig.objects.create(id=2, value=1.0)
     BankConfig.objects.create(
         account_number="0123456789", account_holder="NGUYEN VAN A",
         bank="Vietcombank", branch="Hà Nội", qr_img="https://example.com/qr.png",

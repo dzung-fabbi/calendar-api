@@ -1,10 +1,10 @@
-"""Adapter binding the shared ``testkit.shape`` engine to apis/tests/snapshots/.
+"""Adapter binding the shared ``testkit.shape`` engine to giapha/tests/snapshots/.
 
-The comparison logic (``shape_of``, load/save, ``SnapshotMixin``) lives in
-``testkit/shape.py`` so ``giapha/tests/shape.py`` can reuse it without a
-second copy. This module only supplies this app's own ``SNAPSHOT_DIR`` and
-re-exports the same public names existing ``apis`` tests already import, so
-no import in this app changes and no golden file under ``snapshots/`` moves.
+Parallel to ``apis/tests/shape.py``. Both bind the same ``testkit.shape``
+comparison logic to their own app's snapshot directory rather than each
+having its own copy. ``giapha`` importing from ``testkit`` (not from
+``apis``) keeps the one-way app boundary documented in
+``giapha/exceptions.py`` intact.
 """
 
 from pathlib import Path

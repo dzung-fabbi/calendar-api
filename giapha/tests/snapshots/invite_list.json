@@ -1,0 +1,13 @@
+{
+  "data": [
+    {
+      "code": "str",
+      "created_at": "str",
+      "expires_at": "null",
+      "id": "int",
+      "max_uses": "int",
+      "role": "str",
+      "used_count": "int"
+    }
+  ]
+}

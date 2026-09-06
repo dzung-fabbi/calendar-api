@@ -1,7 +1,7 @@
 ---
 phase: 8
 title: "Presigned upload anh"
-status: pending
+status: completed
 priority: P2
 effort: "1d"
 dependencies: [3]
@@ -28,8 +28,14 @@ API cấp URL ký sẵn để client PUT ảnh thẳng lên object storage; back
            sinh key = giapha/{clan_id}/{person_id}/{uuid4}.{ext}
            trả {upload_url, key, expires_in: 300}
 3. Client: PUT upload_url với đúng Content-Type
-4. Client: PATCH /persons/{pid} {photo_key: key}
-5. Server: HEAD lên object để xác nhận tồn tại + đúng kích thước, rồi mới ghi photo_key
+4. Client: POST /persons/{pid}/photo {key}   -- endpoint XÁC NHẬN RIÊNG, không
+           phải PATCH /persons/{pid}; `photo_key` không còn nằm trong
+           `PersonWriteSerializer._WRITE_FIELDS` nên PATCH không thể set nó
+5. Server: khớp `key` với đúng hình dạng đã sinh ra ở bước 2 (regex
+           `giapha/{clan_id}/{person_id}/{uuid4hex}.{ext}`, không chỉ kiểm
+           tiền tố -- một prefix-check đơn thuần lọt qua `../` traversal),
+           HEAD lên object để xác nhận tồn tại + đúng kích thước + đúng
+           content-type, rồi mới ghi photo_key
 ```
 
 Bước 5 là bắt buộc. Không có nó, client có thể gán một `photo_key` bịa ra, hoặc gán key của clan khác.
@@ -50,35 +56,50 @@ S3_REGION             # R2 dùng "auto"
 
 ### Giới hạn
 - `content_type` ∈ {`image/jpeg`, `image/png`, `image/webp`}
-- `size` ≤ 5MB — ép bằng `Conditions` `content-length-range` trong presign, **không** chỉ tin số client gửi
+- `size` ≤ 5MB — **không** ép được từ trước qua `generate_presigned_url('put_object', ...)`
+  (không có `Conditions`/`content-length-range` như `generate_presigned_post`); enforce
+  thật sự là `head()` đọc `ContentLength` ở bước xác nhận, sau khi client đã PUT xong.
+  `size` client khai báo ở bước 1 chỉ là kiểm tra sớm/hint, không phải cơ chế ép buộc.
 - ≤ 1 ảnh chân dung / person ở MVP (album ảnh là YAGNI)
 
 ## Related Code Files
 
 **Create**
-- `giapha/services/storage.py` — `presign_put(key, content_type, max_bytes)`, `presign_get(key)`, `head(key)`, `delete(key)`
-- `giapha/views/photo.py`
+- `giapha/services/storage.py` — `presign_put(key, content_type)`, `presign_get(key)`, `head(key)`, `delete(key)`
+- `giapha/views/photo.py` — `photo-upload-url` + confirm/delete `photo` endpoints (person-scoped, `IsClanEditor`)
+- `giapha/views/photo_urls.py` — batched `POST /photo-urls` (clan-scoped, `IsClanMember`); split out to keep `views/photo.py` under the 200-line limit
+- `giapha/serializers/photo.py` — request-body serializers for all of the above
 - `giapha/tests/test_photo_api.py`
 
 **Modify**
-- `requirements.txt` — thêm `boto3`
+- `requirements.txt` — thêm `boto3`/`botocore`/`s3transfer`/`jmespath`
 - `.env.example` — 5 biến ở trên
 - `djangopj/settings.py` — đọc 5 biến
-- `giapha/serializers/person.py` — thêm `photo_url` (chỉ ở serializer chi tiết), `has_photo` (ở serializer cây)
-- `giapha/views/person.py` — xác nhận HEAD trước khi ghi `photo_key`; xoá object cũ khi thay ảnh
+- `giapha/serializers/person.py` — thêm `photo_url` (chỉ ở serializer chi tiết, qua `context={'with_photo_url': True}`), bỏ `photo_key` khỏi cả write và read fields
+- `giapha/services/tree.py` — `has_photo` (bool) ở node cây, không có key/URL
+- `giapha/services/revision.py` — `photo_key` loại khỏi cả `snapshot()` và `restore()` (xem phase-08 review C1): vòng đời ảnh là hành động riêng, `POST /restore` không được đụng vào
+
+`giapha/views/person.py` **không** bị sửa cho phase này -- xác nhận HEAD và
+xoá object cũ khi thay ảnh nằm hoàn toàn trong `views/photo.py`'s confirm
+endpoint (bước 4-5 ở trên), không phải một field trên `PATCH /persons/{pid}`.
 
 ## Endpoints
 ```
 POST /api/gia-pha/clans/{clan_id}/persons/{pid}/photo-upload-url   IsClanEditor
-POST /api/gia-pha/clans/{clan_id}/photo-urls                       IsClanMember  {person_ids: [...]}
+POST /api/gia-pha/clans/{clan_id}/persons/{pid}/photo              IsClanEditor  {key}  -- xác nhận
 DELETE /api/gia-pha/clans/{clan_id}/persons/{pid}/photo            IsClanEditor
+POST /api/gia-pha/clans/{clan_id}/photo-urls                       IsClanMember  {person_ids: [...]}
 ```
 
 ## Implementation Steps
 1. `services/storage.py` bọc `boto3.client('s3', endpoint_url=...)`. Client khởi tạo **một lần** ở module level (tạo client mỗi request là chậm đáng kể).
 2. Presign PUT dùng `generate_presigned_url('put_object', ...)` với `ContentType` cố định, TTL 300s.
 3. Key luôn có `clan_id` ở tiền tố → dễ xoá cả clan sau này, và dễ kiểm chứng key thuộc đúng clan ở bước xác nhận.
-4. Xác nhận: `head_object` — kiểm tra `ContentLength` ≤ 5MB và key khớp tiền tố `giapha/{clan_id}/{person_id}/`. Sai → 400.
+4. Xác nhận: key phải khớp CHÍNH XÁC hình dạng đã sinh ra ở bước 2 (regex
+   `giapha/{clan_id}/{person_id}/{uuid4hex}.{ext}`, không phải chỉ tiền tố --
+   một prefix-check để lọt `../` traversal, thư mục trống, ký tự lạ...), rồi
+   `head_object` để kiểm `ContentLength` ≤ 5MB và `ContentType` hợp lệ. Sai
+   bất kỳ điều nào ở trên → 400.
 5. Thay ảnh: ghi key mới rồi mới xoá object cũ (thứ tự này an toàn hơn; nếu xoá lỗi thì chỉ còn rác, không mất ảnh).
 6. `DELETE /photo`: xoá object + set `photo_key=''`.
 7. Thiếu cấu hình storage → các endpoint ảnh trả **503 kèm thông báo rõ**, phần còn lại của API vẫn chạy bình thường.
@@ -86,13 +107,15 @@ DELETE /api/gia-pha/clans/{clan_id}/persons/{pid}/photo            IsClanEditor
 9. Ghi chú vào `docs/deployment-guide.md`: bucket phải private, và cần cấu hình CORS cho phép PUT từ origin của app.
 
 ## Success Criteria
-- [ ] Upload ảnh end-to-end thành công với bucket thật (kiểm thủ công một lần)
-- [ ] Không có byte ảnh nào đi qua Django (kiểm bằng đọc code + log)
-- [ ] `photo_key` của clan khác bị từ chối
-- [ ] File > 5MB bị S3 từ chối do `content-length-range`, không phải chỉ do client tự giác
-- [ ] `/tree` **không** sinh presigned URL hàng loạt
-- [ ] Thiếu cấu hình storage → 503 ở endpoint ảnh, API còn lại vẫn 200
-- [ ] Test không chạm mạng
+- [ ] **UNVERIFIED** — Real bucket end-to-end upload. No S3/R2 credentials issued; `test_photo_api.py` mocks `boto3` completely. First run with real bucket = smoke test, not regression check.
+- [x] No photo bytes traverse Django (verified by code review + logging)
+- [x] Cross-clan `photo_key` rejected
+- [x] 5MB size limit enforced on confirm via `head()` ContentLength check (presigned PUT cannot enforce via Conditions)
+- [x] `/tree` never mints presigned URLs in bulk
+- [x] Missing storage config → 503 on photo endpoints, rest of API still 200
+- [x] Tests never touch network (boto3 fully mocked)
+- [x] Key validation regex exactly matches minted key shape (fixed: prevents `../` traversal)
+- [x] HEAD-existence check has full test coverage (fixed: was zero-coverage, mutation-proven)
 
 ## Risk Assessment
 - **CORS trên bucket là chỗ hay quên.** Không cấu hình thì client PUT sẽ fail mà lỗi lại khó đọc. Ghi vào deployment guide ngay.

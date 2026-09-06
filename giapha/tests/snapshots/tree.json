@@ -1,0 +1,33 @@
+{
+  "clan": {
+    "id": "int",
+    "ten_ho": "str"
+  },
+  "edges": [
+    {
+      "from": "int",
+      "kind": "str",
+      "role": "str",
+      "to": "int",
+      "type": "str"
+    }
+  ],
+  "nodes": [
+    {
+      "birth_order": "null",
+      "birth_year": "null",
+      "branch": "str",
+      "death_lunar": "null",
+      "death_year": "null",
+      "generation": "null",
+      "gioi_tinh": "str",
+      "has_photo": "bool",
+      "ho_ten": "str",
+      "id": "int",
+      "is_living": "bool",
+      "is_truong": "bool",
+      "ten_huy": "str"
+    }
+  ],
+  "truncated": "bool"
+}

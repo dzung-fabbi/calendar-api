@@ -10,6 +10,17 @@ Run explicitly with: `python manage.py test --settings=djangopj.settings_test \
 
 Or set env var: `BENCHMARK_TREE_PERFORMANCE=1 ./scripts/run-tests.sh`
 
+`TreeCiRegressionGuardTests` at the bottom of this file is DIFFERENT from the
+above and runs ALWAYS (not gated by `BENCHMARK_TREE_PERFORMANCE`): phase 10
+needs a permanent CI check that `GET /tree` has not regressed to a worse
+complexity class at ~1,000 persons, with a deliberately generous threshold
+(catch a O(n) or worse regression, not benchmark steady-state latency -- CI
+machines are slower and noisier than a dev box). It reuses
+`giapha.tests.perf_fixture` (real relations: generations, branches, polygamy,
+dead people, an adopted child) rather than `build_large_clan_fixture` below,
+which exists only for the opt-in latency benchmarks and is not relations-rich
+in the same way.
+
 Fixture sizes are chosen to stress the tree generation algorithm and JSON
 serialization without exhausting test machine resources:
 - 1,000 persons: realistic large family, target for p95 measurement
@@ -34,6 +45,7 @@ from rest_framework.test import APIClient
 
 from giapha.models import Marriage, Person
 from giapha.tests.factories import build_clan_fixture, build_person
+from giapha.tests.perf_fixture import build_perf_clan_fixture
 
 
 def should_run_benchmarks():
@@ -353,4 +365,46 @@ class RecomputeGenerationsWorstCase(TestCase):
         self.assertLess(
             elapsed_ms, 5000,
             f"Recompute at root took {elapsed_ms:.1f}ms, risks timeout in request",
+        )
+
+
+class TreeCiRegressionGuardTests(TestCase):
+    """Always-on CI guard (not gated by `BENCHMARK_TREE_PERFORMANCE`): `GET
+    /tree` over a ~1,000-person clan with real relations must not regress to
+    a worse complexity class. See the module docstring for why this is
+    separate from the opt-in latency benchmarks above.
+
+    The threshold is deliberately generous (2s, not the 500ms p95 SLA the
+    benchmarks above track) -- the goal is catching an accidental N+1 or a
+    quadratic pass over the person list, not measuring steady-state latency
+    on noisy CI hardware.
+    """
+
+    CI_THRESHOLD_SECONDS = 2.0
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.fixture = build_clan_fixture(suffix='_ci_guard')
+        cls.clan = cls.fixture['clan']
+        cls.perf = build_perf_clan_fixture(cls.clan, target_size=1000)
+
+    def test_tree_endpoint_completes_within_generous_ci_threshold(self):
+        client = APIClient()
+        client.force_authenticate(user=self.fixture['viewer'])
+        url = reverse('clan-tree', kwargs={'clan_id': self.clan.id})
+
+        start = time.perf_counter()
+        response = client.get(url)
+        elapsed_seconds = time.perf_counter() - start
+
+        self.assertEqual(200, response.status_code)
+        body = response.json()
+        # Sanity: the fixture's relations actually made it into the response,
+        # so a future change that silently drops rows still fails loudly.
+        self.assertGreaterEqual(len(body['nodes']), self.perf['total'])
+        self.assertFalse(body['truncated'])
+        self.assertLess(
+            elapsed_seconds, self.CI_THRESHOLD_SECONDS,
+            '/tree took {:.2f}s for {} persons, exceeds the {}s CI regression '
+            'guard threshold.'.format(elapsed_seconds, self.perf['total'], self.CI_THRESHOLD_SECONDS),
         )

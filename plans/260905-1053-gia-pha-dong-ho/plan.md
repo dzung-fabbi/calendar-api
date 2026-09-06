@@ -1,10 +1,10 @@
 ---
 title: "Module Gia phả dòng họ"
 description: "Django app `giapha/` — cây gia phả, lịch giỗ âm lịch VN, push nhắc giỗ, máy tính xưng hô. Backend/API only."
-status: in-progress
+status: completed
 priority: P1
 branch: "master"
-status_note: "7/10 phases shipped (1-7); còn 8 (chặn S3), 9, 10"
+status_note: "10/10 phases shipped. All core giapha features + photos + public sharing + test coverage done."
 tags: [giapha, backend, api, lunar]
 blockedBy: []
 blocks: []
@@ -47,17 +47,23 @@ Nguồn quyết định: [`plans/reports/brainstorm-260905-1053-gia-pha-dong-ho.
 | 5 | [VN lunar va lich gio](./phase-05-vn-lunar-va-lich-gio.md) | Completed |
 | 6 | [FCM push va nhac gio](./phase-06-fcm-push-va-nhac-gio.md) | Completed |
 | 7 | [May tinh xung ho](./phase-07-may-tinh-xung-ho.md) | Completed |
-| 8 | [Presigned upload anh](./phase-08-presigned-upload-anh.md) | Pending |
-| 9 | [Chia se cong khai](./phase-09-chia-se-cong-khai.md) | Pending |
-| 10 | [Test hardening va docs](./phase-10-test-hardening-va-docs.md) | Pending |
+| 8 | [Presigned upload anh](./phase-08-presigned-upload-anh.md) | Completed |
+| 9 | [Chia se cong khai](./phase-09-chia-se-cong-khai.md) | Completed |
+| 10 | [Test hardening va docs](./phase-10-test-hardening-va-docs.md) | Completed |
 
 ## Tiến độ
 
-**7/10 phases completed** (1–7 shipped). **579 tests pass / 4 skipped.** Còn lại: **phase 8** (chặn bởi credential S3), **9**, **10**.
+**10/10 phases completed**. **720 tests pass / 4 skipped.**
 
-Phase 6: `ClanMember.person`, `GioFollow`/`DeviceToken`/`GioNotificationLog`, `toi-la` + `gio-follows` + `/devices`, `services/fcm*.py` (HTTP v1), command `remind_death_anniversary`. **Đúng một tiêu chí còn treo: gửi push THẬT tới máy thử** — chặn bởi Firebase service account JSON.
+Phase 8 (2026-09-06): S3 presigned upload. `giapha/services/storage.py`, `serializers/photo.py`, `views/photo.py`, `views/photo_urls.py`, 4 endpoints. Review 6.5/10 → critical photo_key bypass on `POST .../restore/{revision_id}` fixed; HIGH key-validation regex + HEAD existence test coverage + presigned-URL list minting fixed; plus 5 Lows → 9.5/10. **Real-bucket end-to-end deferred** (no S3 creds; all mock-tested).
 
-Phase 7 (2026-09-05): `GET /clans/{id}/xung-ho`, 8 service module `kinship*`, selector mới `clan_kinship_rows` + `clan_spouse_pairs`. **Không model, không migration.** Review 6/10 (2 Critical: thang bàng hệ lệch bậc, vợ ruột trả về `chị`) → fix → verify 8/10 (1 High mới: đi qua vợ/chồng nào do id autoincrement quyết) → fix → xong. Chốt an toàn: test property đối ứng viết tay, độc lập `TERMS`, đã mutation-verify. **Query budget spec ≤2 KHÔNG đạt — thực tế 2–4**, chi tiết trong phase file.
+Phase 9 (2026-09-06): Public sharing via `public_slug`. New `selectors/public.py`, `services/public_*.py`, `serializers/public.py`, `views/public.py`, migration `0006_visibility_public_link.py`. Review 7.5/10 (two PII leaks found by orchestrator, fixed) → 8.5/10 after two HIGH findings (living-person death-field all-NULL condition bypass via admin/raw update, `visibility` writable via PATCH, throttle X-Forwarded-For bypassable). **Living person's single-char given names now render as placeholder**, marriage edges omitted from public tree (product decision deferred).
+
+Phase 7 (2026-09-05): `GET /clans/{id}/xung-ho`, 8 service modules `kinship*`. **Query budget spec ≤2 NOT MET — actual 2–4**; detail in phase file.
+
+Phase 6: `ClanMember.person`, `GioFollow`/`DeviceToken`/`GioNotificationLog`, `remind_death_anniversary` command. **FCM real-handset criterion remains unverified** (no Firebase JSON).
+
+Phases 1–5, 3 migrations done.
 
 ## Thứ tự phụ thuộc
 
@@ -79,10 +85,11 @@ Phase 5 chỉ cần model `Person` (phase 3), không cần cây. Phase 7/8/9 đ�
 | ~~Âm lịch sai 1 ngày → giỗ sai~~ | ~~**Cao**~~ **ĐÃ GỠ** | `vn_lunar` UTC+7, differential 146.097 ngày với `amlich.js` gốc → 0 sai lệch (phase 5) |
 | Django 3.1 EOL, Python 3.9 pin | **Cao** | Cô lập trong `giapha/`; nâng Django là việc riêng, không nhét vào plan này |
 | MySQL 5.7 không có CTE đệ quy | Trung bình | Duyệt Python + trần 5.000 người/clan |
-| PII người sống lộ qua bản công khai | **Cao** | Serializer công khai tách riêng + test security (phase 9, 10) |
+| PII người sống lộ qua bản công khai | **Cao** | Serializer công khai tách riêng + test security (phase 9, 10) — 3 HIGH leaks found & fixed |
 | Chu trình cha-con phá mọi thuật toán duyệt | **Cao** | Validate chặn chu trình khi ghi (phase 3) |
 | ~~Spam cả họ khi nhắc giỗ~~ | ~~Cao~~ **ĐÃ GỠ** | Trực hệ + override `GioFollow`, đã ship phase 6 |
-| **Đường FCM chưa từng chạy thật** — mock xanh 100% nhưng chưa có handset nào nhận push | **Cao** | Xin Firebase JSON rồi chạy `remind_death_anniversary` một lần có người xác nhận. Không sửa code, chỉ nghiệm thu. |
+| **Đường FCM chưa từng chạy thật** | **Cao** | Mock 100% → xanh. Xin Firebase JSON + run `remind_death_anniversary` để xác nhận. Tiêu chí không tick (dành smoke-test). |
+| **Đường S3 chưa từng chạy thật** | **Cao** | Mock 100% → xanh (presigned PUT/HEAD/DELETE). Chưa bucket. Real upload = lần đầu với bucket thật. Tiêu chí không tick. |
 
 ## Dependencies
 
@@ -148,6 +155,14 @@ Ba câu hỏi của đợt đầu (nhắc giỗ gửi cho ai / index công khai 
 23. **`nhieu_hon_nhan_ngang_hang` có thể thành nhiễu.** Hedge này bắn khi hai hôn nhân cùng rank cho ra hai từ khác nhau — mà `Marriage.order` là **per-husband** và mặc định 1, nên hai đời chồng của một người phụ nữ đều mang `order=1`. Luật unique `order` theo từng người sẽ xoá cả lớp lỗi này — **đổi model**, ngoài phạm vi phase 7.
 24. **N5 là quyết định sản phẩm do người implement tự chốt, không phải chủ dự án.** Con dâu gọi ông nội chồng là **`ông`** chứ không phải `ông nội` (lý do: `nội`/`ngoại` khẳng định huyết thống mà người đó không có; endpoint trả **cách xưng hô**, mà "ông ơi" thì ai cũng nói vậy). Nếu chủ dự án không đồng ý: xoá 4 hàng `MARRIED_IN_SUBSTITUTES`, một test lật.
 25. **Điểm mù của test đối ứng đã bịt một phần, chưa hết.** Sweep chỉ ràng buộc độ sâu thang; chọn từ ở gap 0/1 do bảng `BY_HAND` giữ, và sweep hedge dùng fixture riêng — **cả hai đều mới hơn và ít trận mạc hơn** sweep từ máu mủ. Đừng coi file đối ứng là bảo chứng cho toàn bộ từ vựng.
+
+### Mới phát sinh từ phase 8, 9, 10 (2026-09-06)
+
+26. **`apis/views/good_day.py` `DateGoodByWorkAPIView` sắp xếp sai.** Filter `HiepKy` không `.order_by()` rồi sort chỉ có `percent` → rows cùng `percent` trả theo MySQL's arbitrary order. **Pre-existing bug, out of scope** session này. Test `apis.tests.test_api_values.test_date_good_by_work_values` fail khi chạy riêng, xanh khi chạy với các test khác (race condition, không phải timeout).
+
+27. **Cạnh hôn nhân hiện KHÔNG xuất hiện ở bản công khai.** Phase 9 cố ý omit — `Marriage.status` có `ly_hon`/`goá`, không whitelist. Product decision: hiển thị vợ/chồng hay để họ unconnected trên public tree? Implementer call, project owner chưa chốt.
+
+28. **Query budget `/xung-ho` ≤2 không đạt — thực tế 2–4 tuỳ luật.** `/public/tree` ≤3 không đạt — thực tế 4 (một requery per non-empty liveness branch). Có nên optimize hay revise target?
 
 ### Deferred (low-risk, documentable)
 

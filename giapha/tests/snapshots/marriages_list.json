@@ -1,0 +1,14 @@
+{
+  "data": [
+    {
+      "husband_id": "int",
+      "husband_name": "str",
+      "id": "int",
+      "note": "str",
+      "order": "int",
+      "status": "str",
+      "wife_id": "int",
+      "wife_name": "str"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "items": [
+    {
+      "adjusted": "bool",
+      "can_chi_ngay": "str",
+      "days_until": "int",
+      "generation": "null",
+      "ho_ten": "str",
+      "lunar": {
+        "day": "int",
+        "month": "int"
+      },
+      "lunar_year": "int",
+      "person_id": "int",
+      "solar_date": "str",
+      "thuy_hieu": "str"
+    }
+  ],
+  "truncated": "bool"
+}

@@ -3,6 +3,15 @@
 #
 # Usage: ./scripts/run-tests.sh [extra manage.py test args]
 #   e.g. ./scripts/run-tests.sh apis.tests.test_api_snapshots -v 2
+#   e.g. ./scripts/run-tests.sh giapha.tests.test_query_counts -v 2
+#
+# With NO args, runs both apps in one invocation (`apis giapha`) -- phase 10's
+# headline success criterion is that they pass together, not just separately
+# (a shared table's AUTO_INCREMENT state, e.g. `auth_user`, can make one
+# app's tests order-dependent on the other's). Any arg given on the command
+# line is passed through UNCHANGED instead (positional test labels, `-v 2`,
+# `--keep-test-db`, ...) -- so `./scripts/run-tests.sh giapha.tests.test_x`
+# still runs exactly that, never `apis giapha giapha.tests.test_x`.
 set -e
 
 # Git Bash on Windows rewrites /code into a host path; stop it.
@@ -16,6 +25,13 @@ NETWORK=$(docker network ls --format '{{.Name}}' | grep -E '^calendar-api[_-]def
 
 docker compose up -d db >/dev/null 2>&1
 docker build -q -f "$PROJECT_DIR/Dockerfile.test" -t calendar-api-test:latest "$PROJECT_DIR" >/dev/null
+
+# Default test labels when the caller passes none at all. `$#` (not `$@`)
+# is what to check here: an empty-but-present arg (`./run-tests.sh ""`)
+# must still count as "an arg was given" and be passed through as-is.
+if [ "$#" -eq 0 ]; then
+    set -- apis giapha
+fi
 
 exec docker run --rm \
     --network "$NETWORK" \

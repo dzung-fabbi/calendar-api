@@ -1,0 +1,11 @@
+{
+  "data": [
+    {
+      "email": "str",
+      "joined_at": "str",
+      "role": "str",
+      "user_id": "int",
+      "username": "str"
+    }
+  ]
+}

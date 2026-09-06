@@ -1,0 +1,6 @@
+{
+  "data": {
+    "enabled": "bool",
+    "person_id": "int"
+  }
+}

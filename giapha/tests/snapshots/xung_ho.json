@@ -1,0 +1,22 @@
+{
+  "a_calls_b": {
+    "confident": "bool",
+    "reason": "null",
+    "term": "str"
+  },
+  "b_calls_a": {
+    "confident": "bool",
+    "reason": "null",
+    "term": "str"
+  },
+  "common_ancestor": {
+    "ho_ten": "str",
+    "id": "int"
+  },
+  "explain": "str",
+  "path": {
+    "a_up": "int",
+    "b_up": "int",
+    "side": "str"
+  }
+}

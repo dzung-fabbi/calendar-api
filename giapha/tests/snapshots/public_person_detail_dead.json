@@ -1,0 +1,26 @@
+{
+  "data": {
+    "birth_order": "null",
+    "birth_year": "null",
+    "branch": "str",
+    "death_lunar": {
+      "day": "int",
+      "leap": "bool",
+      "month": "int"
+    },
+    "death_year": "null",
+    "generation": "null",
+    "ho_ten": "str",
+    "id": "int",
+    "is_living": "bool",
+    "is_truong": "bool",
+    "nghe_nghiep": "str",
+    "photo_url": "null",
+    "que_quan": "str",
+    "ten_hieu": "str",
+    "ten_huy": "str",
+    "ten_tu": "str",
+    "thuy_hieu": "str",
+    "tieu_su": "str"
+  }
+}

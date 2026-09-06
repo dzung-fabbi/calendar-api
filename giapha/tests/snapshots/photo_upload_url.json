@@ -1,0 +1,7 @@
+{
+  "data": {
+    "expires_in": "int",
+    "key": "str",
+    "upload_url": "str"
+  }
+}

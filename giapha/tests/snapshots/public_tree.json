@@ -1,0 +1,24 @@
+{
+  "clan": {
+    "id": "int",
+    "ten_ho": "str"
+  },
+  "edges": [],
+  "nodes": [
+    {
+      "birth_order": "null",
+      "birth_year": "null",
+      "branch": "str",
+      "death_lunar": "null",
+      "death_year": "null",
+      "generation": "null",
+      "has_photo": "bool",
+      "ho_ten": "str",
+      "id": "int",
+      "is_living": "bool",
+      "is_truong": "bool",
+      "ten_huy": "null"
+    }
+  ],
+  "truncated": "bool"
+}

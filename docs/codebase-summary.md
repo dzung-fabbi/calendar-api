@@ -210,6 +210,25 @@ migration**: the answer is computed from rows already in the tree.
 Central usage differs; regional variants are out of scope and would be a second table, not
 edits to this one.
 
+## Giapha query budgets (Phase 10)
+
+Query ceilings are enforced per test; numbers are **measured from the snapshot**, not
+guessed. Each ceiling is asserted **against two fixtures: one ~10 person clan and one ~1,000
+person clan** — the property tested is that these queries do NOT grow with clan size.
+
+| Endpoint | Actual | Status |
+|---|---|---|
+| `GET /clans` (list) | 2 | ✓ meets target |
+| `GET /clans/{id}/tree` | 3 | ✓ meets target |
+| `GET /clans/{id}/persons` (list, paginated) | 3 | ✓ meets target |
+| `GET /clans/{id}/persons/{pid}` (detail) | 2 | ✓ beats target (planned 3) |
+| `GET /clans/{id}/lich-gio` | 2 | ✓ meets target |
+| `GET /clans/{id}/xung-ho` | 3 | **Exceeds target** — plan asked for 2; actual is 2 base + 1 lazy load for non-blood links, or 4 when subject is an in-law (`a` omitted + no common ancestor). The extra query is a `clan_spouse_pairs` lookup needed only when kinship is affinal. Each query is independent of clan size. |
+| `GET /public/{slug}/tree` | 4 | **Exceeds target** — plan asked for 3; actual is clan lookup + liveness scan + one requery per non-empty liveness branch, so a mixed clan (both living and deceased) costs 4. Does not grow with clan size. |
+
+**Command budget** (`remind_death_anniversary`): 1 query per clan with nothing due (after
+early exit); ~5 per clan with a due giỗ. Test pins `1 + 3` for three quiet clans.
+
 ## Test suites
 
 **Total: 579 tests, 4 skipped** (50 `apis/` + 529 `giapha/`). The 4 skips are the tree
@@ -255,5 +274,10 @@ Snapshots recorded on first run; `REWRITE_SNAPSHOTS=1` re-records after reviewed
   Acceptable at the table's size (12 months x 60 can-chi = 720 rows max).
 - **`tiet_khi__icontains`** in `HomeAPIView` is used where an exact match looks
   intended; left as-is pending confirmation that the column never holds a list.
+- **`apis/views/good_day.py`'s `DateGoodByWorkAPIView`** queries `HiepKy.objects.filter(...)`
+  with no `.order_by()`, then sorts Python-side by `percent` only. Rows tied on `percent`
+  come back in MySQL's natural order. This causes `apis.tests.test_api_values.test_date_good_by_work_values`
+  to fail in isolation but pass in suite (test ordering matters). Pre-existing; unrelated to
+  giapha; not fixed as part of this phase.
 - **Django 3.1 is end-of-life.** The Dockerfile is pinned to Python 3.9 because
   3.1 does not run on 3.12+. An upgrade path is the next structural piece of work.

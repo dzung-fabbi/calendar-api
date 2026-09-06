@@ -1,7 +1,7 @@
 ---
 phase: 9
 title: "Chia se cong khai"
-status: pending
+status: completed
 priority: P2
 effort: "1d"
 dependencies: [4]
@@ -84,13 +84,15 @@ GET    /api/gia-pha/public/{slug}/persons/{pid}   AllowAny + throttle
    - **Test canary**: thêm một trường mới vào `Person` trong test rồi khẳng định nó **không** xuất hiện trong response công khai → chứng minh cơ chế danh sách trắng thật sự hoạt động
 
 ## Success Criteria
-- [ ] Không trường nhạy cảm nào của người còn sống xuất hiện trong response công khai
-- [ ] Test canary chứng minh trường mới mặc định bị ẩn
-- [ ] Slug sai / clan private / slug đã thu hồi đều trả 404
-- [ ] Throttle chặn được cào dữ liệu
-- [ ] Endpoint công khai trả `X-Robots-Tag: noindex`
-- [ ] Toạ độ mộ phần **không** xuất hiện ở bản công khai
-- [ ] Serializer công khai không dùng `__all__` hay `exclude` (kiểm bằng grep trong test)
+- [x] No sensitive fields of living persons in public response (whitelist enforced at SQL query level + serializer)
+- [x] Test canary: new field added to Person in test → not in public response (proved whitelist mechanism)
+- [x] Wrong slug / private clan / revoked slug all return 404 (404-only surface, no 403 to enable enumeration oracle bypass)
+- [x] Throttle prevents data scraping (X-Forwarded-For bypass fixed: DJANGO_NUM_PROXIES now required)
+- [x] Public endpoints return `X-Robots-Tag: noindex, nofollow` and `Cache-Control: no-store`
+- [x] Grave coordinates not in public response (never queried for public persons)
+- [x] Public serializer uses explicit `fields` list, no `__all__` or `exclude` (verified by grep in tests)
+- [x] Living person given-name rendering (single char → `(Đang sống)` placeholder)
+- [x] Marriage edges omitted from public tree (Marriage.status not whitelisted — product decision, no spouse visibility at MVP)
 
 ## Risk Assessment
 - **Rò rỉ PII là rủi ro nghiêm trọng nhất của cả plan.** Một link công khai chứa họ tên + ngày sinh của hàng trăm người sống là sự cố dữ liệu thật, không phải bug thẩm mỹ.
