@@ -151,6 +151,47 @@ Column definitions for the twelve monthly tables live on one abstract base
 (`SaoMonthBase`); Django names each concrete table after its own class, so this
 is a source-level change with no schema effect.
 
+## Account management (apis/)
+
+Login and logout are OAuth2 (`/auth/token`, `/auth/revoke-token`, served by the shim at
+`djangopj/auth_token_views.py`). Everything else about an account lives in `apis/` under
+`/api/auth/*` and `/api/me`. Nothing here imports `giapha/`.
+
+**Email is the identity.** Registration writes the address to both `auth_user.username`
+and `auth_user.email`, lower-cased, so a new account works with the existing password
+grant unchanged. `username` is the unique column and is therefore what every lookup keys
+on; `auth_user.email` has no unique constraint in stock Django and cannot be trusted to
+identify a row.
+
+**Password reset is a stateful 6-digit OTP**, not `django.contrib.auth.tokens`. That
+generator is stateless and cannot express the three controls a short numeric code needs:
+a per-code attempt counter, single use, and a short absolute lifetime. With a keyspace of
+only 10**6, those controls *are* the security — the code's own entropy is not. Hence
+`apis/models/password_reset.py`.
+
+The code is stored as an HMAC-SHA256 keyed on `SECRET_KEY` and bound to the user id, not
+as a password hash: a slow hash buys nothing over a million values, while a key held
+outside the database means a table dump alone yields nothing. See `apis/services/otp.py`.
+
+**Defence in depth, weakest layer first.** The per-IP throttle scopes are the weakest —
+`NUM_PROXIES` is 0 and there is no shared `CACHES` backend, so buckets are per-process and
+keyed on `REMOTE_ADDR`. What actually holds is per-code and per-user state: one live code
+at a time, dead after 5 wrong guesses, expired after 10 minutes, and at most 3 requests per
+hour per account. Lockout is per *code*, never per account — an account-level lock would
+let anyone who knows an address deny service to its owner.
+
+**Both password-changing paths revoke every token.** `apis/selectors/auth_tokens.py`
+deletes rather than calling `revoke()`, because `RefreshToken.revoke()` in
+django-oauth-toolkit 2.2.0 is a *soft* revoke that the refresh grant still honours inside
+`REFRESH_TOKEN_GRACE_PERIOD_SECONDS`. Refresh tokens are deleted first: the FK between the
+two models is `SET_NULL`, not a cascade, so the other order leaves live refresh tokens
+behind.
+
+**No account enumeration on reset.** `forgot-password` returns one identical 200 for an
+unknown address, an inactive account, a rate-limited user and a failed send. The failed-send
+case is the subtle one — a send is only attempted for accounts that exist, so surfacing its
+failure would leak exactly the fact being protected.
+
 ## Giapha Design Decisions
 
 **Python tree traversal, not SQL recursion.** MySQL 5.7 has no `WITH RECURSIVE`.

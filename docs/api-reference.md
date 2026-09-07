@@ -27,6 +27,107 @@ Hầu hết endpoint trả về response bao trong `{"data": ...}`. **Ngoại l�
 - Validation errors (400) trả dict lỗi trực tiếp, không bao
 - Public endpoint `/public/{slug}/tree` và `/public/{slug}/persons/{person_id}` trả serializer data không bao
 
+## ⚠️ Thay Đổi Không Tương Thích: Danh Sách Thành Viên Họ
+
+`GET /api/gia-pha/clans/{id}/members` (và các response chứa `ClanMember`) **không còn trả
+`username`** cho `editor`/`viewer` — chỉ `owner` mới thấy. Thay vào đó có trường mới
+**`display_name`** (họ + tên; nếu tài khoản chưa đặt tên thì là dạng che `ngu***`).
+
+**Lý do:** đăng ký tài khoản lưu email làm `username`. Serializer vốn đã cố ý giấu `email`
+với người không phải chủ họ, nhưng vẫn trả `username` — nên nếu giữ nguyên, một `viewer` vào
+họ bằng invite code sẽ lấy được đúng danh sách email mà cái khoá kia sinh ra để bảo vệ.
+
+**Client cần làm:** đổi chỗ hiển thị `username` sang `display_name`.
+
+## Tài Khoản (`/api/`)
+
+Các endpoint quản lý tài khoản nằm ở app `apis/`, **không** phải `/api/gia-pha/`. Ghi ở đây
+vì chúng bổ sung cho phần "Xác Thực" bên trên: `/auth/token` cấp token, nhóm này lo phần
+còn lại của vòng đời tài khoản.
+
+| Endpoint | Auth | Body | Thành công |
+|---|---|---|---|
+| `POST /api/auth/register` | không | `email`, `password`, `first_name?`, `last_name?` | 201 `{"data": <user>}` |
+| `POST /api/auth/forgot-password` | không | `email` | 200 `{"data": {"detail": "..."}}` |
+| `POST /api/auth/verify-otp` | không | `email`, `code` | 200 `{"data": {"valid": true}}` |
+| `POST /api/auth/reset-password` | không | `email`, `code`, `new_password` | 200 `{"data": {"detail": "..."}}` |
+| `POST /api/auth/change-password` | Bearer | `current_password`, `new_password` | 200 `{"data": {"detail": "..."}}` |
+| `GET /api/me` · `GET /api/get-user` | Bearer | — | 200 `{"data": <user>}` |
+| `PATCH /api/me` · `PATCH /api/get-user` | Bearer | `first_name?`, `last_name?`, `phone?`, `birth_date?`, `avatar_url?` | 200 `{"data": <user>}` |
+
+`/api/me` và `/api/get-user` là **cùng một view**. `get-user` là tên cũ, giữ cho client đã
+phát hành; `me` là tên nên dùng cho client mới.
+
+**`<user>`:**
+
+```json
+{"id": 1, "username": "a@b.com", "email": "a@b.com",
+ "first_name": "An", "last_name": "Nguyễn",
+ "date_joined": "...", "last_login": "...",
+ "profile": {"phone": "0912345678", "birth_date": "1990-01-31", "avatar_url": "https://..."}}
+```
+
+`profile` luôn có mặt. Tài khoản cũ hơn migration 0055 chưa có bản ghi profile sẽ nhận
+`{"phone": "", "birth_date": null, "avatar_url": ""}` chứ không phải lỗi.
+
+### Đăng ký
+
+- **Email chính là định danh đăng nhập**: lưu vào cả `username` lẫn `email`, chuẩn hoá về
+  chữ thường. Đăng ký xong dùng ngay `/auth/token` với `grant_type=password`, không có bước
+  xác minh email.
+- Email tối đa **150 ký tự** (giới hạn của cột `auth_user.username`, không phải 254 của `email`).
+- Mật khẩu chạy qua `AUTH_PASSWORD_VALIDATORS` của Django, gồm cả kiểm tra "quá giống email/tên".
+- Ký tự ngoài BMP (emoji) trong tên bị từ chối 400: MySQL 5.7 ở đây chạy `utf8` 3 byte,
+  không lưu được ký tự 4 byte.
+
+### Quên mật khẩu (OTP 6 số)
+
+1. `POST /api/auth/forgot-password` → mã 6 số gửi qua email, **hiệu lực 10 phút**.
+2. `POST /api/auth/verify-otp` (tuỳ chọn) → kiểm tra mã mà **không tiêu** nó. Dùng để báo
+   "sai mã" ngay ở màn hình nhập mã. Đoán sai ở đây **vẫn bị tính** vào số lần thử.
+3. `POST /api/auth/reset-password` → đặt mật khẩu mới.
+
+**Client cần biết:**
+
+- `forgot-password` **luôn trả 200 với nội dung giống hệt nhau**, kể cả khi email không tồn
+  tại, tài khoản bị khoá, đã vượt hạn mức, hoặc gửi mail thất bại. Đây là cố ý — phản hồi
+  khác nhau sẽ biến endpoint thành công cụ dò xem một địa chỉ có phải người dùng hay không.
+  **Đừng hiển thị "email không tồn tại"** dựa trên endpoint này; nó không bao giờ nói thế.
+- Mã **sai 5 lần là chết**, kể cả sau đó nhập đúng — phải xin mã mới. Khoá theo **mã**, không
+  theo tài khoản (khoá theo tài khoản sẽ cho phép bất kỳ ai khoá người khác chỉ bằng email).
+- Xin mã mới sẽ **vô hiệu hoá mã cũ**. Tối đa **3 lần/giờ mỗi tài khoản**.
+- Mọi lỗi mã (sai / hết hạn / đã dùng / hết lượt / email lạ) trả về **cùng một body**.
+- Tài khoản Facebook/Google cũ (không có mật khẩu dùng được) **đặt lại được** qua luồng này.
+
+### Đổi mật khẩu và thu hồi token
+
+**`reset-password` và `change-password` đều xoá TOÀN BỘ access + refresh token của tài
+khoản** — kể cả token đang gọi chính request đó. Sau khi nhận 200, client **phải đăng nhập
+lại**; token cũ sẽ trả 401 ở request kế tiếp. Đây là hành vi cố ý: đổi mật khẩu vì bị lộ thì
+phải đẩy được kẻ đang giữ token ra ngoài.
+
+### Sửa thông tin cá nhân
+
+- `email` và `username` **không sửa được** và bị **bỏ qua im lặng** trên PATCH. Chúng là định
+  danh đăng nhập và chưa có bước xác minh địa chỉ, nên cho sửa đồng nghĩa với việc ai chiếm
+  được token có thể trỏ tài khoản về hộp thư của mình rồi dùng "quên mật khẩu" để khoá chủ
+  tài khoản vĩnh viễn. Muốn đổi email: liên hệ quản trị viên.
+- `phone`: định dạng Việt Nam, chấp nhận `0…`, `+84…`, có khoảng trắng/gạch nối. Chuỗi rỗng xoá giá trị.
+- `birth_date`: `YYYY-MM-DD`, không được ở tương lai. `null` xoá giá trị.
+- `avatar_url`: **client tự upload ảnh ở nơi khác rồi gửi URL về**. API không nhận bytes ảnh.
+  Chỉ chấp nhận `http`/`https` — `javascript:`/`data:` bị từ chối 400.
+- Trường vắng mặt trong body thì **giữ nguyên** giá trị đang lưu (đúng ngữ nghĩa PATCH).
+
+### Throttle của nhóm tài khoản
+
+`auth-register` 10/giờ · `auth-forgot-password` 5/giờ · `auth-reset-password` 10/giờ ·
+`auth-change-password` 10/giờ.
+
+Ba scope đầu tính **theo IP** và chỉ là rào cản chi phí — xem cảnh báo `NUM_PROXIES` ở
+`djangopj/settings.py`. Thứ thực sự chặn dò mã là bộ đếm số lần thử trên từng mã và hạn mức
+3 lần/giờ mỗi tài khoản. `auth-change-password` tính **theo người dùng** (đã xác thực) nên
+chặt hơn hẳn.
+
 ## Mô Hình Phân Quyền
 
 **Ba vai trò:** `owner` (quản trị họ), `editor` (viết person/marriage), `viewer` (chỉ đọc).

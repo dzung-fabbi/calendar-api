@@ -1,5 +1,6 @@
 # Codebase Summary
 
+> Account endpoints (`/api/auth/*`, `/api/me`) are documented in `docs/api-reference.md` → "Tài Khoản".
 > Full request/response reference for `giapha/` (auth, error catalogue, per-endpoint fields, client gotchas): `docs/api-reference.md`. The table below is a map, not a contract.
 
 ## Endpoints
@@ -19,6 +20,12 @@
 | `appointment-date` | `views/booking.py` | auth | 1 |
 | `get-bank` | `views/booking.py` | auth | - |
 | `get-user` | `views/account.py` | auth | 1 |
+| `me` (GET, PATCH) | `views/account.py` | auth | 1 / 5 |
+| `auth/register` | `views/auth_register.py` | public POST | 8 |
+| `auth/forgot-password` | `views/auth_password_reset.py` | public POST | 5 |
+| `auth/verify-otp` | `views/auth_password_reset.py` | public POST | - |
+| `auth/reset-password` | `views/auth_password_reset.py` | public POST | - |
+| `auth/change-password` | `views/auth_password_change.py` | auth POST | 5 |
 
 Query counts are enforced as ceilings by `apis/tests/test_query_counts.py`.
 

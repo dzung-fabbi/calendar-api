@@ -271,9 +271,13 @@ drives and delete after use.**
 **Recovery options for social-only accounts, cheapest first:**
 - Admin sets password via `manage.py changepassword <username>` or Django admin
   (`/admin/auth/user/`) and communicates it to the user.
-- Password-reset email is NOT available as-is: the project routes no
-  `django.contrib.auth.urls` and configures no `EMAIL_*` backend, so
-  `PasswordResetView` would have to be wired up first.
+- **Password reset now works for these accounts** (this caveat is retired).
+  `POST /api/auth/forgot-password` mails a 6-digit code and
+  `POST /api/auth/reset-password` sets a new password. It is deliberately NOT gated on
+  `has_usable_password()`, so a social-only account with a `!`-prefixed hash can recover
+  through mailbox possession alone. Requires the `EMAIL_*` configuration below and a
+  `username` that is the user's email — a legacy row whose `username` is a provider id
+  is still not reachable this way and needs the admin path above.
 - User re-registers; admin re-binds their `ClanMember` row and family data to the new account.
 
 ### Follow-up release: drop the tables (IRREVERSIBLE)
@@ -305,3 +309,49 @@ It is now the only login flow in the product and has no rate limit, so password-
 credential stuffing is unbounded. Pre-existing, tracked separately. Note that adding a DRF
 throttle scope only helps once `DJANGO_NUM_PROXIES` matches the real number of trusted
 proxies — at the current `0`, buckets key off `REMOTE_ADDR`.
+
+## Email (password-reset OTP)
+
+The only feature that sends mail is the password-reset code
+(`apis/services/mailer.py`). Set these in `.env`:
+
+```
+EMAIL_HOST=smtp.example.com
+EMAIL_PORT=587
+EMAIL_HOST_USER=apikey-or-username
+EMAIL_HOST_PASSWORD=...
+EMAIL_USE_TLS=True
+EMAIL_TIMEOUT=10
+DEFAULT_FROM_EMAIL=no-reply@yourdomain.tld
+```
+
+**`EMAIL_HOST` is the switch.** Leave it empty and Django uses the console backend: the
+message is printed to the process log instead of being sent, and nothing raises. That is
+what makes local dev and CI work without credentials — and it also means a deploy that
+forgets `EMAIL_HOST` looks completely healthy while no user ever receives a code.
+
+**A broken SMTP server is invisible to users, by design.** `forgot-password` answers the
+same 200 whether the send succeeded or not, because a visible failure would reveal which
+addresses belong to real accounts (a send is only attempted for those). The failure is
+recorded as a `WARNING` from the `apis.services.mailer` logger — **monitor that logger**,
+it is the only signal you get.
+
+`EMAIL_TIMEOUT` is not optional. Django sets no socket timeout by default, so one
+unreachable mail server would pin a gunicorn worker per request on an unauthenticated
+endpoint.
+
+Verify after deploy:
+
+```sh
+python manage.py shell -c "from django.core.mail import send_mail;   send_mail('test', 'test', None, ['you@yourdomain.tld'])"
+```
+
+### Migration
+
+This release adds `apis/migrations/0073_account_profile_and_password_reset.py`:
+three nullable/blank columns on `apis_userprofile` (`phone`, `birth_date`, `avatar_url`)
+and the new `apis_passwordresetcode` table. Additive only — no backfill, no data
+migration, and safe to run before the new code is live.
+
+Old reset codes are deleted opportunistically on each user's next request, so the table
+stays bounded without a cron job.
