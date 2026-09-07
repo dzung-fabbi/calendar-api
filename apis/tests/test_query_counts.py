@@ -28,9 +28,26 @@ class QueryCountTests(TestCase):
         self.client = APIClient()
 
     def assert_within_budget(self, name, client, path, params=None):
+        self._assert_call_within_budget(
+            name, lambda: client.get(path, params or {}), 200,
+        )
+
+    def assert_post_within_budget(self, name, client, path, body, expected_status=200):
+        """POST variant. The account endpoints are all writes, so the ratchet
+        would not cover any of them without this."""
+        self._assert_call_within_budget(
+            name, lambda: client.post(path, body, format="json"), expected_status,
+        )
+
+    def assert_patch_within_budget(self, name, client, path, body):
+        self._assert_call_within_budget(
+            name, lambda: client.patch(path, body, format="json"), 200,
+        )
+
+    def _assert_call_within_budget(self, name, call, expected_status):
         with CaptureQueriesContext(connection) as captured:
-            response = client.get(path, params or {})
-        self.assertEqual(200, response.status_code)
+            response = call()
+        self.assertEqual(expected_status, response.status_code, response.content)
 
         count = len(captured.captured_queries)
         budgets = load_snapshot(BUDGETS) or {}
@@ -93,4 +110,52 @@ class QueryCountTests(TestCase):
         client.force_authenticate(user=self.fixture["user"])
         self.assert_within_budget(
             "appointment_date", client, "/api/appointment-date"
+        )
+
+    # -- account endpoints ------------------------------------------------
+    #
+    # `get_user` was missing entirely despite docs/codebase-summary.md
+    # publishing a budget of 1 for it -- the one endpoint whose shape this
+    # feature changes (it now nests `profile`) had no ratchet at all.
+
+    def test_get_user(self):
+        client = APIClient()
+        client.force_authenticate(user=self.fixture["user"])
+        self.assert_within_budget("get_user", client, "/api/get-user")
+
+    def test_me_patch(self):
+        client = APIClient()
+        client.force_authenticate(user=self.fixture["user"])
+        self.assert_patch_within_budget(
+            "me_patch", client, "/api/me", {"first_name": "An"},
+        )
+
+    def test_auth_register(self):
+        self.assert_post_within_budget(
+            "auth_register",
+            APIClient(),
+            "/api/auth/register",
+            {"email": "budget@example.com", "password": "Kh0ngDeDoan!2026"},
+            expected_status=201,
+        )
+
+    def test_auth_forgot_password(self):
+        self.assert_post_within_budget(
+            "auth_forgot_password",
+            APIClient(),
+            "/api/auth/forgot-password",
+            {"email": self.fixture["user"].email or "khong.co@example.com"},
+        )
+
+    def test_auth_change_password(self):
+        user = self.fixture["user"]
+        user.set_password("MatKhauCu!2026")
+        user.save()
+        client = APIClient()
+        client.force_authenticate(user=user)
+        self.assert_post_within_budget(
+            "auth_change_password",
+            client,
+            "/api/auth/change-password",
+            {"current_password": "MatKhauCu!2026", "new_password": "MatKhauMoi!2026"},
         )

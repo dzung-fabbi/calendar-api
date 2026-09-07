@@ -5,13 +5,18 @@ from apis.views import (
     BankAPIView,
     BookCalendarAPIView,
     CalendarAPIView,
+    ChangePasswordAPIView,
     ConfigAPIView,
     DateGoodByWorkAPIView,
+    ForgotPasswordAPIView,
     HomeAPIView,
+    RegisterAPIView,
+    ResetPasswordAPIView,
     SoHocAPIView,
     ThanSatAPIView,
     TietkhiAPIView,
     UserAPIView,
+    VerifyOtpAPIView,
 )
 
 urlpatterns = [
@@ -26,4 +31,29 @@ urlpatterns = [
     path("get-config", ConfigAPIView.as_view(), name="get-config"),
     path("get-bank", BankAPIView.as_view(), name="get-bank"),
     path("get-user", UserAPIView.as_view(), name="get-user"),
+    # Same view as `get-user` above, under the name new clients should use.
+    # `get-user` is GET-only in every shipped client and cannot be renamed;
+    # rather than duplicate a view, both paths reach the one that now also
+    # handles PATCH.
+    path("me", UserAPIView.as_view(), name="me"),
+    # Account management. `/auth/token` and `/auth/revoke-token` (login and
+    # logout, mounted in `djangopj/urls.py`) are deliberately NOT part of this
+    # group -- shipped clients call them at the root and they stay there.
+    path("auth/register", RegisterAPIView.as_view(), name="auth-register"),
+    path(
+        "auth/forgot-password",
+        ForgotPasswordAPIView.as_view(),
+        name="auth-forgot-password",
+    ),
+    path("auth/verify-otp", VerifyOtpAPIView.as_view(), name="auth-verify-otp"),
+    path(
+        "auth/reset-password",
+        ResetPasswordAPIView.as_view(),
+        name="auth-reset-password",
+    ),
+    path(
+        "auth/change-password",
+        ChangePasswordAPIView.as_view(),
+        name="auth-change-password",
+    ),
 ]

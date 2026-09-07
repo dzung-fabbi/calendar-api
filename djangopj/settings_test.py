@@ -40,3 +40,9 @@ DEBUG = False
 
 # The default PBKDF2 hasher dominates runtime when tests create users.
 PASSWORD_HASHERS = ['django.contrib.auth.hashers.MD5PasswordHasher']
+
+# Keep every test send in memory so tests assert on `django.core.mail.outbox`.
+# Pinned here rather than left to the real settings module, whose backend is
+# chosen by whether EMAIL_HOST is set -- a developer with EMAIL_HOST exported
+# would otherwise have the suite talk to a real SMTP server.
+EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'

@@ -2,6 +2,13 @@
 
 from apis.views.account import ConfigAPIView, UserAPIView
 from apis.views.almanac import CalendarAPIView, HomeAPIView, TietkhiAPIView
+from apis.views.auth_password_change import ChangePasswordAPIView
+from apis.views.auth_password_reset import (
+    ForgotPasswordAPIView,
+    ResetPasswordAPIView,
+    VerifyOtpAPIView,
+)
+from apis.views.auth_register import RegisterAPIView
 from apis.views.booking import (
     AppointmentDateAPIView,
     BankAPIView,
@@ -16,11 +23,16 @@ __all__ = [
     'BankAPIView',
     'BookCalendarAPIView',
     'CalendarAPIView',
+    'ChangePasswordAPIView',
     'ConfigAPIView',
     'DateGoodByWorkAPIView',
+    'ForgotPasswordAPIView',
     'HomeAPIView',
+    'RegisterAPIView',
+    'ResetPasswordAPIView',
     'SoHocAPIView',
     'ThanSatAPIView',
     'TietkhiAPIView',
     'UserAPIView',
+    'VerifyOtpAPIView',
 ]

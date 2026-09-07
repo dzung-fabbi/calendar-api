@@ -60,9 +60,28 @@ class BankTransaction(models.Model):
 
 
 class UserProfile(models.Model):
+    """Per-user data that does not fit on `auth.User`.
+
+    `is_free`/`expiry_datetime` are BILLING internals and are deliberately not
+    exposed by `apis/serializers/profile.py`; the three fields below are the
+    only ones a user may read or write about themselves.
+
+    NOT EVERY USER HAS A ROW. The signal at the bottom of this class only fires
+    on creation, and the model arrived in migration 0055 -- so accounts older
+    than that have none. Callers must use `hasattr(user, 'profile')` or
+    `get_or_create`, never a bare `user.profile` (see
+    `apis/admin/site_config.py.make_done`, which was fixed for exactly this).
+    """
+
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     is_free = models.IntegerField(verbose_name="Thành viên trả phí", default=0)
     expiry_datetime = models.DateField(verbose_name="Thời gian hết hạn", null=True)
+    phone = models.CharField(verbose_name="Số điện thoại", max_length=20, blank=True, default='')
+    birth_date = models.DateField(verbose_name="Ngày sinh", null=True, blank=True)
+    # Client-supplied: the API stores a URL, it does not accept image bytes.
+    # The serializer restricts the scheme to http/https -- an unchecked
+    # `javascript:`/`data:` value here is echoed to every client that renders it.
+    avatar_url = models.URLField(verbose_name="Ảnh đại diện", max_length=500, blank=True, default='')
 
     def create_user_profile(sender, instance, created, **kwargs):
         if created:

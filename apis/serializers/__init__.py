@@ -1,6 +1,13 @@
 """Serializer package. Re-exported flat so `from apis.serializers import X` works."""
 
 from apis.serializers.account import UserSerializer
+from apis.serializers.auth import (
+    ChangePasswordSerializer,
+    ForgotPasswordSerializer,
+    RegisterSerializer,
+    ResetPasswordSerializer,
+    VerifyOtpSerializer,
+)
 from apis.serializers.almanac import (
     HiepKySerializer,
     HourInDaySerializer,
@@ -13,6 +20,7 @@ from apis.serializers.booking import (
     BankSerializer,
     BookCalendarSerializer,
 )
+from apis.serializers.profile import ProfileUpdateSerializer, UserProfileSerializer
 from apis.serializers.site_config import (
     DateConfigSerializer,
     DirectionConfigSerializer,
@@ -39,6 +47,9 @@ from apis.serializers.than_sat import (
 
 __all__ = [
     'AppointmentDateSerializer', 'BankSerializer', 'BookCalendarSerializer',
+    'ChangePasswordSerializer', 'ForgotPasswordSerializer',
+    'ProfileUpdateSerializer', 'RegisterSerializer', 'ResetPasswordSerializer',
+    'UserProfileSerializer', 'VerifyOtpSerializer',
     'DateConfigSerializer', 'DirectionConfigSerializer', 'HiepKySerializer',
     'HourInDaySerializer', 'HoursConfigSerializer', 'QuyNhanSerializer',
     'SaoSerializer', 'ThanSatByMonthSerializer', 'ThanSatByYearSerializer',

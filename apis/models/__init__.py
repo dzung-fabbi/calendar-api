@@ -57,6 +57,7 @@ from apis.models.month_stars import (
     SaoMonth12,
     SaoMonthBase,
 )
+from apis.models.password_reset import PasswordResetCode
 from apis.models.site_config import DateConfig, DirectionConfig, HoursConfig
 from apis.models.stars import CategoryStars, Sao
 from apis.models.than_sat import (
@@ -82,7 +83,8 @@ __all__ = [
     'AM_DUONG', 'CALENDAR', 'HOURS', 'STATUS_TRANSACTION',
     'AppointmentDate', 'BankConfig', 'BankTransaction', 'BookCalendar',
     'CategoryStars', 'DateConfig', 'DirectionConfig', 'HiepKy', 'HourInDay',
-    'HoursConfig', 'ItemBase', 'QuyNhan', 'Sao', 'SaoHiepKy', 'SaoMonthBase',
+    'HoursConfig', 'ItemBase', 'PasswordResetCode', 'QuyNhan', 'Sao',
+    'SaoHiepKy', 'SaoMonthBase',
     'ThanSatByMonth', 'ThanSatByYear', 'ThanSatByYearSao', 'TietKhi',
     'TuDaiCatThoi', 'TuDaiCatThoiSao', 'UserProfile',
     'SAO_HOUR_MODELS', 'SAO_MONTH_MODELS',

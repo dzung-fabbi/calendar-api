@@ -2,7 +2,7 @@
 
 import datetime as dt
 
-from django.test import SimpleTestCase
+from django.test import SimpleTestCase, override_settings
 
 from apis.constant import CAN_CHI
 from apis.models.choices import lunar_day
@@ -11,6 +11,7 @@ from apis.services.can_chi import (
     can_chi_for_date,
     lunar_month_solar_range,
 )
+from apis.services import otp
 from apis.services.day_rating import DEFAULT_CONFIG, RatingConfig, rate_day
 from apis.services.numerology import (
     LETTER_VALUES,
@@ -138,3 +139,45 @@ class DayRatingTests(SimpleTestCase):
         )
         # 3 things to do against 1 to avoid; the star ratio is weighted out.
         self.assertEqual(3.0, result['percent'])
+
+
+class OtpServiceTests(SimpleTestCase):
+    """`apis.services.otp` -- pure, so no database is needed. That this class
+    runs on `SimpleTestCase` at all is the proof the module touched no ORM."""
+
+    def test_generate_code_is_six_digits(self):
+        for _ in range(50):
+            code = otp.generate_code()
+            self.assertEqual(6, len(code))
+            self.assertTrue(code.isdigit())
+
+    def test_generate_code_covers_the_whole_keyspace(self):
+        """Leading zeros must survive. The `str(randbelow(10**6))` spelling
+        drops them, which silently loses ~10% of the keyspace and leaks that
+        the first digit is never 0."""
+        codes = [otp.generate_code() for _ in range(400)]
+        self.assertGreater(len(set(codes)), 300)
+        # P(no leading zero in 400 draws) = 0.9**400, about 1e-19.
+        self.assertTrue(any(code.startswith('0') for code in codes))
+
+    def test_hash_is_deterministic_and_64_hex_chars(self):
+        first = otp.hash_code('123456', 7)
+        self.assertEqual(first, otp.hash_code('123456', 7))
+        self.assertEqual(64, len(first))
+        self.assertNotEqual('123456', first)
+
+    def test_hash_is_bound_to_the_user(self):
+        self.assertNotEqual(otp.hash_code('123456', 7), otp.hash_code('123456', 8))
+
+    def test_hash_depends_on_the_secret_key(self):
+        with override_settings(SECRET_KEY='a-different-secret'):
+            other = otp.hash_code('123456', 7)
+        self.assertNotEqual(otp.hash_code('123456', 7), other)
+
+    def test_codes_match(self):
+        stored = otp.hash_code('123456', 7)
+        self.assertTrue(otp.codes_match(stored, '123456', 7))
+        self.assertFalse(otp.codes_match(stored, '654321', 7))
+        self.assertFalse(otp.codes_match(stored, '123456', 8))
+        self.assertFalse(otp.codes_match('', '123456', 7))
+        self.assertFalse(otp.codes_match(stored, '', 7))

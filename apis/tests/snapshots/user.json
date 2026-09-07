@@ -6,6 +6,11 @@
     "id": "int",
     "last_login": "null",
     "last_name": "str",
+    "profile": {
+      "avatar_url": "str",
+      "birth_date": "null",
+      "phone": "str"
+    },
     "username": "str"
   }
 }

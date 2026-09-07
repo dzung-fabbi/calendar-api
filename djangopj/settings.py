@@ -172,6 +172,16 @@ REST_FRAMEWORK = {
     'DEFAULT_THROTTLE_RATES': {
         'giapha-join': '10/hour',
         'giapha-public': '60/hour',
+        # Account endpoints (`apis/views/auth_register.py`,
+        # `apis/views/auth_password_reset.py`). Same PER-IP caveat as above -- these
+        # raise the cost of a single-source attack and nothing more. The
+        # binding limit on guessing a reset code is the PER-CODE attempt
+        # counter (`PASSWORD_RESET_MAX_ATTEMPTS`), which no amount of IP
+        # rotation can get around.
+        'auth-register': '10/hour',
+        'auth-forgot-password': '5/hour',
+        'auth-reset-password': '10/hour',
+        'auth-change-password': '10/hour',
     },
     # How many reverse proxies in front of Django are TRUSTED to append to
     # `X-Forwarded-For` (DRF's `BaseThrottle.get_ident`; see
@@ -213,6 +223,36 @@ S3_BUCKET = os.environ.get('S3_BUCKET', '')
 S3_ACCESS_KEY_ID = os.environ.get('S3_ACCESS_KEY_ID', '')
 S3_SECRET_ACCESS_KEY = os.environ.get('S3_SECRET_ACCESS_KEY', '')
 S3_REGION = os.environ.get('S3_REGION', '')
+
+# Outbound email. Only the password-reset OTP uses this today
+# (`apis/services/mailer.py`).
+#
+# The backend is CHOSEN BY WHETHER `EMAIL_HOST` IS SET, rather than being its
+# own env var, so that a host with no mail configuration degrades to printing
+# the message on stdout instead of raising at send time. That keeps local dev,
+# CI and a half-provisioned deploy working: the OTP is still recoverable from
+# the log, and no code path has to special-case "email is not set up".
+EMAIL_HOST = os.environ.get('EMAIL_HOST', '')
+EMAIL_BACKEND = (
+    'django.core.mail.backends.smtp.EmailBackend' if EMAIL_HOST
+    else 'django.core.mail.backends.console.EmailBackend'
+)
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+EMAIL_USE_TLS = env_flag('EMAIL_USE_TLS', True)
+EMAIL_USE_SSL = env_flag('EMAIL_USE_SSL', False)
+# Django has NO default socket timeout for SMTP. Without this, one unreachable
+# mail server pins a gunicorn sync worker until the OS gives up -- a handful of
+# password-reset requests is then enough to stall the whole API.
+EMAIL_TIMEOUT = int(os.environ.get('EMAIL_TIMEOUT', '10'))
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'no-reply@localhost')
+
+# Password-reset OTP policy (`apis/models/password_reset.py`). Short TTL and a
+# small attempt cap are the real defence on a 6-digit code -- see the throttle
+# note in REST_FRAMEWORK above for why per-IP limits cannot be relied on.
+PASSWORD_RESET_CODE_TTL_SECONDS = int(os.environ.get('PASSWORD_RESET_CODE_TTL_SECONDS', '600'))
+PASSWORD_RESET_MAX_ATTEMPTS = int(os.environ.get('PASSWORD_RESET_MAX_ATTEMPTS', '5'))
 
 # HTTPS hardening. Off by default because turning SSL redirect on behind a
 # proxy that does not forward the scheme causes a redirect loop; switch these
