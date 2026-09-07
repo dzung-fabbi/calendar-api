@@ -1,5 +1,6 @@
 {
   "data": {
+    "display_name": "str",
     "email": "str",
     "joined_at": "str",
     "role": "str",

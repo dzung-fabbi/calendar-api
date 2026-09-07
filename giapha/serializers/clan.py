@@ -72,25 +72,48 @@ class ClanSerializer(serializers.ModelSerializer):
 
 
 class ClanMemberSerializer(serializers.ModelSerializer):
-    """`email` is only shown to the clan's owner -- every other role sees
-    `username`/`role`/`joined_at` only. The roster is `IsClanMember` (any
-    role), so without this gate a viewer who joined via an invite code could
-    harvest every member's email address.
+    """`email` AND `username` are only shown to the clan's owner -- every other
+    role sees `user_id`/`display_name`/`role`/`joined_at`. The roster is
+    `IsClanMember` (any role), so without this gate a viewer who joined via an
+    invite code could harvest every member's email address.
+
+    WHY `username` IS GATED TOO, not just `email`: account registration
+    (`apis/views/auth_register.py`) stores the user's email address AS the
+    username. Leaving `username` ungated therefore hands every viewer exactly
+    the addresses the `email` gate exists to protect -- the gate would still be
+    there, and it would do nothing. Gating one column but not its duplicate is
+    the whole bug.
+
+    `display_name` replaces it for non-owners so a roster still has something
+    human to show. It falls back to a masked username for accounts with no name
+    set, rather than to the raw value.
     """
 
     user_id = serializers.IntegerField(source='user.id', read_only=True)
     username = serializers.CharField(source='user.username', read_only=True)
     email = serializers.EmailField(source='user.email', read_only=True)
+    display_name = serializers.SerializerMethodField()
 
     class Meta:
         model = ClanMember
-        fields = ('user_id', 'username', 'email', 'role', 'joined_at')
+        fields = ('user_id', 'username', 'display_name', 'email', 'role', 'joined_at')
         read_only_fields = fields
+
+    def get_display_name(self, instance):
+        user = instance.user
+        full_name = '{} {}'.format(user.first_name, user.last_name).strip()
+        if full_name:
+            return full_name
+        # No name on the account. Show enough to tell two rows apart without
+        # reproducing the address: `nguoi.dung@example.com` -> `ngu***`.
+        local_part = (user.username or '').split('@')[0]
+        return '{}***'.format(local_part[:3]) if local_part else ''
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
         if not self._caller_is_owner(instance):
             data.pop('email', None)
+            data.pop('username', None)
         return data
 
     def _caller_is_owner(self, instance):

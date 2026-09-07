@@ -139,6 +139,36 @@ class ClanPermissionMatrixTests(TestCase):
                 data = client_for(self.fixture[role]).get(self.members_url()).json()['data']
                 self.assertTrue(all('email' not in row for row in data))
 
+    def test_member_roster_hides_username_from_non_owners(self):
+        """Account registration stores the email address AS the username
+        (`apis/views/auth_register.py`), so leaking `username` leaks exactly
+        what the `email` gate above exists to protect. Gating one column and
+        not its duplicate would leave the gate in place doing nothing.
+        """
+        owner_data = client_for(self.fixture['owner']).get(self.members_url()).json()['data']
+        self.assertTrue(all('username' in row for row in owner_data))
+
+        for role in ('editor', 'viewer'):
+            with self.subTest(role=role):
+                data = client_for(self.fixture[role]).get(self.members_url()).json()['data']
+                self.assertTrue(all('username' not in row for row in data))
+                # A roster still needs something human to show.
+                self.assertTrue(all('display_name' in row for row in data))
+
+    def test_display_name_never_reproduces_the_email_address(self):
+        """The fallback for an account with no name set must not simply hand
+        back the username it replaced."""
+        nameless = self.fixture['viewer']
+        nameless.first_name = ''
+        nameless.last_name = ''
+        nameless.username = 'nguoi.dung@example.com'
+        nameless.save()
+
+        data = client_for(self.fixture['editor']).get(self.members_url()).json()['data']
+        names = [row['display_name'] for row in data]
+        self.assertNotIn('nguoi.dung@example.com', names)
+        self.assertIn('ngu***', names)
+
     def test_public_slug_hidden_from_non_owners(self):
         self.clan.public_slug = 'noi-toc'
         self.clan.save(update_fields=['public_slug'])

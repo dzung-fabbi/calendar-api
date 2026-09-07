@@ -1,8 +1,8 @@
 {
   "data": {
+    "display_name": "str",
     "joined_at": "str",
     "role": "str",
-    "user_id": "int",
-    "username": "str"
+    "user_id": "int"
   }
 }
