@@ -1,7 +1,7 @@
 ---
 title: "Remove Facebook + Google social login"
 description: "Strip drf-social-oauth2/social-auth from the project, keep /auth/token working unchanged, drop the social_django tables."
-status: pending
+status: in-progress
 priority: P2
 effort: 3h
 branch: master
@@ -32,7 +32,7 @@ Endpoints deliberately dropped (will 404): `/auth/convert-token`, `/auth/authori
 |---|---|---|---|---|
 | 01 | [Remove social wiring + token compat shim](phase-01-remove-social-wiring-and-token-shim.md) | complete | 1h | — |
 | 02 | [Auth endpoint regression tests](phase-02-auth-endpoint-regression-tests.md) | complete | 1h | 01 |
-| 03 | [Drop social_django tables (migration)](phase-03-drop-social-django-tables-migration.md) | **deferred to release N+1** | 30m | 01 |
+| 03 | [Drop social_django tables (migration)](phase-03-drop-social-django-tables-migration.md) | migration written 2026-09-09, **not yet applied** (needs backup + migrate) | 30m | 01 |
 | 04 | [Docs + deployment notes + final sweep](phase-04-docs-and-verification-sweep.md) | complete | 30m | 02, 03 |
 
 02 and 03 may run in parallel (disjoint files). 04 last — it asserts the whole thing.

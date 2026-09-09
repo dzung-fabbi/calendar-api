@@ -1,29 +1,26 @@
-"""Local drop-in replacement for drf-social-oauth2's token endpoints.
+"""The `/auth/token` and `/auth/revoke-token` endpoints. Username/password only.
 
 WHY THIS EXISTS -- do not "simplify" it into `oauth2_provider.views.TokenView`.
 
-`/auth/token` and `/auth/revoke-token` used to be served by `drf_social_oauth2.urls`.
-That package was removed together with Facebook/Google login, but shipped mobile
-clients still call both URLs and some of them send a JSON body.
-
+Shipped mobile clients call both URLs, and some of them send a JSON body.
 django-oauth-toolkit's own views are plain Django `View`s that read `request.POST`,
-i.e. form-encoded bodies ONLY. drf-social-oauth2's were DRF `APIView`s that copied
-`request.data` into `request._request.POST` first, so JSON worked. This module keeps
-that behaviour -- and the optional trailing slash (handled in `djangopj/urls.py`) --
-with zero social code.
+i.e. form-encoded bodies ONLY -- swap this module out for them and every JSON
+client starts getting `unsupported_grant_type`. This module accepts BOTH body
+formats (see `_copy_parsed_body_into_post`) and `djangopj/urls.py` keeps the
+trailing slash optional. Both are wire contracts with already-released clients,
+not preferences.
 
-Everything social is gone: no `convert-token`, no provider backends, no
-`social_django` session flow.
-
-Deliberate deviations from the package it replaces, all of them strict improvements
-that no caller can tell apart from success:
-  * a non-mapping JSON body answers 400 instead of raising and returning 500;
+Properties worth keeping if this is ever rewritten again:
+  * a non-mapping JSON body answers 400, never a 500;
   * oauthlib's response headers (notably `WWW-Authenticate`, required by
     RFC 6749 section 5.2 on a 401) are copied onto the response;
   * `sensitive_post_parameters` / `sensitive_variables` keep the password out of
-    error reports.
-Everything else -- URLs, status codes, body shapes, the 204-on-revoke rule -- is
-byte-for-byte what drf-social-oauth2 2.1.1 did.
+    error reports;
+  * revoke answers 204 with an empty body.
+
+The URLs, status codes and body shapes are frozen: they match what the endpoints
+returned before this module replaced the third-party package that used to serve
+them, so no released client can tell the difference.
 """
 from json import loads as json_loads
 
@@ -105,8 +102,8 @@ class TokenView(OAuthLibMixin, APIView):
 
 
 class _RevokeTokenSerializer(Serializer):
-    """Mirrors `drf_social_oauth2.serializers.RevokeTokenSerializer` field for field,
-    so the 400 body that clients already parse keeps its exact shape."""
+    """Three required fields, in this exact shape: the 400 body a missing field
+    produces is already being parsed by released clients."""
 
     client_id = CharField(max_length=100)
     client_secret = CharField(max_length=255)

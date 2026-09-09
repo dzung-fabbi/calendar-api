@@ -23,9 +23,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('apis.urls')),
     path('api/gia-pha/', include('giapha.urls')),
-    # Facebook/Google login was removed; these two are all that is left of the
-    # old `drf_social_oauth2.urls` mount. `/?$` preserves the optional trailing
-    # slash that package allowed -- shipped clients call `/auth/token` bare.
+    # Login and logout. `/?$` keeps the trailing slash OPTIONAL -- shipped
+    # clients call `/auth/token` bare and must not start 404ing.
     url(r'^auth/token/?$', TokenView.as_view(), name='auth-token'),
     url(r'^auth/revoke-token/?$', RevokeTokenView.as_view(), name='auth-revoke-token'),
 ]

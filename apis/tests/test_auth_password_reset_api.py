@@ -193,8 +193,8 @@ class PasswordResetFlowTests(TestCase):
         self.assertEqual(wrong.content, unknown.content)
 
     def test_legacy_unusable_password_account_can_reset(self):
-        """Accounts left over from the removed Facebook/Google login have no
-        usable password. Reset is their ONLY recovery path, so it must not be
+        """An account carrying `set_unusable_password()` cannot authenticate by
+        password at all. Reset is its ONLY recovery path, so it must not be
         gated on `has_usable_password()`."""
         self.user.set_unusable_password()
         self.user.save()

@@ -44,8 +44,7 @@ prefix `/api/gia-pha/` is throttled on `/join` only (`giapha-join` scope: 10/hou
 
 Both accept form-encoded (`application/x-www-form-urlencoded`) or JSON bodies; the trailing
 slash is optional. Neither runs an authenticator (`authentication_classes = ()`), so a stale
-`Bearer` header cannot 401 a token refresh. Facebook/Google login was removed -- these two are
-all that remains of the old `drf_social_oauth2` mount.
+`Bearer` header cannot 401 a token refresh. Username/password is the only login flow.
 
 **giỗ (death anniversary) endpoint:**
 

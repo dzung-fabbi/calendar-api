@@ -33,11 +33,12 @@ TWO RULES GOVERN EVERYTHING IN THIS MODULE.
    Lockout is per CODE, never per account: an account-level lock would let
    anyone who knows a victim's address lock them out at will.
 
-LEGACY ACCOUNTS RESET TOO. Users left over from the removed Facebook/Google
-login have `set_unusable_password()`. Reset is deliberately NOT gated on
-`has_usable_password()` -- possession of the mailbox is the proof, and before
-this flow existed those accounts had no recovery path at all
-(`docs/deployment-guide.md`). Refusing them would leak account type as well.
+ACCOUNTS WITH NO USABLE PASSWORD RESET TOO. Some rows carry
+`set_unusable_password()` -- Django's marker for "this account cannot
+authenticate by password". Reset is deliberately NOT gated on
+`has_usable_password()`: possession of the mailbox is the proof, this flow is
+the ONLY recovery path such an account has, and refusing them would leak
+account type as well.
 """
 
 from django.conf import settings

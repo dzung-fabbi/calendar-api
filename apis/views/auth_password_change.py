@@ -37,7 +37,7 @@ class ChangePasswordAPIView(APIView):
 
         data = serializer.validated_data
         if not request.user.has_usable_password():
-            # A legacy social account has no current password to present.
+            # An account with no usable password has no current one to present.
             # Point at the flow that CAN help instead of an unfalsifiable
             # "wrong password" -- the caller is already authenticated, so
             # there is nothing to leak here.

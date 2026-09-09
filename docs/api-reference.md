@@ -18,7 +18,7 @@ Endpoint auth (từ `djangopj/auth_token_views.py` trên `django-oauth-toolkit`,
 
 **Ghi chú:**
 - Cả hai endpoint chấp nhận body dạng `application/x-www-form-urlencoded` hoặc JSON (`application/json`).
-- Endpoint sau đây **đã bị xóa** và trả về 404: `/auth/convert-token`, `/auth/login/{provider}/`, `/auth/authorize`, `/auth/invalidate-sessions`, `/auth/invalidate-refresh-tokens`, `/auth/disconnect-backend`. **Đăng nhập Facebook/Google không còn được hỗ trợ.**
+- **Đăng nhập chỉ bằng username/password** (`grant_type=password`). Không có đăng nhập qua nhà cung cấp bên thứ ba.
 
 ### Bao Đóng Response
 
@@ -97,7 +97,8 @@ phát hành; `me` là tên nên dùng cho client mới.
   theo tài khoản (khoá theo tài khoản sẽ cho phép bất kỳ ai khoá người khác chỉ bằng email).
 - Xin mã mới sẽ **vô hiệu hoá mã cũ**. Tối đa **3 lần/giờ mỗi tài khoản**.
 - Mọi lỗi mã (sai / hết hạn / đã dùng / hết lượt / email lạ) trả về **cùng một body**.
-- Tài khoản Facebook/Google cũ (không có mật khẩu dùng được) **đặt lại được** qua luồng này.
+- Tài khoản không có mật khẩu dùng được (`set_unusable_password()`) **đặt lại được** qua luồng
+  này — đây là đường phục hồi duy nhất của chúng.
 
 ### Đổi mật khẩu và thu hồi token
 
@@ -140,7 +141,9 @@ chặt hơn hẳn.
 
 - **`POST /join`** (`giapha-join` scope): 10 yêu cầu/giờ mỗi IP
 - **Public tree/person endpoints** (`giapha-public` scope): 60 yêu cầu/giờ mỗi IP
-- Endpoint khác: không giới hạn
+- **Endpoint tài khoản** (`apis/`): `auth-register` 10/giờ, `auth-forgot-password` 5/giờ,
+  `auth-reset-password` 10/giờ, `auth-change-password` 10/giờ
+- Endpoint khác: không giới hạn — **kể cả `/auth/token`** (xem "Chưa Xác Minh")
 
 Bucket là **mỗi IP** (từ `X-Forwarded-For` nếu `DJANGO_NUM_PROXIES` khớp deployment; nếu không dùng `REMOTE_ADDR`). Đây là tăng chi phí, không phải hard stop.
 

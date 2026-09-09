@@ -6,8 +6,7 @@ serves Vietnamese family-tree (gia phả) records. MySQL 5.7 storage; OAuth2 (dj
 `grant_type=password`) for authenticated endpoints. The two token endpoints themselves live
 outside both apps, in `djangopj/auth_token_views.py` -- a thin DRF shim over
 django-oauth-toolkit, kept because DOT's own views accept form-encoded bodies only and
-shipped clients send JSON. Facebook/Google login was removed; password grant is the only
-login flow.
+shipped clients send JSON. Password grant is the only login flow.
 
 ## Layers
 

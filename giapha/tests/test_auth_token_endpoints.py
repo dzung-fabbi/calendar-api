@@ -1,15 +1,11 @@
 """Regression guard for `/auth/token` and `/auth/revoke-token`.
 
-These two URLs used to be served by `drf_social_oauth2`, removed together with
-Facebook/Google login. `djangopj.auth_token_views` replaces them. The contract
-that matters is that SHIPPED CLIENTS SEE NO CHANGE: same paths, optional
-trailing slash, and -- the easy one to lose -- a JSON body works just as well as
-a form-encoded one. django-oauth-toolkit's own views are form-only, so
+Login is username/password only. `djangopj.auth_token_views` serves both URLs.
+The contract that matters is that SHIPPED CLIENTS SEE NO CHANGE: same paths,
+optional trailing slash, and -- the easy one to lose -- a JSON body works just as
+well as a form-encoded one. django-oauth-toolkit's own views are form-only, so
 `test_token_json_body` is what fails the moment someone swaps the shim out for
 `oauth2_provider.views.TokenView`.
-
-The dead social routes are asserted 404 here too, so the removal cannot silently
-regrow.
 """
 from urllib.parse import urlencode
 
@@ -30,19 +26,6 @@ TOKEN_URL = '/auth/token'
 REVOKE_URL = '/auth/revoke-token'
 CLANS_URL = '/api/gia-pha/clans'
 
-# Every route the social removal killed. A GET on the live `/auth/token` rides
-# along as a CONTROL: it answers 405, which proves the 404s below are real
-# absences and not eight typo'd URLs.
-REMOVED_ROUTES = [
-    '/auth/convert-token',
-    '/auth/authorize',
-    '/auth/invalidate-sessions',
-    '/auth/invalidate-refresh-tokens',
-    '/auth/disconnect-backend',
-    '/auth/login/facebook/',
-    '/auth/login/google-oauth2/',
-    '/auth/complete/facebook/',
-]
 
 
 class AuthTokenEndpointTests(TestCase):
@@ -207,15 +190,3 @@ class AuthTokenEndpointTests(TestCase):
         )
         self.assertEqual(response.status_code, 400)
         self.assertIn('client_secret', response.json())
-
-    # --- the social surface is gone -------------------------------------
-
-    def test_removed_social_routes_are_gone(self):
-        with self.subTest(control=TOKEN_URL):
-            # A live route answers 405 to GET -- if this ever 404s, the loop
-            # below is proving nothing.
-            self.assertEqual(self.client.get(TOKEN_URL).status_code, 405)
-        for route in REMOVED_ROUTES:
-            with self.subTest(route=route):
-                self.assertEqual(self.client.get(route).status_code, 404)
-                self.assertEqual(self.client.post(route, data={}).status_code, 404)

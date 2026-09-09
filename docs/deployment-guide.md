@@ -216,92 +216,69 @@ check the bucket credential has `s3:PutObject` (and ideally `s3:ListBucket`). If
 confirm endpoint returns 503, check that all five S3_* variables are set and the
 credentials are readable by the container.
 
-## Upgrading: social login removal
+## Dropping the orphaned `social_auth_*` tables (IRREVERSIBLE)
 
-Facebook/Google login has been permanently removed. `/auth/token` and `/auth/revoke-token`
-are unchanged for clients (same URLs, optional trailing slash, form or JSON body).
+Login is username/password only (`grant_type=password` against `/auth/token`). Five
+`social_auth_*` tables are left over from a third-party auth package that no longer ships;
+Django stopped managing them when the package left `INSTALLED_APPS` but does **not** drop
+them, so they sit in the database holding third-party user ids and provider access tokens
+in plaintext.
 
-This ships in **two releases on purpose**. This release removes the code only. The five
-`social_auth_*` tables stay in the database, orphaned and harmless — nothing reads them once
-`social_django` leaves `INSTALLED_APPS`. Dropping them is irreversible, so it waits for a
-separate release once this one has soaked; see "Follow-up release" below.
+`giapha/migrations/0007_drop_social_auth_tables.py` drops them. It runs
+`DROP TABLE IF EXISTS` on `social_auth_usersocialauth` (the child holding the FK to
+`auth_user`, first), `social_auth_nonce`, `social_auth_association`, `social_auth_code`,
+`social_auth_partial`, then deletes the orphan `django_migrations` rows.
 
-### This release (code only — fully reversible)
+**This is not reversible.** Reverting the commit does not bring the tables back; a restored
+dump is the only rollback.
 
-1. Rebuild the image — `requirements.txt` changed (six social packages and their transitives
-   removed): `docker compose build web`.
-
-2. Deploy. There is no new migration in this release; `migrate` has nothing social to do.
-
-3. Remove `SOCIAL_AUTH_FACEBOOK_KEY`, `SOCIAL_AUTH_FACEBOOK_SECRET`,
-   `SOCIAL_AUTH_GOOGLE_OAUTH2_KEY`, `SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET` from `.env`
-   and the deployment secret store. Revoke the apps at
-   [Facebook for Developers](https://developers.facebook.com) and
-   [Google Cloud Console](https://console.cloud.google.com). **These credentials are in
-   the git history — treat them as compromised and rotate regardless.**
-
-4. Smoke test both body formats:
+1. **BACK UP FIRST — mandatory, not advisory:**
    ```bash
-   curl -X POST https://HOST/auth/token \
-     -d 'grant_type=password&username=...&password=...'
-   
-   curl -X POST https://HOST/auth/token \
-     -H 'Content-Type: application/json' \
-     -d '{"grant_type":"password","username":"...","password":"..."}'
+   mysqldump -h <host> -u <user> -p <db> > backup-YYYYMMDD.sql
+   ```
+2. **Dry-run against a restored production dump.** The test suite provably cannot cover this
+   migration: the test database never creates these tables, so `IF EXISTS` makes it a no-op
+   there and a green suite says nothing about it.
+3. Apply it:
+   ```bash
+   docker compose run --rm web python manage.py migrate giapha
+   ```
+4. Verify:
+   ```sql
+   SHOW TABLES LIKE 'social_auth%';  -- should return 0 rows
+   SELECT COUNT(*) FROM django_migrations WHERE app='social_django';  -- should return 0
    ```
 
-### Consequence: social-only accounts can no longer log in
+`migrate` is idempotent here — running it twice is clean.
 
-Users who signed in only via Facebook or Google still exist in `auth_user`, but with an
-unusable password (`password` empty or starting with `!`). From the code deploy above they
-have no way to authenticate — their data is intact, their login is not. This is independent
-of the table drop. **Export the list before the follow-up release drops the table that
-answers it:**
+**One thing the drop destroys:** `social_auth_usersocialauth` is the only table that can
+answer *which* accounts have no usable password because they used to authenticate through a
+provider. Once it is gone, that list is only recoverable by restoring the backup. If you
+want it kept out of band, export it before step 3:
 
 ```sql
-SELECT u.id, u.username, u.email, s.provider
+SELECT u.id, u.username, u.email
 FROM auth_user u
 JOIN social_auth_usersocialauth s ON s.user_id = u.id
 WHERE u.password = '' OR u.password LIKE '!%';
 ```
 
-Save the output as CSV. **This file contains email addresses (PII) — keep it off shared
-drives and delete after use.**
+Treat the output as PII: keep it off shared drives and delete it after use.
 
-**Recovery options for social-only accounts, cheapest first:**
-- Admin sets password via `manage.py changepassword <username>` or Django admin
+### Accounts with no usable password
+
+Some rows in `auth_user` carry `set_unusable_password()` (`password` empty or starting with
+`!`) and therefore cannot log in by password. Their data is intact; their login is not.
+
+**Recovery, cheapest first:**
+- **Password reset works for them.** `POST /api/auth/forgot-password` mails a 6-digit code
+  and `POST /api/auth/reset-password` sets a new password. It is deliberately NOT gated on
+  `has_usable_password()`, so mailbox possession alone is enough. Requires the `EMAIL_*`
+  configuration below, and a `username` that is the user's email address — a row whose
+  `username` is some other identifier is not reachable this way and needs the admin path.
+- Admin sets a password via `manage.py changepassword <username>` or Django admin
   (`/admin/auth/user/`) and communicates it to the user.
-- **Password reset now works for these accounts** (this caveat is retired).
-  `POST /api/auth/forgot-password` mails a 6-digit code and
-  `POST /api/auth/reset-password` sets a new password. It is deliberately NOT gated on
-  `has_usable_password()`, so a social-only account with a `!`-prefixed hash can recover
-  through mailbox possession alone. Requires the `EMAIL_*` configuration below and a
-  `username` that is the user's email — a legacy row whose `username` is a provider id
-  is still not reachable this way and needs the admin path above.
 - User re-registers; admin re-binds their `ClanMember` row and family data to the new account.
-
-### Follow-up release: drop the tables (IRREVERSIBLE)
-
-Only after this release has soaked and the export above has been taken.
-
-1. Add the migration — source kept verbatim in
-   `plans/260906-1951-remove-social-login/phase-03-drop-social-django-tables-migration.md`.
-   It DROPs `social_auth_usersocialauth` (child with the FK, first), `social_auth_nonce`,
-   `social_auth_association`, `social_auth_code`, `social_auth_partial`, then deletes the
-   `django_migrations` rows for `social_django`. `DROP TABLE IF EXISTS` throughout, so it is
-   a clean no-op on a database that never had them.
-2. **Dry-run it against a restored production dump.** The test suite provably cannot cover
-   this migration — the test database never creates these tables, so `IF EXISTS` makes it a
-   no-op there and a green suite says nothing about it.
-3. **BACK UP:** `mysqldump -h <host> -u <user> -p <db> > backup-YYYYMMDD.sql`. Reverting the
-   commit does NOT bring the tables back; restoring this dump is the only rollback.
-4. `docker compose run --rm web python manage.py migrate giapha`.
-
-**Verify after that migration:**
-```sql
-SHOW TABLES LIKE 'social_auth%';  -- should return 0 rows
-SELECT COUNT(*) FROM django_migrations WHERE app='social_django';  -- should return 0
-```
 
 ### Known gap: `/auth/token` is unthrottled
 

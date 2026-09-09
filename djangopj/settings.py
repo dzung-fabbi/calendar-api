@@ -31,8 +31,7 @@ DEBUG = env_flag('DJANGO_DEBUG', False)
 
 # Secrets come from the environment. See .env.example. The previously
 # committed key and database password must be treated as compromised and
-# rotated -- they remain in the git history, as do the Facebook/Google app
-# secrets that social login used before it was removed.
+# rotated -- they remain in the git history.
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', '')
 if not SECRET_KEY:
     if not DEBUG:
@@ -199,9 +198,9 @@ REST_FRAMEWORK = {
     'NUM_PROXIES': int(os.environ.get('DJANGO_NUM_PROXIES', '0')),
 }
 
-# Facebook/Google login was removed. `grant_type=password` against
-# `/auth/token` (see djangopj/auth_token_views.py) is the only login flow left,
-# and django-oauth-toolkit's validator serves it through plain `authenticate()`.
+# Username/password is the only login flow: `grant_type=password` against
+# `/auth/token` (see djangopj/auth_token_views.py), which django-oauth-toolkit's
+# validator serves through plain `authenticate()`.
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
 )

@@ -32,9 +32,9 @@ def user_for_email(email):
     banned account must not be recoverable through mailbox possession, which
     would make this endpoint an account-reactivation bypass.
 
-    Registration stores `username = email` lower-cased, but rows created by
-    the admin or by the old social login may not be normalised -- hence
-    `iexact` on BOTH columns rather than a plain lookup on `username`.
+    Registration stores `username = email` lower-cased, but older rows and
+    rows created by the admin may not be normalised -- hence `iexact` on BOTH
+    columns rather than a plain lookup on `username`.
 
     `.first()` and not `.get()`: `auth_user.email` carries NO unique
     constraint in stock Django, so two rows can genuinely share an address and

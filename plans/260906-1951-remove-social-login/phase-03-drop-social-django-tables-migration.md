@@ -1,7 +1,14 @@
 # Phase 03 — Drop the `social_django` tables (destructive migration)
 
-**Priority:** P2 · **Status:** DEFERRED to a follow-up release · **Effort:** 30m · **Blocked by:** phase 01
+**Priority:** P2 · **Status:** migration created 2026-09-09 as `giapha/migrations/0007_drop_social_auth_tables.py`; NOT applied · **Effort:** 30m · **Blocked by:** phase 01
 
+> **Release N+1 is now in progress.** The file below was recreated on 2026-09-09 as
+> `giapha/migrations/0007_drop_social_auth_tables.py`. It has NOT been applied: Docker was
+> unavailable in that session, so neither the mandatory `mysqldump` nor `migrate` could run.
+> Whoever deploys must back up first — see `docs/deployment-guide.md`.
+>
+> Original deferral note follows.
+>
 > **Not in this release.** The migration file was written and verified (applies clean,
 > `IF EXISTS` no-ops on a fresh DB, `sqlmigrate` output correct) and then REMOVED from
 > the change set: an irreversible drop must not ship in the same `migrate` run as the
