@@ -461,6 +461,49 @@ Some rows in `auth_user` carry `set_unusable_password()` (`password` empty or st
   (`/admin/auth/user/`) and communicates it to the user.
 - User re-registers; admin re-binds their `ClanMember` row and family data to the new account.
 
+### OAuth2 application is a `public` client (changed 2026-09-09)
+
+Login was returning `401 {"error":"invalid_client"}` for every caller — 18 attempts across
+the whole retained nginx window, zero successes. The cause was not user credentials: the
+single `oauth2_provider_application` row (`name='social'`, created 2023-05-08, never
+re-saved) was `client_type='confidential'`, so django-oauth-toolkit demanded client
+authentication, and no one still had the plaintext `client_secret` — it has been stored
+hashed (`pbkdf2_sha256$216000$…`) since the row was created.
+
+Fixed by moving the row to `public`, which is what a native app must be anyway (RFC 8252: a
+secret shipped inside an App Store binary is not a secret). Rotating the secret instead
+would have restored login just as well but left the same thing to lose again.
+
+```python
+# `.update()`, NOT `.save()`: it bypasses `ClientSecretField.pre_save` and touches one column.
+Application.objects.filter(pk=1, client_type='confidential').update(
+    client_type='public', updated=timezone.now())
+```
+
+Backup taken first: `backups/pre-clienttype-20260909-094919.sql.gz`. The stale hashed secret
+is left in the row — inert once the client is public, and removing it buys nothing.
+
+**What clients must send now** — `client_id` only, on BOTH `/auth/token` and
+`/auth/revoke-token`:
+
+```
+client_id + no client_secret       -> 200
+client_id + client_secret=""       -> 200   ('' is falsy, client auth stays skipped)
+client_id + client_secret=anything -> 401 invalid_client
+```
+
+The third line is the trap: `OAuth2Validator.client_authentication_required` returns `True`
+the moment BOTH `client_id` and `client_secret` are truthy, *before* it ever looks at
+`client_type`. An old build that keeps the field with a junk value opts itself back into the
+confidential branch and fails. The field must be dropped, not blank-filled.
+
+Verified end to end on production against a throwaway account registered through
+`/api/auth/register` (deleted afterwards): `200` with `access_token` + `refresh_token`.
+
+Logout needed a code change to match: `_RevokeTokenSerializer` required `client_secret`, so a
+public client could not revoke at all (400 before oauthlib ever ran). It is now
+`required=False, allow_blank=True`; `PublicClientAuthTokenTests` pins the whole table above.
+
 ### Known gap: `/auth/token` is unthrottled
 
 It is now the only login flow in the product and has no rate limit, so password-grant

@@ -14,11 +14,40 @@ Endpoint auth (từ `djangopj/auth_token_views.py` trên `django-oauth-toolkit`,
 | Endpoint | Dùng khi |
 |---|---|
 | `POST /auth/token` | Lấy token bằng username/password (grant `password`) hoặc làm mới token (grant `refresh_token`) |
-| `POST /auth/revoke-token` | Thu hồi token (logout) |
+| `POST /auth/revoke-token` | Thu hồi token (logout). Body: `client_id`, `token` (bắt buộc); `client_secret` tuỳ chọn |
 
 **Ghi chú:**
 - Cả hai endpoint chấp nhận body dạng `application/x-www-form-urlencoded` hoặc JSON (`application/json`).
 - **Đăng nhập chỉ bằng username/password** (`grant_type=password`). Không có đăng nhập qua nhà cung cấp bên thứ ba.
+
+### ⚠️ Client là `public` — chỉ gửi `client_id`, KHÔNG gửi `client_secret`
+
+Application OAuth2 của production đổi từ `confidential` sang **`public`** ngày 2026-09-09.
+
+| Trường | Gửi? |
+|---|---|
+| `client_id` | **Bắt buộc**, cả `/auth/token` lẫn `/auth/revoke-token` |
+| `client_secret` | **Bỏ hẳn field này** (hoặc gửi chuỗi rỗng) |
+
+**Lý do:** app native không giữ được bí mật — secret nằm trong chính binary tải từ store, ai
+cũng `strings` ra được. RFC 8252 quy định app native phải là `public` client. Secret cũ đã
+hash từ 2023 và không còn ai giữ plaintext, nên `confidential` chỉ tạo ra một thứ để mất.
+
+**Cạm bẫy — gửi secret SAI còn tệ hơn không gửi.** `client_authentication_required` của
+django-oauth-toolkit bật xác thực client ngay khi thấy **cả** `client_id` lẫn `client_secret`
+có giá trị, bất kể `client_type`. Một build cũ nhét secret rác vào sẽ tự đẩy mình sang nhánh
+confidential rồi ăn 401:
+
+```
+client_id + không có client_secret   -> OK
+client_id + client_secret=""          -> OK ('' là falsy, bỏ qua nhánh confidential)
+client_id + client_secret="bất kỳ"    -> 401 {"error":"invalid_client"}
+```
+
+**Phân biệt hai lỗi 401/400:**
+- `401 {"error":"invalid_client"}` — sai ở tầng **client**, chưa hề kiểm tới user. Kiểm lại
+  `client_id`, và bỏ `client_secret` ra khỏi request.
+- `400 {"error":"invalid_grant"}` — client đã qua, **sai username/password**.
 
 ### Bao Đóng Response
 

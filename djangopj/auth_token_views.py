@@ -102,11 +102,24 @@ class TokenView(OAuthLibMixin, APIView):
 
 
 class _RevokeTokenSerializer(Serializer):
-    """Three required fields, in this exact shape: the 400 body a missing field
-    produces is already being parsed by released clients."""
+    """`client_id` and `token` are required, in this exact shape: the 400 body a
+    missing field produces is already being parsed by released clients.
+
+    `client_secret` is OPTIONAL because the production application is a `public`
+    client (RFC 8252: a native app cannot keep a secret -- it ships inside the
+    binary). Required here, it made logout unreachable: a public client has no
+    secret to send, and the serializer rejected the request before oauthlib ever
+    saw it. Omitted or blank, `client_authentication_required` falls through to
+    `authenticate_client_id`, which accepts a non-confidential client.
+
+    Loosening is safe for released clients: one that still sends the field is
+    validated exactly as before. A CONFIDENTIAL application that omits it now
+    answers 401 `invalid_client` (oauthlib's own error) instead of a 400 field
+    error -- the honest status for a client that failed to authenticate.
+    """
 
     client_id = CharField(max_length=100)
-    client_secret = CharField(max_length=255)
+    client_secret = CharField(max_length=255, required=False, allow_blank=True)
     token = CharField(max_length=500)
 
 

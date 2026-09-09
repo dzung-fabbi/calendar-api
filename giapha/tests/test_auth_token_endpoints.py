@@ -182,11 +182,104 @@ class AuthTokenEndpointTests(TestCase):
         self.assertIn('application/json', response['Content-Type'])
         self.assertEqual(self._get_clans(token).status_code, 401)
 
-    def test_revoke_token_missing_client_secret_keeps_field_error_shape(self):
+    def test_revoke_token_missing_client_secret_is_401_for_a_confidential_client(self):
+        """`client_secret` is optional on the serializer so a PUBLIC client can log
+        out. A confidential one that omits it has simply failed to authenticate, so
+        the answer moves from a 400 field error to oauthlib's own 401."""
         response = self.client.post(
             REVOKE_URL,
             data={'client_id': self.client_id, 'token': 'whatever'},
             content_type='application/json',
         )
+        self.assertEqual(response.status_code, 401, response.content)
+        self.assertEqual(response.json(), {'error': 'invalid_client'})
+
+    def test_revoke_token_missing_token_keeps_field_error_shape(self):
+        """The serializer still guards the two fields it requires."""
+        response = self.client.post(
+            REVOKE_URL,
+            data={'client_id': self.client_id, 'client_secret': RAW_SECRET},
+            content_type='application/json',
+        )
         self.assertEqual(response.status_code, 400)
-        self.assertIn('client_secret', response.json())
+        self.assertIn('token', response.json())
+
+
+class PublicClientAuthTokenTests(TestCase):
+    """The production application is a `public` client (see
+    `_RevokeTokenSerializer`). A native app cannot hold a secret, so both
+    endpoints must work with `client_id` alone -- this class is what fails if
+    anyone makes `client_secret` mandatory again."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = User.objects.create_user(username='publicclient', password=RAW_PASSWORD)
+        app = Application.objects.create(
+            name='test-public-client',
+            user=cls.user,
+            client_type=Application.CLIENT_PUBLIC,
+            authorization_grant_type=Application.GRANT_PASSWORD,
+        )
+        cls.client_id = app.client_id
+
+    def _issue_token(self):
+        response = self.client.post(
+            TOKEN_URL,
+            data=urlencode({
+                'grant_type': 'password',
+                'username': 'publicclient',
+                'password': RAW_PASSWORD,
+                'client_id': self.client_id,
+            }),
+            content_type=FORM_CONTENT_TYPE,
+        )
+        self.assertEqual(response.status_code, 200, response.content)
+        return response.json()
+
+    def test_token_without_client_secret(self):
+        self.assertIn('access_token', self._issue_token())
+
+    def test_token_with_blank_client_secret(self):
+        """A client that keeps the field but empties it must not be pushed down
+        the confidential branch -- `'' `is falsy, so client auth stays skipped."""
+        response = self.client.post(
+            TOKEN_URL,
+            data=urlencode({
+                'grant_type': 'password',
+                'username': 'publicclient',
+                'password': RAW_PASSWORD,
+                'client_id': self.client_id,
+                'client_secret': '',
+            }),
+            content_type=FORM_CONTENT_TYPE,
+        )
+        self.assertEqual(response.status_code, 200, response.content)
+
+    def test_token_with_a_wrong_client_secret_is_still_rejected(self):
+        """Sending SOME secret opts back into client authentication, which then
+        fails. This is why an old build must drop the field, not blank-fill it."""
+        response = self.client.post(
+            TOKEN_URL,
+            data=urlencode({
+                'grant_type': 'password',
+                'username': 'publicclient',
+                'password': RAW_PASSWORD,
+                'client_id': self.client_id,
+                'client_secret': 'wrong-secret',
+            }),
+            content_type=FORM_CONTENT_TYPE,
+        )
+        self.assertEqual(response.status_code, 401, response.content)
+
+    def test_revoke_token_without_client_secret(self):
+        token = self._issue_token()['access_token']
+        response = self.client.post(
+            REVOKE_URL,
+            data={'client_id': self.client_id, 'token': token},
+            content_type='application/json',
+        )
+        self.assertEqual(response.status_code, 204, response.content)
+        self.assertEqual(
+            self.client.get(CLANS_URL, HTTP_AUTHORIZATION='Bearer ' + token).status_code,
+            401,
+        )
