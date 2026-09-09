@@ -142,6 +142,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+# `collectstatic` target. Required in production: with DEBUG off Django serves
+# no static files at all, so the admin (the CMS surface on
+# cms-calendar.thienvanlichphap.vn) renders unstyled unless nginx serves this
+# directory at /static/. docker-compose.prod.yml bind-mounts it to the host.
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Left permissive because the public almanac endpoints are read-only and
 # unauthenticated. Set DJANGO_CORS_ALLOWED_ORIGINS to lock it down.

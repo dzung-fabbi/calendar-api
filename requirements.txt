@@ -32,3 +32,4 @@ sqlparse==0.4.3
 urllib3==1.26.15
 wrapt==1.15.0
 django-object-actions
+gunicorn==20.1.0

@@ -1,8 +1,134 @@
 # Deployment Guide
 
-The application itself runs from `docker-compose.yml` (`docker-compose up -d`).
-This document covers only what has to be scheduled or configured *outside* the
-web container.
+`docker-compose.yml` is the **development** stack (`runserver`, source bind-mount,
+ports on `0.0.0.0`, no database volume). Production runs from
+`docker-compose.prod.yml`. The rest of this document covers what has to be
+scheduled or configured *outside* the web container.
+
+## Production: api.thienvanlichphap.vn / cms-calendar.thienvanlichphap.vn
+
+Live on `ubuntu@13.212.105.46` (shared host — `tuvi.thienvanlichphap.vn`,
+`ttc.ces-ai.io.vn` and others already run there; ports `8000`, `8001`, `3000`,
+`3003`, `3101`, `8101`, `5433` are taken by them).
+
+| | |
+|---|---|
+| App directory | `/srv/calendar-api` |
+| Compose file | `docker-compose.prod.yml` (**standalone**, not an overlay) |
+| Web container | gunicorn, 3 sync workers, published on `127.0.0.1:8002` only |
+| Database | `mysql:5.7` in the named volume `calendar-api_mysql_data`, **not** published to the host |
+| Static files | `collectstatic` → `/srv/calendar-api/staticfiles`, served by host nginx at `/static/` |
+| nginx vhosts | source of truth in `deploy/nginx/`, installed to `/etc/nginx/sites-available/` |
+| Secrets | `/srv/calendar-api/.env`, mode `600`, never committed |
+
+`docker-compose.prod.yml` is deliberately **standalone rather than an overlay**:
+compose merges `ports` additively, so `-f docker-compose.yml -f docker-compose.prod.yml`
+would keep the dev publishes (`0.0.0.0:8000`, `0.0.0.0:3308`) and collide with the
+other projects on this host.
+
+### Split across the two domains
+
+Both names are served by the *same* container — there is no separate CMS
+application in this repository. `django.contrib.admin` plus django-object-actions
+**is** the content-management surface, which matters because the almanac tables
+(stars, thần sát, …) ship with **no fixtures**: on a fresh database they are empty
+and the almanac endpoints return nothing until content is entered through the CMS.
+
+- `api.thienvanlichphap.vn` — the API. `/admin/` returns **404 by nginx** here on
+  purpose: `ALLOWED_HOSTS` accepts both names, so without that rule the same
+  session-cookie admin login would be reachable on the public API origin too.
+- `cms-calendar.thienvanlichphap.vn` — the admin. `/` 302s to `/admin/`.
+
+### Deploy / redeploy
+
+The server has no credentials for the private GitHub repo, so code is pushed over
+SSH rather than pulled:
+
+```bash
+# From a clone, on your machine:
+tar czf - --exclude-vcs --exclude='__pycache__' --exclude='*.pyc' \
+    --exclude='staticfiles' --exclude='plans' --exclude='.env' . \
+  | ssh -i ~/.ssh/numerlogy.pem ubuntu@13.212.105.46 'tar xzf - -C /srv/calendar-api'
+
+# On the server:
+cd /srv/calendar-api
+docker compose -f docker-compose.prod.yml up -d --build
+docker compose -f docker-compose.prod.yml run --rm web python manage.py migrate --noinput
+docker compose -f docker-compose.prod.yml run --rm web python manage.py collectstatic --noinput
+```
+
+The `--exclude='.env'` is load-bearing: without it a local dev `.env` overwrites the
+production secrets.
+
+### TLS
+
+**Done.** One Let's Encrypt certificate covers both names
+(`/etc/letsencrypt/live/api.thienvanlichphap.vn/`, SANs `api.` + `cms-calendar.`),
+80→443 redirects are in place, and `certbot renew --dry-run` passes under the
+existing `snap.certbot.renew.timer`.
+
+`deploy/enable-tls.sh <email>` is what did it, and is idempotent if it needs re-running:
+`certbot --nginx` for both names, then flips `DJANGO_SECURE_COOKIES` /
+`DJANGO_BEHIND_TLS_PROXY` to `True` in `.env` and restarts. Its DNS pre-check queries
+`1.1.1.1`/`8.8.8.8` rather than the local stub resolver — see the resolver note below
+for why that matters.
+
+Three settings stay off on purpose, and `manage.py check --deploy` will keep
+warning about two of them:
+
+- `DJANGO_SECURE_COOKIES` — now `True`. It had to stay `False` until certbot had run:
+  a `Secure` session cookie over a plaintext connection means nobody can log into
+  the admin at all. Same for `DJANGO_BEHIND_TLS_PROXY`.
+- `DJANGO_SECURE_SSL_REDIRECT=False` permanently — certbot's `--redirect` already
+  does 80→443 at the edge; doubling it in Django only adds a way to build a loop.
+- `DJANGO_HSTS_SECONDS=0` permanently, **unless every subdomain of
+  `thienvanlichphap.vn` is HTTPS-only**. `settings.py` hardcodes
+  `SECURE_HSTS_INCLUDE_SUBDOMAINS`/`PRELOAD` to `SECURE_HSTS_SECONDS > 0`, so any
+  non-zero value asserts HSTS across the whole apex — including sibling subdomains
+  this deploy does not own.
+
+`DJANGO_NUM_PROXIES=1` is set, matching the one nginx in front. That is what makes
+the DRF per-IP throttles (`giapha-join`, `auth-forgot-password`, …) key off the real
+client IP instead of `REMOTE_ADDR` or a forgeable header.
+
+### Gotcha: the box cannot resolve `api.thienvanlichphap.vn` (harmless)
+
+`curl https://api.thienvanlichphap.vn/...` **from the server** fails with
+`Could not resolve host`, while the same URL works from everywhere else. The AWS
+VPC resolver (`172.31.0.2`) negative-cached the NXDOMAIN from before the A record
+existed; the authoritative NS (`ns1.matbao.vn`), `1.1.1.1` and `8.8.8.8` all answer
+correctly, and `resolvectl flush-caches` does not clear the *upstream* cache. It
+expires on its own.
+
+Nothing depends on it: no code path resolves the API's own hostname, and Let's
+Encrypt validates from outside (the certificate issued fine). It only breaks
+on-box smoke tests — bypass it with `--resolve`:
+
+```bash
+curl -o /dev/null -w '%{http_code}\n' \
+  --resolve api.thienvanlichphap.vn:443:127.0.0.1 \
+  https://api.thienvanlichphap.vn/api/gia-pha/clans   # -> 401
+```
+
+Do **not** "fix" this by adding a `/etc/hosts` entry: that would send the box's own
+traffic to `127.0.0.1` permanently and silently mask a real DNS problem later.
+
+### Base image: bookworm, not bullseye
+
+Debian bullseye left security support and its `bullseye-security` Release file is
+past `Valid-Until`, which makes a plain `apt-get update` exit 100 and **fail the
+build outright** -- both `Dockerfile` and `Dockerfile.test` broke without a single
+commit touching them.
+
+Both now use `python:3.9-bookworm`, which is still supported. An earlier fix on
+this host instead passed `-o Acquire::Check-Valid-Until=false` on the reasoning
+that no 3.9 bookworm image existed; it does (verified by building the test image
+on it). Prefer moving to a supported release over accepting stale metadata: the
+flag silences the error and keeps installing unpatched packages, turning a loud
+build failure into a quiet EOL runtime.
+
+Python stays pinned to 3.9 -- that constraint is Django 3.1, and it is unrelated
+to the Debian release.
 
 ## Upgrading to phase 6 (reminders)
 
@@ -28,6 +154,14 @@ run by cron on the host (or by any external scheduler) against the same image:
 # Nhắc giỗ -- 07:00 Việt Nam (UTC+7), mỗi ngày.
 # If host is UTC, use 0 0; if UTC+7, use 0 7.
 0 7 * * * cd /srv/calendar-api && docker compose run --rm web python manage.py remind_death_anniversary
+```
+
+**Already installed** on 13.212.105.46 in `ubuntu`'s crontab. That host is `Etc/UTC`,
+so the entry is `0 0` (= 07:00 VN), uses the production compose file, and needs
+`-T` because cron has no TTY:
+
+```cron
+0 0 * * * cd /srv/calendar-api && /usr/bin/docker compose -f docker-compose.prod.yml run --rm -T web python manage.py remind_death_anniversary >> /var/log/calendar-api-gio.log 2>&1
 ```
 
 **Critical:** Schedule on Vietnam time (UTC+7). `settings.TIME_ZONE` is `UTC`, so a

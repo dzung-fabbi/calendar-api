@@ -12,7 +12,7 @@ import tempfile
 from unittest import mock
 
 import requests
-from django.test import SimpleTestCase
+from django.test import SimpleTestCase, override_settings
 
 from giapha.services import fcm, fcm_auth
 
@@ -42,10 +42,22 @@ def fcm_error(status, error_code=None):
     return {'error': error}
 
 
+@override_settings(FIREBASE_CREDENTIALS_PATH='', FIREBASE_CREDENTIALS_JSON='')
 class FcmServiceTestCase(SimpleTestCase):
     """Clears the module-level token cache and both credential env vars so
     tests never leak state into each other or read a developer's real
     service account.
+
+    THE SETTINGS LAYER HAS TO BE BLANKED HERE, not just the env. Every test
+    below uses `os.environ` as its seam, but `fcm_auth._setting()` reads
+    `settings.FIREBASE_*` FIRST and only falls back to the env when that is
+    empty -- and `settings.py` populates both from the environment at import
+    time. So in a process that has real credentials exported (the production
+    app container, where `manage.py test` genuinely runs) `patch.dict` was
+    silently ineffective: the "absent credentials" tests loaded the real
+    service account and reached fcm.googleapis.com for real, against the
+    module docstring's NO NETWORK promise. Blanking the settings restores
+    the env as the only seam, on any host.
     """
 
     def setUp(self):

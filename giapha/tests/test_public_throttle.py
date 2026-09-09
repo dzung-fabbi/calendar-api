@@ -5,7 +5,7 @@ Split out of `test_public_security.py` once that file crossed the
 """
 
 from django.core.cache import cache
-from django.test import TestCase
+from django.test import TestCase, override_settings
 
 from djangopj.settings import REST_FRAMEWORK
 from giapha.tests.factories import build_clan_fixture
@@ -36,6 +36,14 @@ class PublicThrottleTests(TestCase):
         self.assertEqual(429, statuses[-1], 'the request past the configured rate must be throttled')
 
 
+# NUM_PROXIES IS PINNED, NOT INHERITED. This class asserts the behaviour of
+# the DEFAULT topology (no trusted proxy), so it must not read whatever
+# `DJANGO_NUM_PROXIES` the host exports: the production server sets it to 1
+# for its nginx, under which DRF trusts the last X-Forwarded-For hop and a
+# rotating header legitimately DOES get its own bucket -- making this test
+# fail for a correct deployment. Pinning 0 keeps the assertion about the
+# code, not about the machine running it.
+@override_settings(REST_FRAMEWORK=dict(REST_FRAMEWORK, NUM_PROXIES=0))
 class ThrottleIdentBypassTests(TestCase):
     """Security fix (phase-9 review H3): with `NUM_PROXIES` unset, DRF's
     `BaseThrottle.get_ident` uses the RAW `X-Forwarded-For` header value as

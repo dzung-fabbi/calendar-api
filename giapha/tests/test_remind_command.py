@@ -25,7 +25,7 @@ from unittest import mock
 
 from django.core.management import call_command
 from django.db import IntegrityError
-from django.test import TestCase
+from django.test import TestCase, override_settings
 
 from giapha.models import (
     Clan,
@@ -400,10 +400,17 @@ class OkResponse(object):
         return {'name': 'projects/giapha-test/messages/1'}
 
 
+@override_settings(FIREBASE_CREDENTIALS_PATH='', FIREBASE_CREDENTIALS_JSON='')
 class TransientAuthFailureTests(RemindTestCase):
     """H2 -- these run the REAL `send_multicast`; only `requests.post` and the
     OAuth mint step are faked, so the "no credentials" / "cannot mint right
     now" distinction is exercised end to end. Still no network.
+
+    The `override_settings` is what keeps that last sentence true off a
+    developer's laptop: `fcm_auth._setting()` prefers `settings.FIREBASE_*`
+    over the env these tests patch, and `settings.py` fills both from the
+    environment at import. On the production container the "genuinely absent
+    credentials" case therefore saw the REAL service account and called FCM.
     """
 
     def setUp(self):

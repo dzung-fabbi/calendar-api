@@ -8,6 +8,7 @@ NOTHING here touches the network; the real end-to-end path (a genuine
 bucket) is documented as unverified in `docs/deployment-guide.md`.
 """
 
+import os
 import uuid
 from unittest import mock
 
@@ -120,10 +121,25 @@ class PhotoUploadUrlTests(MockedBotoMixin, TestCase):
         self.assertEqual(404, response.status_code)
 
 
+S3_BLANK_SETTINGS = {name: '' for name in S3_TEST_SETTINGS}
+
+
+@mock.patch.dict(os.environ, S3_BLANK_SETTINGS)
+@override_settings(**S3_BLANK_SETTINGS)
 class StorageUnconfiguredTests(MockedBotoMixin, TestCase):
-    """Deliberately NO `@override_settings` here -- the test settings leave
-    every `S3_*` variable empty, which is the state every other giapha test
-    already runs under. This class proves that state is safe.
+    """The unconfigured state -- every photo endpoint must answer 503 while
+    the rest of the API keeps working.
+
+    BOTH LAYERS HAVE TO BE BLANKED, and this class used to blank neither.
+    It relied on "the test settings leave every `S3_*` empty", which only
+    held on a machine with no S3 environment: `settings.py` reads each `S3_*`
+    from `os.environ` at import time, and `storage._setting()` falls back to
+    `os.environ` again whenever the setting is empty. Run inside the
+    production app container -- where `manage.py test` genuinely runs -- all
+    four tests saw CONFIGURED storage and got 200 instead of 503. Hence
+    `override_settings` (import-time layer) plus `patch.dict` (fallback
+    layer); both restore the real values afterwards, so no other test is
+    affected.
     """
 
     @classmethod

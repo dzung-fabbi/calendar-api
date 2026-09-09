@@ -38,6 +38,7 @@ import logging
 import os
 
 import boto3
+from botocore.config import Config
 from botocore.exceptions import ClientError
 from django.conf import settings
 
@@ -76,21 +77,37 @@ def _setting(name):
 
 def _config():
     """`(endpoint_url, bucket, access_key, secret_key, region)` or `None` if
-    the required trio (bucket + both credentials) is missing. `endpoint_url`
-    and `region` are optional -- real S3 needs neither (region defaults to
-    the client's own default resolution), R2 needs both.
+    the required trio (bucket + both credentials) is missing.
+
+    `S3_ENDPOINT_URL` stays empty for real S3 (R2 requires it). When it is
+    empty and `S3_REGION` is set, the regional S3 endpoint is derived here
+    rather than left to botocore -- see the comment below for why that is not
+    cosmetic. Both empty is still valid: botocore then resolves whatever
+    default it can, which is the pre-existing behaviour.
     """
     bucket = _setting('S3_BUCKET')
     access_key = _setting('S3_ACCESS_KEY_ID')
     secret_key = _setting('S3_SECRET_ACCESS_KEY')
     if not (bucket and access_key and secret_key):
         return None
+    region = _setting('S3_REGION') or None
+    endpoint_url = _setting('S3_ENDPOINT_URL') or None
+    if endpoint_url is None and region:
+        # REAL S3, REGION KNOWN: address the region explicitly instead of
+        # letting botocore fall back to the global `s3.amazonaws.com`.
+        # This pinned botocore (1.31) resolves virtual-host addressing to that
+        # global host even with `region_name` set, and the global host answers
+        # HTTP 307 -> regional for a bucket whose DNS has not propagated yet
+        # (up to 24h after creation). A 307 kills a presigned PUT outright:
+        # most HTTP clients will not replay the request body on a redirect,
+        # so photo upload fails for every client of a freshly created bucket.
+        endpoint_url = 'https://s3.{}.amazonaws.com'.format(region)
     return (
-        _setting('S3_ENDPOINT_URL') or None,
+        endpoint_url,
         bucket,
         access_key,
         secret_key,
-        _setting('S3_REGION') or None,
+        region,
     )
 
 
@@ -127,6 +144,20 @@ def _client():
             aws_access_key_id=access_key,
             aws_secret_access_key=secret_key,
             region_name=region,
+            # SIGNATURE VERSION IS NOT OPTIONAL HERE. Left to botocore's own
+            # default, this pinned botocore (1.31) presigns S3 URLs with SigV2
+            # -- `AWSAccessKeyId`/`Signature`/`Expires` query params against the
+            # legacy global host `<bucket>.s3.amazonaws.com`. Two ways that
+            # breaks a real upload:
+            #   * The global host answers HTTP 307 to the regional one for a
+            #     bucket whose DNS has not propagated yet (up to 24h after
+            #     creation). A 307 on a presigned PUT is fatal, not a detour:
+            #     most HTTP clients refuse to replay a PUT body on redirect.
+            #   * SigV2 is rejected outright by every region created after
+            #     2014, and R2 requires SigV4 too.
+            # s3v4 also makes botocore resolve the regional endpoint from
+            # `region_name`, which is what removes the 307 at the source.
+            config=Config(signature_version='s3v4'),
         )
         _client_cache['config_key'] = config
     return _client_cache['client']
