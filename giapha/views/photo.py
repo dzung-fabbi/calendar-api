@@ -76,10 +76,17 @@ _EXTENSION_BY_CONTENT_TYPE = {
 # -- if a new content type/extension is ever added to one without the
 # other, every upload of that type breaks loudly (confirm always rejects
 # it) instead of quietly accepting a shape nothing actually mints.
+#
+# `\Z`, NOT `$`: `$` also matches before one trailing newline, so it ACCEPTS
+# `giapha/1/2/<hex>.jpg\n` -- and a matched key is PERSISTED to
+# `person.photo_key`, after which every `presign_get` on it 404s. Do not rely
+# on `PhotoConfirmSerializer` having stripped it: that is only DRF's
+# `trim_whitespace` default, which this module does not control. Same anchor,
+# same reason, in the `apis/views/file_upload.py` twin.
 _KEY_RE = re.compile(
     r'^giapha/(\d+)/(\d+)/[0-9a-f]{32}\.('
     + '|'.join(re.escape(ext) for ext in _EXTENSION_BY_CONTENT_TYPE.values())
-    + r')$'
+    + r')\Z'
 )
 
 

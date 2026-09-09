@@ -231,6 +231,24 @@ class ConfirmPhotoTests(MockedBotoMixin, TestCase):
         )
         self.assertEqual(400, response.status_code)
 
+    def test_key_regex_rejects_a_trailing_newline(self):
+        """Asserted against `_KEY_RE` DIRECTLY, and that is the point.
+
+        A trailing newline cannot be driven through the confirm endpoint:
+        DRF's `CharField.trim_whitespace` defaults to True and strips it, so
+        the view only sees the clean key. Which means no endpoint-level test
+        can catch the anchor regressing from `\\Z` back to `$` -- and `$`
+        does match immediately before one trailing newline. Here the cost of
+        that hole is worse than in the `apis/` twin: a matched key is
+        PERSISTED to `person.photo_key`, so a newline-suffixed key would sit
+        in the database and every later `presign_get` on it would 404.
+        """
+        from giapha.views.photo import _KEY_RE
+        key = self._key_for(self.person)
+        self.assertIsNotNone(_KEY_RE.match(key))
+        self.assertIsNone(_KEY_RE.match(key + '\n'))
+        self.assertIsNone(_KEY_RE.match(key + '\r\n'))
+
     def test_head_reporting_object_over_5mb_is_rejected(self):
         self.mock_client.head_object.return_value = {
             'ContentLength': 6 * 1024 * 1024, 'ContentType': 'image/jpeg',
