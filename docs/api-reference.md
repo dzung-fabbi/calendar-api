@@ -66,6 +66,11 @@ qua Django sẽ giữ chặt một gunicorn worker suốt thời gian upload.
 
 Client **lưu `key`**, gọi lại `confirm` để lấy URL mới khi link hết hạn.
 
+**Client chạy trong trình duyệt:** bước 2 `PUT` đi thẳng tới bucket, nên bucket phải có
+CORS rule cho phép `PUT` + header `Content-Type` từ origin của app. Thiếu rule thì browser
+chặn request với lỗi CORS không có body — đây là lỗi setup phổ biến nhất. Một rule dùng
+chung cho cả `/api/files` lẫn ảnh gia phả (cùng bucket); xem `docs/deployment-guide.md`.
+
 ### Giới hạn
 
 - **Chỉ ảnh:** `image/jpeg`, `image/png`, `image/webp`. Type khác → 400.
@@ -213,7 +218,8 @@ chặt hơn hẳn.
   tế là 20 × số worker
 - **Endpoint tài khoản** (`apis/`): `auth-register` 10/giờ, `auth-forgot-password` 5/giờ,
   `auth-reset-password` 10/giờ, `auth-change-password` 10/giờ
-- Endpoint khác: không giới hạn — **kể cả `/auth/token`** (xem "Chưa Xác Minh")
+- Endpoint khác: không giới hạn — **kể cả `/auth/token`**. `TokenView` là `AllowAny`
+  và không opt vào scope nào, nên đoán mật khẩu chỉ bị chặn bởi hạ tầng trước Django
 
 Bucket là **mỗi IP** (từ `X-Forwarded-For` nếu `DJANGO_NUM_PROXIES` khớp deployment; nếu không dùng `REMOTE_ADDR`). Đây là tăng chi phí, không phải hard stop.
 
@@ -475,13 +481,24 @@ Tất cả lỗi except 204 có body.
 Throttled — xem retry-after header.
 
 ### 503 Service Unavailable
-Photo endpoints, lưu trữ không cấu hình.
+Ba endpoint ảnh gia phả và cả hai endpoint `/api/files` — khi `S3_*` chưa cấu hình. Phần API
+còn lại không ảnh hưởng.
 
 ---
 
-## Chưa Xác Minh
+## Trạng Thái Nghiệm Thu
 
-- **Ảnh / S3-R2:** logic đã test với mock `botocore`, **chưa từng chạy với bucket thật**. Cần nghiệm thu: signature version, CORS của bucket, region, Content-Type enforcement, dọn object mồ côi. Mock không bắt được 3 lỗi đầu, và cả 3 đều fail ở bước client `PUT` — chỗ khó quan sát nhất trong luồng.
+- **`/api/files` — ĐÃ chạy end-to-end với bucket thật (2026-09-09).** `calendar-giapha-prod`,
+  `ap-northeast-1`: mint → `PUT` một PNG thật thẳng lên S3 (200) → `confirm` (200) →
+  presigned `GET` (200), byte nhận về khớp byte gửi đi. Object test đã xoá sau đó.
+- **Ảnh gia phả (`photo-upload-url` / `photo` / `photo-urls`) — 3 view này CHƯA chạy với
+  bucket thật.** Lớp storage bên dưới thì đã: `apis/services/storage.py` và
+  `giapha/services/storage.py` presign giống hệt nhau, nên signature version, endpoint/region,
+  credential và bucket policy tính là đã nghiệm thu qua mục trên. Chưa có bằng chứng: bản thân
+  3 view ảnh, và **dọn object mồ côi** (vẫn không có job nào — đặt lifecycle rule trên bucket).
+- Hai lỗi từng làm hỏng toàn bộ luồng upload (sai signature version, sai region/endpoint) chỉ
+  bị phát hiện bằng tay trên máy production, không phải bởi test — mock `boto3` nhận mọi kwarg
+  mà không phàn nàn. `StorageClientConstructionTests` giờ ghim cả hai.
 - **Push nhắc giỗ / FCM:** `POST /devices` nhận và lưu token bình thường, nhưng **chưa có push nào tới máy thật**. Toàn bộ đường FCM chỉ nghiệm thu qua mock. Client đăng ký token thành công KHÔNG có nghĩa là sẽ nhận được thông báo.
 
 ---
