@@ -122,6 +122,45 @@ class FileUploadUrlTests(MockedBotoMixin, TestCase):
 
 
 @override_settings(**S3_TEST_SETTINGS)
+class StorageClientConstructionTests(MockedBotoMixin, TestCase):
+    """How the boto3 client is BUILT, not what it returns.
+
+    Both assertions below pin fixes that a presigned URL cannot work without,
+    and that no response-shape test can observe -- the mocked client happily
+    accepts any kwargs. They were found missing from this module only after
+    the same bugs had already been fixed by hand on the production host.
+    """
+
+    def test_client_is_built_with_sigv4(self):
+        """botocore 1.31's default presigns S3 with SigV2, which every region
+        created after 2014 rejects outright and R2 does not accept at all."""
+        storage.presign_put('uploads/{}.jpg'.format(uuid.uuid4().hex), 'image/jpeg')
+        config = self.mock_boto_client_factory.call_args.kwargs['config']
+        self.assertEqual('s3v4', config.signature_version)
+
+    def test_empty_endpoint_plus_region_derives_the_regional_endpoint(self):
+        """Left to botocore this resolves to the global `s3.amazonaws.com`,
+        which answers HTTP 307 -> regional for a bucket whose DNS has not
+        propagated. A 307 is fatal to a presigned PUT: most clients will not
+        replay the body on a redirect."""
+        with override_settings(S3_ENDPOINT_URL='', S3_REGION='ap-southeast-1'):
+            storage.reset_client_cache()
+            storage.presign_put('uploads/{}.jpg'.format(uuid.uuid4().hex), 'image/jpeg')
+        self.assertEqual(
+            'https://s3.ap-southeast-1.amazonaws.com',
+            self.mock_boto_client_factory.call_args.kwargs['endpoint_url'],
+        )
+
+    def test_explicit_endpoint_is_left_alone(self):
+        """R2 supplies its own endpoint; nothing may rewrite it."""
+        r2 = 'https://acct.r2.cloudflarestorage.com'
+        with override_settings(S3_ENDPOINT_URL=r2, S3_REGION='auto'):
+            storage.reset_client_cache()
+            storage.presign_put('uploads/{}.jpg'.format(uuid.uuid4().hex), 'image/jpeg')
+        self.assertEqual(r2, self.mock_boto_client_factory.call_args.kwargs['endpoint_url'])
+
+
+@override_settings(**S3_TEST_SETTINGS)
 class FileConfirmTests(MockedBotoMixin, TestCase):
     def confirm(self, key):
         return APIClient().post(confirm_endpoint(), {'key': key}, format='json')

@@ -12,10 +12,9 @@ worker for as long as the upload takes; a handful of concurrent 5MB uploads is
 enough to starve every other request. Presigning pushes the bandwidth to S3/R2
 directly -- Django only ever sees a key string, never a byte of file data.
 
-`boto3` is used for BOTH real S3 and Cloudflare R2: R2 implements the S3 API,
-so `endpoint_url` alone is what changes between them, not the SDK. Settings are
-the same `S3_*` five that `giapha` reads (`djangopj/settings.py`); there is no
-second bucket and no second credential to configure.
+`boto3` serves BOTH real S3 and Cloudflare R2 -- only `endpoint_url` differs.
+Settings are the same five `S3_*` that `giapha` reads: no second bucket, no
+second credential.
 
 TWO KINDS OF FAILURE, DELIBERATELY NOT THE SAME VALUE:
 
@@ -25,12 +24,11 @@ TWO KINDS OF FAILURE, DELIBERATELY NOT THE SAME VALUE:
 * Any `botocore` exception out of `head`/the presign calls -- WEATHER. Network,
   wrong credentials, S3 down. Callers let it propagate to a 500.
 
-HONESTY ABOUT THE SIZE LIMIT: a presigned `PUT` genuinely CANNOT enforce one.
+HONESTY ABOUT THE SIZE LIMIT: a presigned `PUT` genuinely CANNOT enforce one --
 `generate_presigned_url(ClientMethod='put_object')` has no `Conditions`
-parameter -- `content-length-range` only exists on `generate_presigned_post` (a
-browser form upload, not a `PUT`). A client that ignores its own declared
-`size` can still push a larger object. The cap is enforced for real only at the
-confirm step, via `head()` reading back `ContentLength` after the fact.
+parameter (`content-length-range` only exists on `generate_presigned_post`, a
+form upload). The cap is enforced for real only at confirm, via `head()`
+reading back the real `ContentLength`.
 
 No ORM here (`docs/code-standards.md` -> Layering).
 """
@@ -39,6 +37,7 @@ import logging
 import os
 
 import boto3
+from botocore.config import Config
 from botocore.exceptions import ClientError
 from django.conf import settings
 
@@ -75,36 +74,41 @@ def _setting(name):
 
 def _config():
     """`(endpoint_url, bucket, access_key, secret_key, region)` or `None` if
-    the required trio (bucket + both credentials) is missing. `endpoint_url`
-    and `region` are optional -- real S3 needs neither (region defaults to the
-    client's own default resolution), R2 needs both.
+    the required trio (bucket + both credentials) is missing.
+
+    `S3_ENDPOINT_URL` stays empty for real S3 (R2 requires it). When it is
+    empty and `S3_REGION` is set, the regional endpoint is derived HERE rather
+    than left to botocore -- see the comment below. Both empty is still valid.
     """
     bucket = _setting('S3_BUCKET')
     access_key = _setting('S3_ACCESS_KEY_ID')
     secret_key = _setting('S3_SECRET_ACCESS_KEY')
     if not (bucket and access_key and secret_key):
         return None
-    return (
-        _setting('S3_ENDPOINT_URL') or None,
-        bucket,
-        access_key,
-        secret_key,
-        _setting('S3_REGION') or None,
-    )
+    region = _setting('S3_REGION') or None
+    endpoint_url = _setting('S3_ENDPOINT_URL') or None
+    if endpoint_url is None and region:
+        # REAL S3, REGION KNOWN: address the region explicitly instead of
+        # letting botocore fall back to the global `s3.amazonaws.com`. This
+        # pinned botocore (1.31) resolves virtual-host addressing to that
+        # global host even with `region_name` set, and the global host answers
+        # HTTP 307 -> regional for a bucket whose DNS has not propagated yet
+        # (up to 24h after creation). A 307 kills a presigned PUT outright:
+        # most HTTP clients will not replay the request body on a redirect.
+        endpoint_url = 'https://s3.{}.amazonaws.com'.format(region)
+    return (endpoint_url, bucket, access_key, secret_key, region)
 
 
 def is_configured():
-    """`True` once bucket + credentials are set. Used by callers that must
-    degrade gracefully (503) instead of raising.
-    """
+    """`True` once bucket + credentials are set -- callers that must degrade
+    gracefully (503) check this instead of catching."""
     return _config() is not None
 
 
 def reset_client_cache():
-    """Test-only escape hatch. Drop the cached client so the next call rebuilds
-    one -- needed when a test patches `boto3.client` itself (a `mock.Mock()`)
-    rather than changing the config tuple. Production code never calls this.
-    """
+    """Test-only. Drop the cached client so the next call rebuilds one --
+    needed when a test patches `boto3.client` itself rather than changing the
+    config tuple. Production never calls this."""
     _client_cache['client'] = None
     _client_cache['config_key'] = None
 
@@ -123,6 +127,13 @@ def _client():
             aws_access_key_id=access_key,
             aws_secret_access_key=secret_key,
             region_name=region,
+            # SIGNATURE VERSION IS NOT OPTIONAL. Left to botocore's own
+            # default, this pinned botocore (1.31) presigns S3 URLs with
+            # SigV2 against the legacy global host -- which every region
+            # created after 2014 rejects outright, and R2 requires SigV4 too.
+            # s3v4 also makes botocore resolve the regional endpoint from
+            # `region_name`, removing the 307 described in `_config()`.
+            config=Config(signature_version='s3v4'),
         )
         _client_cache['config_key'] = config
     return _client_cache['client']
@@ -133,11 +144,9 @@ def _bucket():
 
 
 def presign_put(key, content_type):
-    """Presigned `PUT` URL for `key`, valid `PRESIGN_PUT_TTL_SECONDS`.
-
-    Takes no size parameter -- see the module docstring's "HONESTY ABOUT THE
-    SIZE LIMIT" for why a presigned `PUT` cannot enforce one. The real size
-    check happens in `head()`, called from the confirm endpoint after upload.
+    """Presigned `PUT` URL for `key`, valid `PRESIGN_PUT_TTL_SECONDS`. Takes no
+    size parameter -- see the module docstring for why a presigned `PUT` cannot
+    enforce one; `head()` at confirm time is where the cap is real.
     """
     client = _client()
     return client.generate_presigned_url(
@@ -148,10 +157,9 @@ def presign_put(key, content_type):
 
 
 def presign_get(key, expires_in=PRESIGN_GET_TTL_SECONDS):
-    """Presigned `GET` URL for `key`. Default TTL is 1 hour: long enough to be
-    cacheable client-side, short enough that a leaked link does not stay valid
-    forever. The bucket itself stays private -- this is the only way a caller
-    ever reads an object back.
+    """Presigned `GET` URL for `key`. 1 hour by default: cacheable client-side,
+    short enough that a leaked link expires. The bucket stays private, so this
+    is the only way a caller ever reads an object back.
     """
     client = _client()
     return client.generate_presigned_url(
@@ -165,13 +173,13 @@ def head(key):
     depending on provider) -- the confirm view treats `None` as "client named a
     key that was never actually uploaded" and answers 400.
 
-    ALSO `None` on 403/`AccessDenied`: a missing key comes back as 403 rather
-    than 404 when the credential lacks `s3:ListBucket` -- the default for an
-    object-scoped R2 token. Without this, that normal setup turns every
-    "key was never uploaded" case into a 500. The mapping is DELIBERATELY
-    ambiguous (a 403 can also mean a real credential fault), hence the
-    `logger.warning`: the request still gets its 400, the ambiguity stays in
-    the logs. Any other `ClientError` is a genuine fault and propagates.
+    ALSO `None` on 403/`AccessDenied`: a missing key comes back as 403, not
+    404, when the credential lacks `s3:ListBucket` -- the default for an
+    object-scoped R2 token, which would otherwise turn every "key was never
+    uploaded" case into a 500. The mapping is DELIBERATELY ambiguous (a 403
+    can also mean a real credential fault), hence the `logger.warning`: the
+    request still gets its 400, the ambiguity stays in the logs. Any other
+    `ClientError` propagates.
     """
     client = _client()
     try:
