@@ -1,5 +1,13 @@
 # Test image. Pinned to 3.9 because Django 3.1 does not run on Python 3.12+.
-FROM python:3.9-bullseye
+#
+# bookworm, not bullseye: bullseye left security support and its
+# `bullseye-security` Release file EXPIRED, which makes `apt-get update` below
+# fail outright ("Release file ... is expired") and took this image -- and so
+# `scripts/run-tests.sh` -- from building to unbuildable without a single
+# commit. bookworm still gets updates. Do NOT "fix" a future recurrence with
+# `Acquire::Check-Valid-Until=false`; that silences the warning and keeps
+# installing unpatched packages. Move to the next supported release instead.
+FROM python:3.9-bookworm
 
 ENV PYTHONUNBUFFERED 1
 ENV PYTHONDONTWRITEBYTECODE 1

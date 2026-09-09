@@ -1,6 +1,10 @@
 # Pinned: Django 3.1 does not run on Python 3.12+, so the previous unpinned
 # `FROM python:3` no longer produces a working image.
-FROM python:3.9-bullseye
+#
+# bookworm, not bullseye: see the comment in `Dockerfile.test` -- bullseye's
+# expired security Release file breaks `apt-get update` and made this image
+# unbuildable too.
+FROM python:3.9-bookworm
 
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
