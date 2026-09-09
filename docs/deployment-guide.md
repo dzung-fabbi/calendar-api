@@ -409,10 +409,28 @@ dump is the only rollback.
 4. Verify:
    ```sql
    SHOW TABLES LIKE 'social_auth%';  -- should return 0 rows
-   SELECT COUNT(*) FROM django_migrations WHERE app='social_django';  -- should return 0
+   SELECT COUNT(*) FROM django_migrations
+    WHERE app IN ('social_django', 'social_auth', 'default');  -- should return 0
    ```
 
 `migrate` is idempotent here — running it twice is clean.
+
+**Two migrations, not one.** `0007` drops the tables and the rows recorded under
+`app='social_django'`. `0008_drop_social_auth_migration_rows` deletes nine more
+that `0007` missed: the same package also registered under the older labels
+`social_auth` (5 rows) and `default` (4 rows), so a database migrated before
+those renames keeps bookkeeping rows for apps that no longer exist. Nothing
+reads them, but `showmigrations` and any audit of what the database has applied
+both report phantom apps until they go. The verification query above covers all
+three labels for that reason.
+
+**Applied to production on 2026-09-09**, in this order — which is forced, not a
+preference: `social_auth_usersocialauth` holds a database-level FK to
+`auth_user`, and Django cannot cascade it because the app is gone from
+INSTALLED_APPS and the table therefore has no model. Deleting a user first
+fails with `IntegrityError (1451)`. The tables have to go first; anything that
+needs to identify accounts *through* that table must capture the ids before
+they do.
 
 **One thing the drop destroys:** `social_auth_usersocialauth` is the only table that can
 answer *which* accounts have no usable password because they used to authenticate through a
