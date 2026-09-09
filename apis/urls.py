@@ -8,6 +8,8 @@ from apis.views import (
     ChangePasswordAPIView,
     ConfigAPIView,
     DateGoodByWorkAPIView,
+    FileConfirmAPIView,
+    FileUploadUrlAPIView,
     ForgotPasswordAPIView,
     HomeAPIView,
     RegisterAPIView,
@@ -36,6 +38,14 @@ urlpatterns = [
     # rather than duplicate a view, both paths reach the one that now also
     # handles PATCH.
     path("me", UserAPIView.as_view(), name="me"),
+
+    # Presigned S3/R2 upload for generic files. No bytes ever cross Django --
+    # see `apis/services/storage.py` / `apis/views/file_upload.py`. Both are
+    # AllowAny + throttled; read the file_upload module docstring before
+    # widening either.
+    path("files/upload-url", FileUploadUrlAPIView.as_view(), name="file-upload-url"),
+    path("files/confirm", FileConfirmAPIView.as_view(), name="file-confirm"),
+
     # Account management. `/auth/token` and `/auth/revoke-token` (login and
     # logout, mounted in `djangopj/urls.py`) are deliberately NOT part of this
     # group -- shipped clients call them at the root and they stay there.

@@ -181,6 +181,12 @@ REST_FRAMEWORK = {
         'auth-forgot-password': '5/hour',
         'auth-reset-password': '10/hour',
         'auth-change-password': '10/hour',
+        # Generic file upload (`apis/views/file_upload.py`). Unauthenticated,
+        # so there is no per-user bucket to use instead. Same PER-IP caveat as
+        # everything above -- this raises the cost of a single-source flood and
+        # nothing more; the images-only allowlist is what actually bounds what
+        # a stranger can put in the bucket.
+        'file-upload': '20/hour',
     },
     # How many reverse proxies in front of Django are TRUSTED to append to
     # `X-Forwarded-For` (DRF's `BaseThrottle.get_ident`; see

@@ -6,6 +6,8 @@
   "calendar_30_days": 2,
   "config": 3,
   "date_good_by_work": 3,
+  "file_confirm": 0,
+  "file_upload_url": 0,
   "get_user": 1,
   "home": 19,
   "me_patch": 5,

@@ -20,6 +20,10 @@ from apis.serializers.booking import (
     BankSerializer,
     BookCalendarSerializer,
 )
+from apis.serializers.file_upload import (
+    FileConfirmSerializer,
+    FileUploadUrlRequestSerializer,
+)
 from apis.serializers.profile import ProfileUpdateSerializer, UserProfileSerializer
 from apis.serializers.site_config import (
     DateConfigSerializer,
@@ -47,7 +51,8 @@ from apis.serializers.than_sat import (
 
 __all__ = [
     'AppointmentDateSerializer', 'BankSerializer', 'BookCalendarSerializer',
-    'ChangePasswordSerializer', 'ForgotPasswordSerializer',
+    'ChangePasswordSerializer', 'FileConfirmSerializer',
+    'FileUploadUrlRequestSerializer', 'ForgotPasswordSerializer',
     'ProfileUpdateSerializer', 'RegisterSerializer', 'ResetPasswordSerializer',
     'UserProfileSerializer', 'VerifyOtpSerializer',
     'DateConfigSerializer', 'DirectionConfigSerializer', 'HiepKySerializer',

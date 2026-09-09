@@ -7,14 +7,18 @@ After a round of optimisation, lower the numbers in
 """
 
 import json
+from unittest import mock
 
+from django.core.cache import cache
 from django.db import connection
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.test.utils import CaptureQueriesContext
 from rest_framework.test import APIClient
 
+from apis.services import storage
 from apis.tests import factories
 from apis.tests.shape import load_snapshot, save_snapshot
+from apis.tests.test_file_upload_api import S3_TEST_SETTINGS, a_key
 
 BUDGETS = "query_budgets"
 
@@ -158,4 +162,45 @@ class QueryCountTests(TestCase):
             client,
             "/api/auth/change-password",
             {"current_password": "MatKhauCu!2026", "new_password": "MatKhauMoi!2026"},
+        )
+
+    # The two file endpoints touch no model at all -- budget 0. They need
+    # `boto3` mocked and `S3_*` set, or they would answer 503 instead of 200
+    # and the ratchet would be measuring the error path.
+    def _mocked_storage(self):
+        cache.clear()
+        storage.reset_client_cache()
+        # Also on the way OUT: without this the Mock built here stays in the
+        # module-level client cache after `patcher.stop()`, for whatever runs
+        # next in the process.
+        self.addCleanup(storage.reset_client_cache)
+        patcher = mock.patch("apis.services.storage.boto3.client")
+        factory = patcher.start()
+        self.addCleanup(patcher.stop)
+        client = mock.Mock()
+        factory.return_value = client
+        client.generate_presigned_url.return_value = "https://test-bucket.example/signed"
+        client.head_object.return_value = {
+            "ContentLength": 1000, "ContentType": "image/jpeg",
+        }
+        return client
+
+    @override_settings(**S3_TEST_SETTINGS)
+    def test_file_upload_url(self):
+        self._mocked_storage()
+        self.assert_post_within_budget(
+            "file_upload_url",
+            APIClient(),
+            "/api/files/upload-url",
+            {"content_type": "image/jpeg", "size": 1000},
+        )
+
+    @override_settings(**S3_TEST_SETTINGS)
+    def test_file_confirm(self):
+        self._mocked_storage()
+        self.assert_post_within_budget(
+            "file_confirm",
+            APIClient(),
+            "/api/files/confirm",
+            {"key": a_key()},
         )

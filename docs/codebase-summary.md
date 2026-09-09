@@ -26,6 +26,8 @@
 | `auth/verify-otp` | `views/auth_password_reset.py` | public POST | - |
 | `auth/reset-password` | `views/auth_password_reset.py` | public POST | - |
 | `auth/change-password` | `views/auth_password_change.py` | auth POST | 5 |
+| `files/upload-url` | `views/file_upload.py` | public POST, throttled | 0 |
+| `files/confirm` | `views/file_upload.py` | public POST, throttled | 0 |
 
 Query counts are enforced as ceilings by `apis/tests/test_query_counts.py`.
 
@@ -146,6 +148,10 @@ intercalary. One person can have two giỗ in a single solar year (drift across 
 `apis/services/can_chi.py`. Duplication enforces package boundary (giapha shares no
 imports from apis).
 
+**Object storage:** `apis/services/storage.py` is a deliberate twin of `giapha/services/storage.py` for the
+same reason -- same `S3_*` settings, same presign/head logic, minus `delete()` (which
+`apis/` has no endpoint for). A behavioural fix in one needs the same fix in the other.
+
 **Query optimization:** `selectors/gio.py` fetches all deceased with lunar death date
 in one query. `services.gio` derives all occurrences in arithmetic (no N+1).
 
@@ -261,6 +267,9 @@ benchmarks, which need `BENCHMARK_TREE_PERFORMANCE=1`.
 - `test_query_counts.py` -- per-endpoint query ceiling; catches reintroduced N+1.
 - `test_services.py` -- unit tests for `services/` (no database).
 - `test_security.py` -- ownership and data-exposure regressions.
+- `test_file_upload_api.py` -- the presigned file endpoints; `boto3` fully mocked,
+  never touches the network. Clears the throttle cache per test because both
+  endpoints are unauthenticated and bucket by IP.
 - `test_management_commands.py` -- `remind_appointment_date` (the `apis/` reminder;
   unrelated to `giapha/`'s `remind_death_anniversary`).
 

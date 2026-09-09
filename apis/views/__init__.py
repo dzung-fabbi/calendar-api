@@ -14,6 +14,7 @@ from apis.views.booking import (
     BankAPIView,
     BookCalendarAPIView,
 )
+from apis.views.file_upload import FileConfirmAPIView, FileUploadUrlAPIView
 from apis.views.good_day import DateGoodByWorkAPIView
 from apis.views.numerology import SoHocAPIView
 from apis.views.than_sat import ThanSatAPIView
@@ -26,6 +27,8 @@ __all__ = [
     'ChangePasswordAPIView',
     'ConfigAPIView',
     'DateGoodByWorkAPIView',
+    'FileConfirmAPIView',
+    'FileUploadUrlAPIView',
     'ForgotPasswordAPIView',
     'HomeAPIView',
     'RegisterAPIView',

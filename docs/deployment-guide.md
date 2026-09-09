@@ -121,6 +121,19 @@ set `gio_remind_before_days` so a known person's death date lands on `today + N`
    (below), or leave them empty and accept that the photo endpoints answer 503
    while the rest of the API works normally.
 
+**The same five `S3_*` variables also serve the generic upload endpoints**
+`POST /api/files/upload-url` and `POST /api/files/confirm` (`apis/views/file_upload.py`,
+`apis/services/storage.py` -- a deliberate copy of the giapha module, since `apis/` may
+not import `giapha/`). One bucket, one credential, one CORS rule covers both. Those two
+endpoints are **unauthenticated** (`AllowAny` + a 20/hour per-IP throttle), so anyone who
+can reach the API can put an image in this bucket -- see `docs/api-reference.md` ->
+"Tải Tệp Lên" for the full risk note. Objects land under the `uploads/` prefix; giapha
+photos stay under `giapha/{clan_id}/{person_id}/`.
+
+**Set a lifecycle rule on the `uploads/` prefix.** A caller can request an upload URL and
+never confirm, leaving an orphaned object, and nothing in the code deletes it -- there is
+no cleanup job and the generic endpoints have no delete.
+
 ### Bucket requirements
 
 * **Private, not public.** Every read goes through a presigned, time-limited `GET` URL

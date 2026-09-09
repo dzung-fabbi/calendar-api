@@ -39,6 +39,72 @@ họ bằng invite code sẽ lấy được đúng danh sách email mà cái kho
 
 **Client cần làm:** đổi chỗ hiển thị `username` sang `display_name`.
 
+## Tải Tệp Lên (`/api/files/`)
+
+Endpoint dùng chung, **không gắn** với model nào — không ghi DB, không lưu lịch sử. Nằm ở
+app `apis/`, dùng chung 5 biến `S3_*` với phần ảnh gia phả (xem `docs/deployment-guide.md`).
+
+| Endpoint | Auth | Body | Thành công |
+|---|---|---|---|
+| `POST /api/files/upload-url` | không | `content_type`, `size` | 200 `{"data": {"upload_url", "key", "expires_in": 300}}` |
+| `POST /api/files/confirm` | không | `key` | 200 `{"data": {"key", "url", "expires_in": 3600}}` |
+
+### Luồng 2 bước
+
+**Byte của tệp không bao giờ đi qua Django** — client `PUT` trực tiếp lên S3/R2. Đẩy byte
+qua Django sẽ giữ chặt một gunicorn worker suốt thời gian upload.
+
+```
+1) POST /api/files/upload-url   {"content_type": "image/jpeg", "size": 123456}
+   -> {"data": {"upload_url": "https://...", "key": "uploads/<32 hex>.jpg", "expires_in": 300}}
+
+2) PUT <upload_url>             (byte của tệp; header Content-Type PHẢI khớp content_type đã khai)
+
+3) POST /api/files/confirm      {"key": "uploads/<32 hex>.jpg"}
+   -> {"data": {"key": "...", "url": "<presigned GET>", "expires_in": 3600}}
+```
+
+Client **lưu `key`**, gọi lại `confirm` để lấy URL mới khi link hết hạn.
+
+### Giới hạn
+
+- **Chỉ ảnh:** `image/jpeg`, `image/png`, `image/webp`. Type khác → 400.
+- **Tối đa 5MB.** `size` ở bước 1 chỉ là *khai báo* của client, dùng để chặn sớm. Presigned
+  `PUT` về bản chất **không** chặn được kích thước trước (không có `content-length-range`),
+  nên cap được thực thi thật ở bước `confirm`: server `HEAD` object và đọc `ContentLength`
+  thực tế. Client khai 1KB rồi push 10MB vẫn bị từ chối ở bước 3.
+- `confirm` cũng kiểm **`ContentType` thật của object**, không tin cái client khai ở bước 1.
+- `key` phải đúng hình dạng server sinh ra: `uploads/{32 ký tự hex}.{jpg|png|webp}`. Mọi
+  thứ khác (traversal `../`, thiếu đuôi, đuôi lạ, chữ hoa, thư mục con) → 400, và **không**
+  chạm tới S3.
+- Chưa cấu hình `S3_*` → **503** ở cả hai endpoint. Phần API còn lại không ảnh hưởng.
+- URL trả về là **presigned GET, hết hạn sau 1 giờ**. Bucket là private — không có URL công
+  khai vĩnh viễn.
+
+### ⚠️ Không yêu cầu xác thực
+
+Cả hai endpoint là `AllowAny`, chỉ có throttle **20 lần/giờ** (scope `file-upload`, dùng
+chung cho cả hai). Nghĩa là **bất kỳ ai cũng ghi được object vào bucket**.
+
+Throttle này không phải rào cản thật, và con số "20/giờ" cần đọc kỹ:
+
+- Bucket throttle là **mỗi IP** với caller ẩn danh, nhưng **mỗi user** nếu request có Bearer
+  token hợp lệ (`SimpleRateThrottle.get_cache_key`).
+- Per-IP chỉ có ý nghĩa khi `DJANGO_NUM_PROXIES` khớp số proxy tin cậy thật (mặc định `0`);
+  và đủ nhiều IP nguồn thì vượt qua được.
+- Project **không cấu hình `CACHES`** → Django dùng `LocMemCache`, **không chia sẻ giữa các
+  process**. Với N gunicorn worker, trần thực tế là **20 × N** mỗi IP.
+
+Allowlist chỉ-ảnh giảm nhẹ, nhưng cần chính xác về việc nó mua được gì: nó ràng buộc
+**`Content-Type` mà object được trả về**, *không* ràng buộc nội dung. `confirm` kiểm nhãn
+`Content-Type` qua `HEAD`; **không có chỗ nào đọc byte** của file (thiết kế presigned không
+làm được). Kẻ lạ vẫn lưu được payload 5MB tuỳ ý dán nhãn `image/png`. Cái nó chặn là payload
+đó **được serve như** `text/html` / `image/svg+xml` — tức chặn thực thi script trên origin
+của bucket. Mở rộng allowlist mà không thêm auth là cho đi đúng thứ đó.
+
+Object mồ côi (xin `upload-url` rồi không `confirm`) **không có job nào dọn**. Nên đặt
+lifecycle rule cho prefix `uploads/` trên bucket.
+
 ## Tài Khoản (`/api/`)
 
 Các endpoint quản lý tài khoản nằm ở app `apis/`, **không** phải `/api/gia-pha/`. Ghi ở đây
@@ -141,6 +207,10 @@ chặt hơn hẳn.
 
 - **`POST /join`** (`giapha-join` scope): 10 yêu cầu/giờ mỗi IP
 - **Public tree/person endpoints** (`giapha-public` scope): 60 yêu cầu/giờ mỗi IP
+- **`POST /api/files/upload-url` + `POST /api/files/confirm`** (`file-upload` scope): 20
+  yêu cầu/giờ, **dùng chung một bucket** cho cả hai endpoint. Ẩn danh → bucket theo IP; có
+  Bearer hợp lệ → bucket theo user. `LocMemCache` không chia sẻ giữa worker nên trần thực
+  tế là 20 × số worker
 - **Endpoint tài khoản** (`apis/`): `auth-register` 10/giờ, `auth-forgot-password` 5/giờ,
   `auth-reset-password` 10/giờ, `auth-change-password` 10/giờ
 - Endpoint khác: không giới hạn — **kể cả `/auth/token`** (xem "Chưa Xác Minh")
@@ -325,6 +395,16 @@ Bộ lọc này áp dụng cả khi ĐỌC payload, không chỉ khi ghi — nê
 | `/clans/{clan_id}/persons/{person_id}/photo` | POST | `IsClanEditor` | Confirm uploaded. Request: `{key}`. Validate shape, HEAD, enforce 5MB. Response: `{data: person}` |
 | `/clans/{clan_id}/persons/{person_id}/photo` | DELETE | `IsClanEditor` | Remove photo. Response: 204 |
 | `/clans/{clan_id}/photo-urls` | POST | `IsClanMember` | Batch presigned GETs. Request: `{person_ids: [...]}` (max 100). Response: `{data: {person_id: url, ...}}` |
+
+### Tệp: Upload Dùng Chung (`apis/`)
+
+| Endpoint | Method | Quyền | Ghi Chú |
+|----------|--------|-------|--------|
+| `/api/files/upload-url` | POST | `AllowAny` + throttle | Request: `{content_type, size}`. Response: `{data: {upload_url, key, expires_in: 300}}`. Key: `uploads/{32 hex}.{jpg\|png\|webp}` |
+| `/api/files/confirm` | POST | `AllowAny` + throttle | Request: `{key}`. Validate shape, HEAD, enforce 5MB + content-type thật. Response: `{data: {key, url, expires_in: 3600}}` |
+
+Không ghi DB (query budget: 0). Xem mục "Tải Tệp Lên" trên để biết giới hạn và rủi ro
+`AllowAny`.
 
 ### Lịch Giỗ
 
