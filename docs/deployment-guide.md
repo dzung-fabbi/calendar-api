@@ -333,13 +333,29 @@ confirmed upload can therefore leave an orphaned object over the cap sitting in
 the bucket; there is no cleanup job for this yet (accepted at MVP, see the
 phase-08 plan's risk assessment).
 
-### S3/R2 upload: end-to-end delivery is UNVERIFIED
+### S3/R2 upload: end-to-end VERIFIED (2026-09-09)
 
-No real S3/R2 bucket has been provisioned for this application. `giapha/tests/test_photo_api.py`
-mocks `boto3` entirely (no network is touched). Mocks cannot catch a wrong signature version,
-a missing CORS rule, or a region/endpoint mismatch — all three fail at the client's `PUT`
-request, the least visible point in the flow. Treat the first upload against a real bucket
-as a smoke test, not as proof the path works:
+The generic `/api/files` flow was run against the live bucket
+(`calendar-giapha-prod`, `ap-northeast-1`) end to end: mint → `PUT` of a real PNG
+straight to S3 (200) → confirm (200) → presigned `GET` (200), with the bytes
+returned byte-identical to the bytes sent. The test object was deleted afterwards.
+
+That proves the shared mechanism — signature version, endpoint resolution,
+credentials, bucket policy — since `apis/services/storage.py` and
+`giapha/services/storage.py` presign identically. The **giapha photo endpoints
+themselves** (`photo-upload-url` / `photo` confirm / `photo-urls`) have still not
+been exercised against the real bucket; only the storage layer underneath them
+has.
+
+Why this mattered: mocks cannot catch a wrong signature version, a missing CORS
+rule, or a region/endpoint mismatch — all three fail at the client's `PUT`, the
+least visible point in the flow. Two of those three were real and were only found
+by hand on the production host (see the SigV4 / regional-endpoint notes in
+`services/storage.py`). `apis/tests/test_file_upload_api.py`'s
+`StorageClientConstructionTests` now pins both, so a regression fails a test
+rather than an upload.
+
+To re-run the check against a fresh bucket:
 
 ```bash
 curl -X POST https://your-app/api/gia-pha/clans/{clan_id}/persons/{pid}/photo-upload-url \
