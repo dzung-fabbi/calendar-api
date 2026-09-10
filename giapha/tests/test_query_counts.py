@@ -42,8 +42,46 @@ def client_for(user):
     return client
 
 
-class QueryBudgetTestCase(TestCase):
-    """Shared small + large fixture and the ratchet-assert helper."""
+class QueryBudgetMixin:
+    """The ratchet helpers alone, for suites with their own fixtures
+    (`test_family_query_counts.py` -- a personal family, not a clan)."""
+
+    def query_count(self, client, path, params=None, method='get', body=None):
+        with CaptureQueriesContext(connection) as captured:
+            if method == 'get':
+                response = client.get(path, params or {})
+            else:
+                response = getattr(client, method)(path, body or {}, format='json')
+        self.assertIn(response.status_code, (200, 201), response.content)
+        return len(captured.captured_queries)
+
+    def assert_budget(self, name, small_count, large_count, comment=''):
+        """Records/checks the ratchet AND asserts the two fixture sizes cost
+        the exact same number of queries -- the property the budget exists
+        to prove. `comment` is surfaced in the assertion message for the
+        known-over-budget endpoints.
+        """
+        self.assertEqual(
+            small_count, large_count,
+            '{} cost {} queries on the small fixture but {} on the large '
+            'one -- the budget must not grow with tree size.{}'.format(
+                name, small_count, large_count, ' ' + comment if comment else '',
+            ),
+        )
+        budgets = load_snapshot(BUDGETS) or {}
+        if name not in budgets:
+            budgets[name] = small_count
+            save_snapshot(BUDGETS, budgets)
+            self.skipTest('Recorded query budget {}={}. Re-run to assert it.'.format(name, small_count))
+        self.assertLessEqual(
+            small_count, budgets[name],
+            '{} used {} queries, budget is {}. If this is an intended regression, '
+            'justify it; otherwise it is an N+1.'.format(name, small_count, budgets[name]),
+        )
+
+
+class QueryBudgetTestCase(QueryBudgetMixin, TestCase):
+    """Shared small + large clan fixture; ratchet helpers from the mixin."""
 
     @classmethod
     def setUpTestData(cls):
@@ -69,37 +107,6 @@ class QueryBudgetTestCase(TestCase):
         cls.large_clan = cls.large['clan']
         cls.large_perf = build_perf_clan_fixture(cls.large_clan, target_size=1000)
         bind_member(cls.large_clan, cls.large['viewer'], cls.large_perf['roots'][0])
-
-    def query_count(self, client, path, params=None):
-        with CaptureQueriesContext(connection) as captured:
-            response = client.get(path, params or {})
-        self.assertEqual(200, response.status_code, response.content)
-        return len(captured.captured_queries)
-
-    def assert_budget(self, name, small_count, large_count, comment=''):
-        """Records/checks the ratchet AND asserts the two fixture sizes cost
-        the exact same number of queries -- the property the budget exists
-        to prove. `comment` is surfaced in the assertion message for the
-        known-over-budget endpoints.
-        """
-        self.assertEqual(
-            small_count, large_count,
-            '{} cost {} queries on the small fixture but {} on the ~1,000-person '
-            'one -- the budget must not grow with clan size.{}'.format(
-                name, small_count, large_count, ' ' + comment if comment else '',
-            ),
-        )
-        budgets = load_snapshot(BUDGETS) or {}
-        if name not in budgets:
-            budgets[name] = small_count
-            save_snapshot(BUDGETS, budgets)
-            self.skipTest('Recorded query budget {}={}. Re-run to assert it.'.format(name, small_count))
-        self.assertLessEqual(
-            small_count, budgets[name],
-            '{} used {} queries, budget is {}. If this is an intended regression, '
-            'justify it; otherwise it is an N+1.'.format(name, small_count, budgets[name]),
-        )
-
 
 class ClanListBudgetTests(QueryBudgetTestCase):
     """`GET /clans` -- ceiling 2 (`clans_for_user` + `roles_for_clans`)."""
