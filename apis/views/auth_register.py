@@ -1,8 +1,7 @@
 """`POST /api/auth/register` -- create an account.
 
 The email IS the identity: it is stored as `username` as well as `email`, so
-the account works with the existing, untouched `POST /auth/token` password
-grant with no further step. Accounts are active immediately; there is no
+the account works with `POST /api/auth/login` with no further step. Accounts are active immediately; there is no
 verification email.
 """
 
@@ -11,6 +10,7 @@ from django.db import IntegrityError, transaction
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
 from apis.serializers.account import UserSerializer
@@ -21,8 +21,11 @@ class RegisterAPIView(APIView):
     permission_classes = [AllowAny]
     # Unauthenticated, so no per-user throttle bucket exists -- see the
     # NUM_PROXIES caveat on DEFAULT_THROTTLE_RATES in djangopj/settings.py.
+    # `throttle_scope` alone is a no-op: the project sets no
+    # DEFAULT_THROTTLE_CLASSES, so the class must be named here.
+    throttle_classes = [ScopedRateThrottle]
     throttle_scope = 'auth-register'
-    # The default OAuth2 authenticator would reject a stale or malformed
+    # The default JWT authenticator would reject a stale or malformed
     # bearer header with a 401 before this view ever runs; a caller with an
     # expired token must still be able to register.
     authentication_classes = ()

@@ -47,6 +47,7 @@ from django.utils import timezone
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
 from apis.selectors.auth_tokens import set_password_and_revoke_tokens
@@ -97,10 +98,13 @@ def check_code(user, code):
 
 class ForgotPasswordAPIView(APIView):
     permission_classes = [AllowAny]
-    # The default OAuth2 authenticator would reject a stale bearer header with
+    # The default JWT authenticator would reject a stale bearer header with
     # a 401 before this view ran; someone who cannot log in must still be able
     # to ask for a code.
     authentication_classes = ()
+    # `throttle_scope` alone is a no-op: the project sets no
+    # DEFAULT_THROTTLE_CLASSES, so the class must be named here.
+    throttle_classes = [ScopedRateThrottle]
     throttle_scope = 'auth-forgot-password'
 
     def post(self, request):
@@ -132,6 +136,9 @@ class VerifyOtpAPIView(APIView):
 
     permission_classes = [AllowAny]
     authentication_classes = ()
+    # `throttle_scope` alone is a no-op: the project sets no
+    # DEFAULT_THROTTLE_CLASSES, so the class must be named here.
+    throttle_classes = [ScopedRateThrottle]
     throttle_scope = 'auth-reset-password'
 
     def post(self, request):
@@ -149,6 +156,9 @@ class VerifyOtpAPIView(APIView):
 class ResetPasswordAPIView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = ()
+    # `throttle_scope` alone is a no-op: the project sets no
+    # DEFAULT_THROTTLE_CLASSES, so the class must be named here.
+    throttle_classes = [ScopedRateThrottle]
     throttle_scope = 'auth-reset-password'
 
     def post(self, request):

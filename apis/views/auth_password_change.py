@@ -11,6 +11,7 @@ The shared part -- setting the password and revoking every token -- lives in
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
 from apis.selectors.auth_tokens import set_password_and_revoke_tokens
@@ -26,6 +27,9 @@ class ChangePasswordAPIView(APIView):
     # `ScopedRateThrottle` keys on the user id for an authenticated request, so
     # unlike the reset scopes this is a genuine per-user bucket -- immune to the
     # IP-rotation and per-process-cache weaknesses those suffer from.
+    # `throttle_scope` alone is a no-op: the project sets no
+    # DEFAULT_THROTTLE_CLASSES, so the class must be named here.
+    throttle_classes = [ScopedRateThrottle]
     throttle_scope = 'auth-change-password'
 
     def post(self, request):
