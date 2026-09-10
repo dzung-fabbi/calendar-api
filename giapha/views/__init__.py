@@ -9,6 +9,20 @@ from giapha.views.clan_membership import (
     JoinClanAPIView,
 )
 from giapha.views.device import DeviceTokenAPIView
+from giapha.views.family import (
+    FamilyGioEventAPIView,
+    FamilyPersonCreateAPIView,
+    FamilyPersonDetailAPIView,
+    FamilyRootAPIView,
+    FamilySelfAPIView,
+)
+from giapha.views.family_relations import (
+    FamilyAddRelativeAPIView,
+    FamilyLinkChildAPIView,
+    FamilyLinkSpouseAPIView,
+    FamilySetParentAPIView,
+    FamilyUnlinkSpouseAPIView,
+)
 from giapha.views.gio import ClanGioCalendarAPIView
 from giapha.views.gio_follow import (
     ClanGioFollowDetailAPIView,
@@ -43,6 +57,16 @@ __all__ = [
     'ClanPublicTreeAPIView',
     'ClanTreeAPIView',
     'DeviceTokenAPIView',
+    'FamilyAddRelativeAPIView',
+    'FamilyGioEventAPIView',
+    'FamilyLinkChildAPIView',
+    'FamilyLinkSpouseAPIView',
+    'FamilyPersonCreateAPIView',
+    'FamilyPersonDetailAPIView',
+    'FamilyRootAPIView',
+    'FamilySelfAPIView',
+    'FamilySetParentAPIView',
+    'FamilyUnlinkSpouseAPIView',
     'JoinClanAPIView',
     'MarriageDetailAPIView',
     'MarriageListCreateAPIView',

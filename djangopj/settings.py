@@ -334,3 +334,6 @@ LOGGING = {
 # Gia phả dòng họ (giapha app): hard cap on persons per clan, guards against
 # runaway data entry and keeps admin/report queries bounded.
 MAX_CLAN_PERSONS = 5000
+# Gia phả cá nhân (`/v1/family`): every request loads the caller's whole tree
+# (spec: a real family is < 500 people), so the cap bounds that load.
+FAMILY_MAX_PERSONS = 1000

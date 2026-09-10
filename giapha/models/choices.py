@@ -51,3 +51,22 @@ REVISION_ACTION = (
     ('update', 'Cập nhật'),
     ('delete', 'Xoá'),
 )
+
+# --- Gia phả cá nhân (`/v1/family`, spec docs/gia-pha-api-spec.md §3) ---
+# English identifiers on purpose: the mobile app Person type uses these exact
+# strings and the API echoes them verbatim -- no DB<->JSON mapping layer.
+FAMILY_GENDER = (
+    ('male', 'Nam'),
+    ('female', 'Nữ'),
+    ('unknown', 'Chưa rõ'),
+)
+
+FAMILY_PARENT_REL = (
+    ('blood', 'Ruột'),
+    ('adopted', 'Nuôi'),
+)
+
+FAMILY_SPOUSE_REL = (
+    ('married', 'Đã kết hôn'),
+    ('divorced', 'Ly hôn'),
+)

@@ -18,6 +18,16 @@ from giapha.views import (
     ClanPublicTreeAPIView,
     ClanTreeAPIView,
     DeviceTokenAPIView,
+    FamilyAddRelativeAPIView,
+    FamilyGioEventAPIView,
+    FamilyLinkChildAPIView,
+    FamilyLinkSpouseAPIView,
+    FamilyPersonCreateAPIView,
+    FamilyPersonDetailAPIView,
+    FamilyRootAPIView,
+    FamilySelfAPIView,
+    FamilySetParentAPIView,
+    FamilyUnlinkSpouseAPIView,
     JoinClanAPIView,
     MarriageDetailAPIView,
     MarriageListCreateAPIView,
@@ -30,6 +40,23 @@ from giapha.views import (
 )
 
 urlpatterns = [
+    # Gia phả cá nhân -- one user, one tree, the mobile app's contract
+    # (`docs/gia-pha-api-spec.md`). Independent of the clan endpoints below.
+    path('v1/family', FamilyRootAPIView.as_view(), name='family-root'),
+    path('v1/family/self', FamilySelfAPIView.as_view(), name='family-self'),
+    path('v1/family/persons', FamilyPersonCreateAPIView.as_view(), name='family-person-create'),
+    path('v1/family/persons/<uuid:person_id>', FamilyPersonDetailAPIView.as_view(), name='family-person-detail'),
+    path(
+        'v1/family/persons/<uuid:person_id>/gio-event',
+        FamilyGioEventAPIView.as_view(),
+        name='family-person-gio-event',
+    ),
+    path('v1/family/relations/add-relative', FamilyAddRelativeAPIView.as_view(), name='family-add-relative'),
+    path('v1/family/relations/set-parent', FamilySetParentAPIView.as_view(), name='family-set-parent'),
+    path('v1/family/relations/link-spouse', FamilyLinkSpouseAPIView.as_view(), name='family-link-spouse'),
+    path('v1/family/relations/unlink-spouse', FamilyUnlinkSpouseAPIView.as_view(), name='family-unlink-spouse'),
+    path('v1/family/relations/link-child', FamilyLinkChildAPIView.as_view(), name='family-link-child'),
+
     path('clans', ClanListCreateAPIView.as_view(), name='clan-list-create'),
     path('clans/<int:clan_id>', ClanDetailAPIView.as_view(), name='clan-detail'),
     path('clans/<int:clan_id>/members', ClanMembersAPIView.as_view(), name='clan-members'),
