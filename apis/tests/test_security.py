@@ -30,7 +30,10 @@ class AppointmentOwnershipTests(TestCase):
               "before_days": 1}],
             format="json",
         )
-        self.assertEqual(201, response.status_code)
+        # Same 400 as for an id that does not exist: the response must not
+        # confirm that somebody else's row is there.
+        self.assertEqual(400, response.status_code)
+        self.assertNotIn('Riêng tư', response.content.decode())
 
         self.owner_row.refresh_from_db()
         self.assertEqual('Riêng tư', self.owner_row.name)

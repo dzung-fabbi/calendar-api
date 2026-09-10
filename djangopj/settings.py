@@ -223,7 +223,8 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
 )
 
-# Firebase Cloud Messaging service account (giapha nhắc giỗ). Declared here so
+# Firebase Cloud Messaging service account (giapha nhắc giỗ + apis nhắc lịch
+# hẹn, both through `giapha.services.fcm`). Declared here so
 # the value is configurable the same way as everything else and reachable from
 # `override_settings`; `giapha.services.fcm_auth` still falls back to the raw
 # environment when these are empty. Never commit the JSON itself.

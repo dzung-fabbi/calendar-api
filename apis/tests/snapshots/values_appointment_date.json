@@ -1,8 +1,8 @@
 {
   "data": [
     {
-      "before_days": "3 00:00:00",
-      "convert_time": "259200.0",
+      "before_days": 3,
+      "convert_time": 3,
       "date": "2026-04-18",
       "id": 2,
       "name": "Giỗ tổ",

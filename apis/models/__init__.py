@@ -6,6 +6,7 @@ The choice tuples are re-exported too, since the migrations reference them.
 """
 
 from apis.models.almanac import HiepKy, HourInDay, SaoHiepKy, TietKhi
+from apis.models.appointment_reminder_log import AppointmentReminderLog
 from apis.models.auspicious_hours import QuyNhan, TuDaiCatThoi, TuDaiCatThoiSao
 from apis.models.booking import (
     AppointmentDate,
@@ -82,7 +83,7 @@ SAO_MONTH_MODELS = (
 
 __all__ = [
     'AM_DUONG', 'CALENDAR', 'HOURS', 'STATUS_TRANSACTION',
-    'AppointmentDate', 'BankConfig', 'BankTransaction', 'BookCalendar',
+    'AppointmentDate', 'AppointmentReminderLog', 'BankConfig', 'BankTransaction', 'BookCalendar',
     'CategoryStars', 'DateConfig', 'DirectionConfig', 'HiepKy', 'HourInDay',
     'HoursConfig', 'ItemBase', 'PasswordResetCode', 'QuyNhan', 'RefreshToken', 'Sao',
     'SaoHiepKy', 'SaoMonthBase',
