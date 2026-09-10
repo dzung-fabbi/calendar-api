@@ -143,6 +143,39 @@ class QueryCountTests(TestCase):
             expected_status=201,
         )
 
+    # Login/refresh/logout. The user's password is reset to a known value
+    # because `factories.build_fixture` may not store one `authenticate()`
+    # accepts. `cache.clear()`: both scopes are per-IP throttled.
+    def _login_body(self):
+        cache.clear()
+        user = self.fixture["user"]
+        user.set_password("MatKhauCu!2026")
+        user.save()
+        return {"username": user.username, "password": "MatKhauCu!2026"}
+
+    def test_auth_login(self):
+        self.assert_post_within_budget(
+            "auth_login", APIClient(), "/api/auth/login", self._login_body(),
+        )
+
+    def test_auth_refresh(self):
+        # Budget 5 = 3 real queries (SELECT row, DELETE it, INSERT the new one)
+        # + the SAVEPOINT/RELEASE pair that the view's `transaction.atomic()`
+        # emits under TestCase's outer transaction. In production that pair is
+        # BEGIN/COMMIT and is not an N+1.
+        tokens = APIClient().post("/api/auth/login", self._login_body(), format="json").json()
+        self.assert_post_within_budget(
+            "auth_refresh", APIClient(), "/api/auth/refresh",
+            {"refresh_token": tokens["refresh_token"]},
+        )
+
+    def test_auth_logout(self):
+        tokens = APIClient().post("/api/auth/login", self._login_body(), format="json").json()
+        self.assert_post_within_budget(
+            "auth_logout", APIClient(), "/api/auth/logout",
+            {"refresh_token": tokens["refresh_token"]}, expected_status=204,
+        )
+
     def test_auth_forgot_password(self):
         self.assert_post_within_budget(
             "auth_forgot_password",

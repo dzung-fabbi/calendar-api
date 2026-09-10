@@ -21,9 +21,13 @@ SCRIPT_DIR=$(cd "$(dirname "$0")/.." && pwd)
 # Docker on Windows needs a native path (C:/...), which `pwd -W` provides.
 PROJECT_DIR=$(cd "$SCRIPT_DIR" && { pwd -W 2>/dev/null || pwd; })
 
-NETWORK=$(docker network ls --format '{{.Name}}' | grep -E '^calendar-api[_-]default$' | head -1)
-
 docker compose up -d db >/dev/null 2>&1
+
+# Ask the running `db` container which network it is on instead of guessing
+# the compose project name: it is derived from the checkout directory (this
+# repo has lived as both `calendar-api` and `calendar`), so a hard-coded
+# `calendar-api_default` silently yields an empty --network on other clones.
+NETWORK=$(docker inspect -f '{{range $k, $v := .NetworkSettings.Networks}}{{$k}}{{end}}' "$(docker compose ps -q db)")
 docker build -q -f "$PROJECT_DIR/Dockerfile.test" -t calendar-api-test:latest "$PROJECT_DIR" >/dev/null
 
 # Default test labels when the caller passes none at all. `$#` (not `$@`)

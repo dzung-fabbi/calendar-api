@@ -11,7 +11,7 @@ from apis.services.can_chi import (
     can_chi_for_date,
     lunar_month_solar_range,
 )
-from apis.services import otp
+from apis.services import jwt_tokens, otp
 from apis.services.day_rating import DEFAULT_CONFIG, RatingConfig, rate_day
 from apis.services.numerology import (
     LETTER_VALUES,
@@ -181,3 +181,52 @@ class OtpServiceTests(SimpleTestCase):
         self.assertFalse(otp.codes_match(stored, '123456', 8))
         self.assertFalse(otp.codes_match('', '123456', 7))
         self.assertFalse(otp.codes_match(stored, '', 7))
+
+
+class JwtTokenServiceTests(SimpleTestCase):
+    """Pure token functions -- no ORM, so a plain SimpleTestCase."""
+
+    PASSWORD_HASH = 'pbkdf2_sha256$1$salt$hash'
+
+    def test_encode_decode_round_trip_carries_every_claim(self):
+        token, expires_in = jwt_tokens.encode_access_token(42, self.PASSWORD_HASH)
+        self.assertIsInstance(token, str)
+        claims = jwt_tokens.decode_access_token(token)
+        self.assertEqual('42', claims['sub'])  # RFC 7519: `sub` is a string
+        self.assertEqual(jwt_tokens.password_fingerprint(self.PASSWORD_HASH), claims['pwd'])
+        self.assertEqual(expires_in, claims['exp'] - claims['iat'])
+        self.assertEqual(32, len(claims['jti']))
+
+    def test_two_tokens_for_the_same_user_differ(self):
+        first, _ = jwt_tokens.encode_access_token(1, self.PASSWORD_HASH)
+        second, _ = jwt_tokens.encode_access_token(1, self.PASSWORD_HASH)
+        self.assertNotEqual(first, second)  # `jti`
+
+    def test_fingerprint_changes_with_the_password_hash(self):
+        self.assertEqual(16, len(jwt_tokens.password_fingerprint(self.PASSWORD_HASH)))
+        self.assertNotEqual(
+            jwt_tokens.password_fingerprint(self.PASSWORD_HASH),
+            jwt_tokens.password_fingerprint(self.PASSWORD_HASH + 'x'),
+        )
+        # An unusable/empty password must still produce a fingerprint, not raise.
+        self.assertEqual(16, len(jwt_tokens.password_fingerprint(None)))
+
+    def test_expired_token_is_rejected(self):
+        yesterday = dt.datetime.now(tz=dt.timezone.utc) - dt.timedelta(days=1)
+        token, _ = jwt_tokens.encode_access_token(1, self.PASSWORD_HASH, now=yesterday)
+        with self.assertRaises(jwt_tokens.jwt.ExpiredSignatureError):
+            jwt_tokens.decode_access_token(token)
+
+    def test_token_signed_with_another_key_is_rejected(self):
+        with override_settings(JWT_SIGNING_KEY='another-key'):
+            token, _ = jwt_tokens.encode_access_token(1, self.PASSWORD_HASH)
+        with self.assertRaises(jwt_tokens.jwt.InvalidTokenError):
+            jwt_tokens.decode_access_token(token)
+
+    def test_refresh_token_is_random_and_hashes_to_64_hex_chars(self):
+        first, second = jwt_tokens.generate_refresh_token(), jwt_tokens.generate_refresh_token()
+        self.assertNotEqual(first, second)
+        digest = jwt_tokens.hash_refresh_token(first)
+        self.assertEqual(64, len(digest))
+        int(digest, 16)  # hex
+        self.assertEqual(digest, jwt_tokens.hash_refresh_token(first))  # deterministic
