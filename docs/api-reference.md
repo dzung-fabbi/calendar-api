@@ -1,60 +1,61 @@
-# Tài Liệu API giapha
+# Tài Liệu API
 
-Đường dẫn gốc: `/api/gia-pha/`
+Tài liệu bao gồm ba nhóm, theo thứ tự trong file:
+
+| Nhóm | Mount | Nguồn |
+|---|---|---|
+| Đăng nhập / đăng xuất (JWT) | `/api/auth/` | app `apis/` |
+| Tài khoản, tải tệp, lịch vạn niên, đặt lịch | `/api/` | app `apis/` |
+| Gia phả (26 endpoint) | `/api/gia-pha/` | app `giapha/` |
+
+Đường dẫn gốc mặc định của phần gia phả: `/api/gia-pha/`. Endpoint của `apis/` luôn ghi đủ tiền tố `/api/`.
 
 ## Xác Thực
 
-Tất cả endpoint cần token OAuth2 bearer (trừ public endpoint ghi chú riêng):
+Tất cả endpoint cần token JWT bearer (trừ public endpoint ghi chú riêng):
 ```
 Authorization: Bearer {access_token}
 ```
 
-Endpoint auth (từ `djangopj/auth_token_views.py` trên `django-oauth-toolkit`, mount ở `/auth/` — dấu `/` cuối là tuỳ chọn):
+**Các endpoint xác thực** (app `apis/`, mount ở `/api/auth/`):
 
-| Endpoint | Dùng khi |
-|---|---|
-| `POST /auth/token` | Lấy token bằng username/password (grant `password`) hoặc làm mới token (grant `refresh_token`) |
-| `POST /auth/revoke-token` | Thu hồi token (logout). Body: `client_id`, `token` (bắt buộc); `client_secret` tuỳ chọn |
+| Endpoint | Dùng khi | Body | Thành công |
+|---|---|---|---|
+| `POST /api/auth/login` | Đăng nhập bằng username/password | `username`, `password` | 200 `{access_token, refresh_token, token_type:"Bearer", expires_in}` |
+| `POST /api/auth/refresh` | Làm mới access token | `refresh_token` | 200 (cùng format, token mới) |
+| `POST /api/auth/logout` | Đăng xuất | `refresh_token` | 204 (body trống) |
 
 **Ghi chú:**
-- Cả hai endpoint chấp nhận body dạng `application/x-www-form-urlencoded` hoặc JSON (`application/json`).
-- **Đăng nhập chỉ bằng username/password** (`grant_type=password`). Không có đăng nhập qua nhà cung cấp bên thứ ba.
+- Cả ba endpoint chấp nhận body dạng `application/x-www-form-urlencoded` hoặc JSON (`application/json`).
+  Body JSON không phải object (mảng, chuỗi, số, `null`) → 400, không 500.
+- **Access token là JWT HS256**, mặc định sống **1 giờ** (`expires_in` trong response tính bằng giây).
+- **Refresh token là chuỗi ngẫu nhiên 32 byte**, lưu **dưới dạng băm sha256** trong database, **dùng một lần**.
+  Mỗi lần gọi `/api/auth/refresh` trả về refresh token mới và **xoá token cũ khỏi database**.
+- Sai username/password / tài khoản bị khoá / refresh token hỏng-hết hạn-đã dùng → **401** với
+  một thông báo chung (không phân biệt được, cố ý).
+- Thiếu field bắt buộc → 400 `{"field": ["error message"]}`.
+- **Đổi mật khẩu làm mọi access token hết hiệu lực ngay** (không chờ hết 1 giờ), vì access token
+  có claim `pwd` = sha256 của mật khẩu hiện tại. Refresh token cũ cũng bị xoá.
 
-### ⚠️ Client là `public` — chỉ gửi `client_id`, KHÔNG gửi `client_secret`
+### ⚠️ Chuyển đổi từ `/auth/token` (BREAKING)
 
-Application OAuth2 của production đổi từ `confidential` sang **`public`** ngày 2026-09-09.
+Các URL cũ `/auth/token` và `/auth/revoke-token` **trả 404**. Mọi client đã phát hành phải:
+1. Gọi `/api/auth/login` với `username`/`password` thay vì `/auth/token` (bỏ hẳn `client_id`/`client_secret`/`grant_type`)
+2. Gọi `/api/auth/refresh` thay vì `/auth/token` với `grant_type=refresh_token`
+3. Gọi `/api/auth/logout` với `refresh_token` thay vì `/auth/revoke-token`
 
-| Trường | Gửi? |
-|---|---|
-| `client_id` | **Bắt buộc**, cả `/auth/token` lẫn `/auth/revoke-token` |
-| `client_secret` | **Bỏ hẳn field này** (hoặc gửi chuỗi rỗng) |
-
-**Lý do:** app native không giữ được bí mật — secret nằm trong chính binary tải từ store, ai
-cũng `strings` ra được. RFC 8252 quy định app native phải là `public` client. Secret cũ đã
-hash từ 2023 và không còn ai giữ plaintext, nên `confidential` chỉ tạo ra một thứ để mất.
-
-**Cạm bẫy — gửi secret SAI còn tệ hơn không gửi.** `client_authentication_required` của
-django-oauth-toolkit bật xác thực client ngay khi thấy **cả** `client_id` lẫn `client_secret`
-có giá trị, bất kể `client_type`. Một build cũ nhét secret rác vào sẽ tự đẩy mình sang nhánh
-confidential rồi ăn 401:
-
-```
-client_id + không có client_secret   -> OK
-client_id + client_secret=""          -> OK ('' là falsy, bỏ qua nhánh confidential)
-client_id + client_secret="bất kỳ"    -> 401 {"error":"invalid_client"}
-```
-
-**Phân biệt hai lỗi 401/400:**
-- `401 {"error":"invalid_client"}` — sai ở tầng **client**, chưa hề kiểm tới user. Kiểm lại
-  `client_id`, và bỏ `client_secret` ra khỏi request.
-- `400 {"error":"invalid_grant"}` — client đã qua, **sai username/password**.
+**Mọi người dùng phải đăng nhập lại sau deploy** — tất cả access token và refresh token cũ bị vô hiệu.
 
 ### Bao Đóng Response
 
 Hầu hết endpoint trả về response bao trong `{"data": ...}`. **Ngoại lệ:**
 - **204 No Content** (DELETE) không có body
 - Validation errors (400) trả dict lỗi trực tiếp, không bao
-- Public endpoint `/public/{slug}/tree` và `/public/{slug}/persons/{person_id}` trả serializer data không bao
+- Ba endpoint xác thực `/api/auth/login`, `/api/auth/refresh`, `/api/auth/logout` trả payload phẳng, không bao
+- Bốn endpoint gia phả trả payload phẳng, không bao: `/clans/{id}/tree`, `/clans/{id}/lich-gio`,
+  `/clans/{id}/gio-follows`, `/clans/{id}/xung-ho`, và public `/public/{slug}/tree`
+- `/public/{slug}/persons/{person_id}` **có** bao `{"data": person}` (khác với public tree)
+- Ở `apis/`: `GET /api/so-hoc`, `GET /api/than-sat` và `POST /api/book-calendar` trả dữ liệu trực tiếp, không bao
 
 ## ⚠️ Thay Đổi Không Tương Thích: Danh Sách Thành Viên Họ
 
@@ -142,7 +143,7 @@ lifecycle rule cho prefix `uploads/` trên bucket.
 ## Tài Khoản (`/api/`)
 
 Các endpoint quản lý tài khoản nằm ở app `apis/`, **không** phải `/api/gia-pha/`. Ghi ở đây
-vì chúng bổ sung cho phần "Xác Thực" bên trên: `/auth/token` cấp token, nhóm này lo phần
+vì chúng bổ sung cho phần "Xác Thực" bên trên: `/api/auth/login` cấp token, nhóm này lo phần
 còn lại của vòng đời tài khoản.
 
 | Endpoint | Auth | Body | Thành công |
@@ -173,7 +174,7 @@ phát hành; `me` là tên nên dùng cho client mới.
 ### Đăng ký
 
 - **Email chính là định danh đăng nhập**: lưu vào cả `username` lẫn `email`, chuẩn hoá về
-  chữ thường. Đăng ký xong dùng ngay `/auth/token` với `grant_type=password`, không có bước
+  chữ thường. Đăng ký xong dùng ngay `/api/auth/login` với `username`/`password`, không có bước
   xác minh email.
 - Email tối đa **150 ký tự** (giới hạn của cột `auth_user.username`, không phải 254 của `email`).
 - Mật khẩu chạy qua `AUTH_PASSWORD_VALIDATORS` của Django, gồm cả kiểm tra "quá giống email/tên".
@@ -202,10 +203,10 @@ phát hành; `me` là tên nên dùng cho client mới.
 
 ### Đổi mật khẩu và thu hồi token
 
-**`reset-password` và `change-password` đều xoá TOÀN BỘ access + refresh token của tài
-khoản** — kể cả token đang gọi chính request đó. Sau khi nhận 200, client **phải đăng nhập
-lại**; token cũ sẽ trả 401 ở request kế tiếp. Đây là hành vi cố ý: đổi mật khẩu vì bị lộ thì
-phải đẩy được kẻ đang giữ token ra ngoài.
+**`reset-password` và `change-password` đều xoá TOÀN BỘ refresh token của tài khoản** và làm
+**mọi access token hết hiệu lực ngay** (thay vì chờ hết 1 giờ) — kể cả token đang gọi chính request đó.
+Sau khi nhận 200, client **phải đăng nhập lại**; token cũ sẽ trả 401 ở request kế tiếp. Đây là hành vi cố ý:
+đổi mật khẩu vì bị lộ thì phải đẩy được kẻ đang giữ token ra ngoài.
 
 ### Sửa thông tin cá nhân
 
@@ -229,26 +230,67 @@ Ba scope đầu tính **theo IP** và chỉ là rào cản chi phí — xem cả
 3 lần/giờ mỗi tài khoản. `auth-change-password` tính **theo người dùng** (đã xác thực) nên
 chặt hơn hẳn.
 
+## Lịch Vạn Niên & Đặt Lịch (`/api/`)
+
+Nhóm endpoint gốc của app `apis/` (tra cứu hiệp kỷ, tiết khí, thần sát, số học, ngày tốt).
+Project **không đặt `DEFAULT_PERMISSION_CLASSES`**, nên view nào không khai báo quyền là
+`AllowAny`. Không throttle. Tất cả tham số truyền qua **query string** (kể cả `calendar`).
+
+| Endpoint | Auth | Tham số | Thành công |
+|---|---|---|---|
+| `GET /api/home` | không | `lunar_day` (can chi ngày, vd `Giáp Tý`), `tiet_khi`, `month` (int), `lunar_date` (`YYYY-MM-DD HH:MM:SS`) — đều bắt buộc | 200 `{"data": {"hiep_ky", "tiet_khi", "hour_in_days", "quy_nhan": [], "tu_dai": []}}` |
+| `GET /api/tiet-khi` | không | `tiet_khi` (tên tiết khí) | 200 `{"data": {"tiet_khi", "start_time", "end_time"}}` — bản ghi của **năm hiện tại**; không có → `{"data": null}` |
+| `GET /api/calendar` | không | `data` = **chuỗi JSON** mảng `[{"month": 1, "lunar_day": "Giáp Tý"}, ...]` | 200 `{"data": [{"should_things", "no_should_things", "good_stars", "ugly_stars"}]}` — cùng thứ tự input; ngày không có dữ liệu → 4 chuỗi rỗng |
+| `GET /api/than-sat` | không | `year` | 200 `{"than_sat_by_year", "than_sat_by_month"}` (**không bao `data`**) |
+| `GET /api/so-hoc` | không | `birth_day` (`DDMMYYYY`, đúng 8 chữ số), `full_name`, `phone` (chỉ chữ số) | 200 object phẳng, **không bao `data`** (xem bên dưới) |
+| `GET /api/get-date-good-by-work` | không | `work` (tên việc, tuỳ chọn), `month`, `year` (int) | 200 `{"data": [{"month", "work", "lunar_day", "lunar_date", "percent", "text"}]}` sắp theo `percent` giảm dần |
+| `GET /api/get-config` | không | — | 200 `{"data": {"date_config", "hours_config", "direction_config"}}` (bản ghi mới nhất mỗi bảng) |
+| `POST /api/book-calendar` | không | body `{work, date, email?}` | 201 `{work, date, email}` (**không bao `data`**) |
+| `GET /api/appointment-date` | Bearer | — | 200 `{"data": [appointment, ...]}` của chính caller |
+| `POST /api/appointment-date` | Bearer | body **mảng** `[{id?, name, date, before_days}]` | 201 `{"data": [appointment, ...]}` |
+| `GET /api/get-bank` | Bearer | — | 200 `{"data": {"bank": {...}, "code": "ABCDEF"}}` |
+
+**Ghi chú:**
+
+- Thiếu/sai tham số → 400 `{"detail": "Tham số 'x' không hợp lệ: <lý do>"}`.
+- `get-date-good-by-work`: `work` khớp `icontains` với `should_things`; alias `Tu tạo mồ mả` →
+  `Tu Tạo Động Thổ`. Ngưỡng đánh giá lấy từ `DateConfig` (admin sửa được).
+- `so-hoc` trả: `so_chu_dao`, `so_thai_do`, `so_ngay_sinh`, `so_no_nghiep` (mảng), `so_nam_ca_nhan`,
+  `so_thang_ca_nhan`, `tuoi_dinh_cao_1..4`, `dinh_cao_1..4`, `thu_thach_1..4`, `so_su_menh`, `so_linh_hon`,
+  `so_nhan_cach`, `so_truong_thanh`, `so_phat_trien`, `so_noi_cam`, `the_nhan_dang`, `so_thieu` (luôn `""`),
+  `so_dien_thoai`.
+- `POST /api/appointment-date` là **thay thế toàn bộ** danh sách của caller: item có `id` thuộc caller →
+  cập nhật; không có `id` → tạo mới; bản ghi cũ không xuất hiện trong body → **xoá**. `id` của người khác bị
+  bỏ qua im lặng. `before_days` gửi lên là **số ngày** (int); trả về dạng chuỗi duration của Django
+  (`"3 00:00:00"`), `convert_time` là cùng giá trị đó. Item trả về: `id`, `name`, `date`, `before_days`,
+  `user_id`, `convert_time`.
+- `get-bank`: `bank` là cấu hình chuyển khoản (`account_number`, `account_holder`, `bank`, `branch`,
+  `qr_img`); `code` là mã tham chiếu 6 chữ in hoa của giao dịch đang chờ — gọi lại trả **cùng một `code`**
+  cho tới khi giao dịch được duyệt.
+
 ## Mô Hình Phân Quyền
 
 **Ba vai trò:** `owner` (quản trị họ), `editor` (viết person/marriage), `viewer` (chỉ đọc).
 
 **Quan trọng:** Người ngoài họ nhận **404 Not Found**, không bao giờ 403 Forbidden. 403 sẽ xác nhận họ tồn tại.
 
-**Chuyển ownership chỉ qua admin** — invite code cấp tối đa `editor`/`viewer`, không bao giờ `owner`.
+**Cấp `owner`:** invite code chỉ cấp tối đa `editor`/`viewer`, không bao giờ `owner`. Owner hiện tại có thể
+nâng một thành viên khác lên `owner` qua `PATCH /clans/{id}/members/{user_id}` với `{"role": "owner"}`
+(một họ có thể có nhiều owner). Không hạ được owner cuối cùng.
 
 ## Throttle (Giới Hạn Tần Suất)
 
+- **`POST /api/auth/login`** (`auth-login` scope): 20 yêu cầu/giờ mỗi IP
+- **`POST /api/auth/refresh`** (`auth-refresh` scope): 60 yêu cầu/giờ mỗi IP
+- **`POST /api/auth/logout`** không giới hạn (token 256-bit không đoán được)
 - **`POST /join`** (`giapha-join` scope): 10 yêu cầu/giờ mỗi IP
 - **Public tree/person endpoints** (`giapha-public` scope): 60 yêu cầu/giờ mỗi IP
 - **`POST /api/files/upload-url` + `POST /api/files/confirm`** (`file-upload` scope): 20
   yêu cầu/giờ, **dùng chung một bucket** cho cả hai endpoint. Ẩn danh → bucket theo IP; có
   Bearer hợp lệ → bucket theo user. `LocMemCache` không chia sẻ giữa worker nên trần thực
   tế là 20 × số worker
-- **Endpoint tài khoản** (`apis/`): `auth-register` 10/giờ, `auth-forgot-password` 5/giờ,
+- **Endpoint tài khoản khác** (`apis/`): `auth-register` 10/giờ, `auth-forgot-password` 5/giờ,
   `auth-reset-password` 10/giờ, `auth-change-password` 10/giờ
-- Endpoint khác: không giới hạn — **kể cả `/auth/token`**. `TokenView` là `AllowAny`
-  và không opt vào scope nào, nên đoán mật khẩu chỉ bị chặn bởi hạ tầng trước Django
 
 Bucket là **mỗi IP** (từ `X-Forwarded-For` nếu `DJANGO_NUM_PROXIES` khớp deployment; nếu không dùng `REMOTE_ADDR`). Đây là tăng chi phí, không phải hard stop.
 
@@ -370,7 +412,9 @@ Cache-Control: no-store
 | `/clans/{clan_id}/invites/{invite_id}` | DELETE | `IsClanOwner` | Revoke code. Response: 204 |
 | `/join` | POST | `IsAuthenticated` | Dùng code mời. Request: `{code}`. Idempotent. Throttle: 10/h. Response: `{data: member}` (200) |
 
-**Member schema (owner thấy email, khác thấy username):** `user_id`, `username`, `email` (owner-only), `role`, `joined_at`
+**Member schema:** `user_id`, `display_name`, `role`, `joined_at`; thêm `username` và `email` **chỉ khi caller là owner**
+(xem mục "Thay Đổi Không Tương Thích" ở trên). `display_name` = `first_name last_name`; tài khoản chưa đặt tên → 3 ký tự
+đầu của phần trước `@` + `***` (ví dụ `ngu***`).
 
 **Invite schema:** `id`, `code`, `role` (`editor` hay `viewer`, không `owner`), `expires_at`, `max_uses`, `used_count`, `created_at`
 
@@ -384,7 +428,7 @@ Cache-Control: no-store
 | `/clans/{clan_id}/persons/{person_id}` | PATCH | `IsClanEditor` | `force` | Request: subset writable field. Response: `{data: person}` |
 | `/clans/{clan_id}/persons/{person_id}` | DELETE | `IsClanEditor` | — | Soft-delete. Fail 400 nếu có con tham chiếu. Response: 204 |
 
-**Person write field:** `ho_ten` (required), `ten_huy`, `ten_tu`, `ten_hieu`, `thuy_hieu`, `gioi_tinh` (`nam`/`nu`/`khac`), `father_id`, `mother_id`, `parent_kind` (`ruot`/`nuoi`/`ke`), `branch`, `birth_order`, `is_truong`, `birth_solar`, `birth_lunar_day`, `birth_lunar_month`, `birth_lunar_leap`, `death_solar`, `death_lunar_day`, `death_lunar_month`, `death_lunar_leap`, `que_quan`, `nghe_nghiep`, `tieu_su`, `mo_phan_lat`, `mo_phan_lng`, `mo_phan_note`
+**Person write field:** `ho_ten` và `gioi_tinh` (required), `ten_huy`, `ten_tu`, `ten_hieu`, `thuy_hieu`, `gioi_tinh` (`nam`/`nu`/`khac`), `father_id`, `mother_id`, `parent_kind` (`ruot`/`nuoi`/`ke`), `branch`, `birth_order`, `is_truong`, `birth_solar`, `birth_lunar_day`, `birth_lunar_month`, `birth_lunar_leap`, `death_solar`, `death_lunar_day`, `death_lunar_month`, `death_lunar_leap`, `que_quan`, `nghe_nghiep`, `tieu_su`, `mo_phan_lat`, `mo_phan_lng`, `mo_phan_note`
 
 **Person read field:** Trên + `id`, `generation` (derived), `father_name`, `mother_name`, `photo_url` (detail only), `is_deleted`, `created_at`, `updated_at`
 
@@ -392,8 +436,8 @@ Cache-Control: no-store
 
 | Endpoint | Method | Quyền | Ghi Chú |
 |----------|--------|-------|--------|
-| `/clans/{clan_id}/persons/{person_id}/revisions` | GET | `IsClanEditor` | Lịch thay đổi, newest first, paginated. Response: `{data: [...], count, next, previous}` |
-| `/clans/{clan_id}/persons/{person_id}/restore/{revision_id}` | POST | `IsClanEditor` | Re-apply snapshot. Validate theo tree rules. Record restore as new revision. Response: `{data: person}` |
+| `/clans/{clan_id}/persons/{person_id}/revisions` | GET | `IsClanEditor` | Lịch thay đổi, newest first, paginated (`limit` mặc định 50, max 200). Vẫn đọc được với người đã xoá mềm. Response: `{data: [...], count, next, previous}` |
+| `/clans/{clan_id}/persons/{person_id}/restore/{revision_id}` | POST | `IsClanEditor` | Re-apply snapshot. Validate theo tree rules (không có `force`). Trạng thái trước restore được ghi thành revision mới. Response: `{data: person}` — **`photo_url` luôn `null`** ở response này (không phải detail) |
 
 **Revision schema:** `id`, `action` (`create`/`update`/`delete`), `actor_username`, `payload_json`, `created_at`
 
@@ -420,7 +464,12 @@ Bộ lọc này áp dụng cả khi ĐỌC payload, không chỉ khi ghi — nê
 |----------|--------|-------|---|--------|
 | `/clans/{clan_id}/tree` | GET | `IsClanMember` | `root`, `depth` | Flat nodes + edges. Subtree filter in-memory. Response: `{clan, nodes, edges, truncated}` (no `data` envelope). Query budget: 3. |
 
-**Response:** `clan {id, ten_ho}`, `nodes` array, `edges` array (parent/marriage), `truncated` (bool)
+**Response:** `clan {id, ten_ho}`, `nodes` array, `edges` array (parent/marriage), `truncated` (bool — true khi họ vượt `MAX_CLAN_PERSONS` = 5000 và phần đuôi bị cắt)
+
+- **Node:** `id`, `ho_ten`, `ten_huy`, `gioi_tinh`, `generation`, `branch`, `is_truong`, `birth_order`, `is_living`, `birth_year`, `death_year`, `death_lunar`, `has_photo`. Không có `photo_url`.
+- **Edge parent:** `{type: "parent", from, to, role, kind}` (`kind` = `parent_kind`).
+- **Edge marriage:** `{type: "marriage", a, b, order, status}`.
+- `root` không thuộc họ → 404. `root`/`depth` phải là số nguyên dương, sai → 400.
 
 ### Ảnh: Upload & URLs
 
@@ -458,7 +507,7 @@ Không ghi DB (query budget: 0). Xem mục "Tải Tệp Lên" trên để biết
 | `/clans/{clan_id}/toi-la` | GET | `IsClanMember` | "Tôi là ai?" — binding node người dùng. Response: `{data: {person_id, ho_ten}}` hoặc `{data: null}` |
 | `/clans/{clan_id}/toi-la` | PUT | `IsClanMember` | Request: `{person_id}`. Bind caller. Reject deceased/khác họ/claimed by another. Response: `{data: binding}` |
 | `/clans/{clan_id}/toi-la` | DELETE | `IsClanMember` | Unbind. Response: 204 |
-| `/clans/{clan_id}/gio-follows` | GET | `IsClanMember` | Resolved follow list. Response: `{items, bound, truncated}` (no `data` envelope). Query budget ~5 — **chưa** được ghim bằng ratchet test, khác 7 endpoint trong `query_budgets.json`. |
+| `/clans/{clan_id}/gio-follows` | GET | `IsClanMember` | Resolved follow list. Response: `{items, bound, truncated}` (no `data` envelope). Query budget **5, cố định** — ghim bằng `assertNumQueries` trong `test_gio_follow_api.py`, không nằm trong snapshot `query_budgets.json` (snapshot đó chỉ có 7 endpoint). |
 | `/clans/{clan_id}/gio-follows/{person_id}` | PUT | `IsClanMember` | Request: `{enabled: bool}`. Person must have lunar death date or 400. Response: `{data: {person_id, enabled}}` |
 | `/clans/{clan_id}/gio-follows/{person_id}` | DELETE | `IsClanMember` | Remove override. Idempotent. Response: 204 |
 | `/devices` | POST | `IsAuthenticated` (not clan-scoped) | Register device. Request: `{token, platform}`. Upsert on token (takeover nếu re-register). Response: `{data: {platform, is_active}}` (201 new / 200 existing). **Token never returned.** |
@@ -472,11 +521,15 @@ Không ghi DB (query budget: 0). Xem mục "Tải Tệp Lên" trên để biết
 
 | Endpoint | Method | Quyền | Query Param | Ghi Chú |
 |----------|--------|-------|---|--------|
-| `/clans/{clan_id}/xung-ho` | GET | `IsClanMember` | `a`, `b` | Xưng hô Việt. `a` default binding caller. `b` required. Response: `{a_calls_b, b_calls_a, common_ancestor, path, explain}` (no `data` envelope). Query budget **3** (4 khi đường quan hệ đi qua dâu/rể) — vượt target 2 trong plan, xem `docs/codebase-summary.md`. |
+| `/clans/{clan_id}/xung-ho` | GET | `IsClanMember` | `a`, `b` | Xưng hô Việt. `a` default binding caller (chưa bind → 400). `b` required. `a`/`b` không thuộc họ → 400. Response: `{a_calls_b, b_calls_a, common_ancestor, path, explain}` (no `data` envelope). Query budget: **2** khi truyền `a` và có huyết thống; +1 nếu bỏ `a` (tra binding); +1 nếu không cùng huyết thống (tra hôn nhân); **tối đa 4**. Snapshot `query_budgets.json` ghi 3 (test bỏ `a`) — vượt target 2 trong plan. |
 
-**Response:** `a_calls_b {term, confident, reason}`, `b_calls_a` (same), `common_ancestor {id, ho_ten}` (null on in-law), `path {a_up, b_up, side}` (always object, fields null on in-law), `explain` (prose)
+**Response:** `a_calls_b {term, confident, reason}`, `b_calls_a` (same), `common_ancestor {id, ho_ten}` (null on in-law), `path {a_up, b_up, side}` (always object, fields null on in-law; `side` = `noi`/`ngoai`), `explain` (prose)
 
 **No blood link = 200 với `term: null`, không error.**
+
+`reason` là slug ASCII để client rẽ nhánh, không hiển thị: `khong_cung_huyet_thong`, `cung_mot_nguoi`,
+`thieu_birth_order`, `thieu_gioi_tinh`, `khong_co_tu_xung_ho_thong_dung`, `nhieu_hon_nhan_ngang_hang`,
+`ngoai_bang_tu_vung`. Chữ tiếng Việt tương ứng nằm trong `explain`.
 
 ### Public Page (Không Auth)
 
@@ -485,6 +538,12 @@ Không ghi DB (query budget: 0). Xem mục "Tải Tệp Lên" trên để biết
 | `/public/{slug}/tree` | GET | None (`AllowAny`) | Public tree. 404 nếu slug invalid/revoke/private. Redact living. Throttle: 60/h. Header: `X-Robots-Tag: noindex, nofollow`, `Cache-Control: no-store`. Response: `{clan, nodes, edges, truncated}` (no `data` envelope). Query budget **4** (clan lookup + quét sống/mất + 1 query mỗi nhánh) — vượt target 3; đây là giá phải trả của việc tách field list theo nhánh sống/mất. |
 | `/public/{slug}/persons/{person_id}` | GET | None (`AllowAny`) | Person detail. 404 nếu not found/slug invalid. Redact living. Response: `{data: person}` |
 
+Chỉ nhận `GET`/`HEAD` (kể cả `OPTIONS` → 405) và chỉ render JSON (`Accept: text/html` không mở browsable API).
+
+- **Public tree node:** `id`, `ho_ten`, `ten_huy`, `generation`, `branch`, `is_truong`, `birth_order`, `is_living`, `birth_year`, `death_year`, `death_lunar`, `has_photo`. Không có `gioi_tinh`.
+- **Public tree edge:** chỉ `{type: "parent", from, to, role}` — không có `kind` (không lộ con nuôi/con kế), không có edge marriage.
+- **Public person:** node + `ten_tu`, `ten_hieu`, `thuy_hieu`, `que_quan`, `nghe_nghiep`, `tieu_su`, `photo_url` (presigned 1h, chỉ người đã mất).
+
 ---
 
 ## Response Lỗi
@@ -492,9 +551,20 @@ Không ghi DB (query budget: 0). Xem mục "Tải Tệp Lên" trên để biết
 Tất cả lỗi except 204 có body.
 
 ### 400 Bad Request
+
+Hai dạng, client phải xử lý cả hai:
+
 ```json
 {"field_name": ["Error message", ...]}
 ```
+Lỗi validate body (serializer), khoá là tên trường.
+
+```json
+{"detail": "Tham số year phải là số nguyên."}
+```
+Lỗi nghiệp vụ hoặc query param sai (`BadRequestException`): sai cửa sổ `lich-gio`, `person_id` khác họ,
+key ảnh sai hình dạng, xoá người còn con, v.v. Ở `apis/` lỗi query param có dạng
+`Tham số 'x' không hợp lệ: <lý do>`.
 
 ### 403 Forbidden
 ```json
@@ -505,6 +575,9 @@ Tất cả lỗi except 204 có body.
 ```json
 {"detail": "Không tìm thấy..."}
 ```
+
+### 405 Method Not Allowed
+Public endpoint với method khác `GET`/`HEAD`.
 
 ### 429 Too Many Requests
 Throttled — xem retry-after header.

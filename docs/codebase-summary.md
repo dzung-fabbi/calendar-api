@@ -28,25 +28,22 @@
 | `auth/change-password` | `views/auth_password_change.py` | auth POST | 5 |
 | `files/upload-url` | `views/file_upload.py` | public POST, throttled | 0 |
 | `files/confirm` | `views/file_upload.py` | public POST, throttled | 0 |
+| `auth/login` | `views/auth_login.py` | public POST, throttled | 2 |
+| `auth/refresh` | `views/auth_login.py` | public POST, throttled | 5 (3 + SAVEPOINT pair from `transaction.atomic`) |
+| `auth/logout` | `views/auth_login.py` | public POST | 1 |
 
 Query counts are enforced as ceilings by `apis/tests/test_query_counts.py`.
+
+**JWT authentication** (`apis/authentication.py`, `apis/services/jwt_tokens.py`, `apis/models/refresh_token.py`):
+Validates `Authorization: Bearer <access_token>` header, decodes JWT (PyJWT HS256), checks password claim
+for instant revocation on password change, fetches user from database (1 query per request).
+Refresh tokens are stored as sha256-hashed opaque strings in `apis_refreshtoken` table.
 
 ### giapha/ (`/api/gia-pha/`)
 
 Routes: clan CRUD, person CRUD, marriages, invites, tree fetch, membership join, revisions.
 All tree operations enforce the [**3-query contract**](#giapha-design-decisions). Route
 prefix `/api/gia-pha/` is throttled on `/join` only (`giapha-join` scope: 10/hour).
-
-**auth endpoints (`djangopj/auth_token_views.py`, mounted at `/auth/` outside both apps):**
-
-| Route | Methods | Auth |
-|---|---|---|
-| `/auth/token` | POST | `AllowAny` -- credentials are in the body (grants: `password`, `refresh_token`) |
-| `/auth/revoke-token` | POST | `AllowAny` -- `client_id`/`client_secret`/`token` in the body |
-
-Both accept form-encoded (`application/x-www-form-urlencoded`) or JSON bodies; the trailing
-slash is optional. Neither runs an authenticator (`authentication_classes = ()`), so a stale
-`Bearer` header cannot 401 a token refresh. Username/password is the only login flow.
 
 **giỗ (death anniversary) endpoint:**
 
@@ -257,13 +254,16 @@ early exit); ~5 per clan with a due giỗ. Test pins `1 + 3` for three quiet cla
 
 ## Test suites
 
-**Total: 579 tests, 4 skipped** (50 `apis/` + 529 `giapha/`). The 4 skips are the tree
-benchmarks, which need `BENCHMARK_TREE_PERFORMANCE=1`.
+**Total: 856 pass, 7 skip** (`./scripts/run-tests.sh`, 2026-09-10, after the JWT auth refactor).
+Allocation: `apis/` count includes 17 new `test_auth_login_api.py` tests (JWT login/refresh/logout);
+`test_auth_change_password_api.py` rewritten to reflect instant access-token revocation on password change;
+`giapha/tests/test_auth_token_endpoints.py` removed (OAuth2 endpoints deleted).
 
 ### apis/tests/
 - `test_api_snapshots.py` -- freezes the **shape** (keys and types) of all 11 routes.
 - `test_api_values.py` -- freezes **exact values** for deterministic endpoints.
   Golden files recorded from pre-refactor code, proving restructuring is behaviour-neutral.
+- `test_auth_login_api.py` -- JWT login/refresh/logout endpoints (17 tests).
 - `test_query_counts.py` -- per-endpoint query ceiling; catches reintroduced N+1.
 - `test_services.py` -- unit tests for `services/` (no database).
 - `test_security.py` -- ownership and data-exposure regressions.

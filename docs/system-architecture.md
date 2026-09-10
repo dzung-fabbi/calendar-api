@@ -2,11 +2,9 @@
 
 Django 3.1 + Django REST Framework service with two independent apps. **`apis/`** serves
 Vietnamese almanac data (hiệp kỷ, thần sát, tiết khí, sao, tử vi số học). **`giapha/`**
-serves Vietnamese family-tree (gia phả) records. MySQL 5.7 storage; OAuth2 (django-oauth-toolkit,
-`grant_type=password`) for authenticated endpoints. The two token endpoints themselves live
-outside both apps, in `djangopj/auth_token_views.py` -- a thin DRF shim over
-django-oauth-toolkit, kept because DOT's own views accept form-encoded bodies only and
-shipped clients send JSON. Password grant is the only login flow.
+serves Vietnamese family-tree (gia phả) records. MySQL 5.7 storage; in-house JWT authentication
+(PyJWT HS256 access token + opaque sha256-hashed refresh token) for authenticated endpoints.
+Login and token refresh live in `apis/` under `/api/auth/login` and `/api/auth/refresh`.
 
 ## Layers
 
@@ -33,6 +31,12 @@ belongs there; what it may not do is write a model. See "Push Notification Chann
 
 **Decoupling rule:** `giapha/` and `apis/` share no imports; code is duplicated if needed.
 This is enforced to allow independent evolution.
+
+**Authentication integration:** `djangopj/settings.py` sets `DEFAULT_AUTHENTICATION_CLASSES` to
+`('apis.authentication.JWTAuthentication',)` **as a settings string** — `giapha/` does not
+import `apis/`, preserving the decoupling. Every authenticated request passes through
+`apis.authentication.JWTAuthentication`, which validates the `Authorization: Bearer` header
+and fetches the user (1 query).
 
 ## Directory structure (giapha/)
 
@@ -152,9 +156,8 @@ is a source-level change with no schema effect.
 
 ## Account management (apis/)
 
-Login and logout are OAuth2 (`/auth/token`, `/auth/revoke-token`, served by the shim at
-`djangopj/auth_token_views.py`). Everything else about an account lives in `apis/` under
-`/api/auth/*` and `/api/me`. Nothing here imports `giapha/`.
+Login and token refresh are JWT-based (`/api/auth/login`, `/api/auth/refresh`, `/api/auth/logout`). 
+Everything else about an account lives in `apis/` under `/api/auth/*` and `/api/me`. Nothing here imports `giapha/`.
 
 **Email is the identity.** Registration writes the address to both `auth_user.username`
 and `auth_user.email`, lower-cased, so a new account works with the existing password
@@ -179,12 +182,15 @@ at a time, dead after 5 wrong guesses, expired after 10 minutes, and at most 3 r
 hour per account. Lockout is per *code*, never per account — an account-level lock would
 let anyone who knows an address deny service to its owner.
 
-**Both password-changing paths revoke every token.** `apis/selectors/auth_tokens.py`
-deletes rather than calling `revoke()`, because `RefreshToken.revoke()` in
-django-oauth-toolkit 2.2.0 is a *soft* revoke that the refresh grant still honours inside
-`REFRESH_TOKEN_GRACE_PERIOD_SECONDS`. Refresh tokens are deleted first: the FK between the
-two models is `SET_NULL`, not a cascade, so the other order leaves live refresh tokens
-behind.
+**Both password-changing paths revoke every token instantly.** Access tokens (JWT) are not stored
+in the database and are revoked by the `pwd` claim — a sha256 hash of the current password (first 16 hex chars).
+When `set_password()` runs, every existing token becomes invalid immediately because its `pwd` claim
+no longer matches. Each refresh row also stores the fingerprint it was issued under and refuses to mint when
+it no longer matches, so a password rewritten OUTSIDE the two API views (Django admin, `manage.py changepassword`,
+a shell `set_password()`) still evicts every session. Refresh tokens are revoked by **deleting the row from `apis_refreshtoken`**
+(never soft-revoked), because a soft-revoke flag in a column would require checking on every refresh —
+the prior django-oauth-toolkit implementation allowed refresh tokens to survive inside a `REFRESH_TOKEN_GRACE_PERIOD`,
+which motivated this hard-delete approach to avoid the same trap.
 
 **No account enumeration on reset.** `forgot-password` returns one identical 200 for an
 unknown address, an inactive account, a rate-limited user and a failed send. The failed-send

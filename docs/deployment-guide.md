@@ -381,7 +381,7 @@ credentials are readable by the container.
 
 ## Dropping the orphaned `social_auth_*` tables (IRREVERSIBLE)
 
-Login is username/password only (`grant_type=password` against `/auth/token`). Five
+Login is username/password only (against `/api/auth/login`). Five
 `social_auth_*` tables are left over from a third-party auth package that no longer ships;
 Django stopped managing them when the package left `INSTALLED_APPS` but does **not** drop
 them, so they sit in the database holding third-party user ids and provider access tokens
@@ -461,55 +461,50 @@ Some rows in `auth_user` carry `set_unusable_password()` (`password` empty or st
   (`/admin/auth/user/`) and communicates it to the user.
 - User re-registers; admin re-binds their `ClanMember` row and family data to the new account.
 
-### OAuth2 application is a `public` client (changed 2026-09-09)
+### JWT auth (replaced OAuth2 on 2026-09-10)
 
-Login was returning `401 {"error":"invalid_client"}` for every caller — 18 attempts across
-the whole retained nginx window, zero successes. The cause was not user credentials: the
-single `oauth2_provider_application` row (`name='social'`, created 2023-05-08, never
-re-saved) was `client_type='confidential'`, so django-oauth-toolkit demanded client
-authentication, and no one still had the plaintext `client_secret` — it has been stored
-hashed (`pbkdf2_sha256$216000$…`) since the row was created.
+Login was returning `401 {"error":"invalid_client"}` for every caller because the `oauth2_provider_application`
+row was `client_type='confidential'` but no one held the plaintext `client_secret` (hashed since 2023).
+django-oauth-toolkit replaced with in-house JWT auth using PyJWT HS256 access tokens + opaque sha256-hashed
+refresh tokens stored in `apis_refreshtoken`. All `oauth2_provider_*` tables dropped by
+`apis/migrations/0075_drop_oauth2_provider_tables.py` (IRREVERSIBLE; `mysqldump` before `migrate`). The
+migration wraps the drops in `SET FOREIGN_KEY_CHECKS = 0/1` because DOT 2.2.0's `accesstoken` and
+`refreshtoken` tables reference EACH OTHER (`source_refresh_token` / `access_token`) -- no drop order
+satisfies the cycle, and the test database (where the tables never exist) cannot catch a bare DROP failing.
+Rehearse `migrate` against a restored production dump before the release.
 
-Fixed by moving the row to `public`, which is what a native app must be anyway (RFC 8252: a
-secret shipped inside an App Store binary is not a secret). Rotating the secret instead
-would have restored login just as well but left the same thing to lose again.
+**At deploy, every user must log in again** — all old OAuth2 access and refresh tokens die.
 
-```python
-# `.update()`, NOT `.save()`: it bypasses `ClientSecretField.pre_save` and touches one column.
-Application.objects.filter(pk=1, client_type='confidential').update(
-    client_type='public', updated=timezone.now())
+**Settings required:**
+
+- **`JWT_SIGNING_KEY`** (optional; defaults to `DJANGO_SECRET_KEY`): must be identical across all app containers.
+  Generate with:
+  ```bash
+  python -c "import secrets; print(secrets.token_urlsafe(48))"
+  ```
+- **`JWT_ACCESS_TOKEN_LIFETIME_SECONDS`** (default: 3600 / 1 hour): access token TTL
+- **`JWT_REFRESH_TOKEN_LIFETIME_SECONDS`** (default: 2592000 / 30 days): refresh token TTL
+
+**To force a mass logout** (incident response):
+1. Rotate `JWT_SIGNING_KEY` (generate a new one as above and deploy)
+2. Execute: `DELETE FROM apis_refreshtoken;` 
+
+The key rotation alone is not enough — surviving refresh tokens would re-mint access tokens
+under the new key, so both are required.
+
+**Abandoned refresh rows:** Rows are deleted only on successful refresh and on logout. If a session
+remains unused, its row accumulates. No job ships for cleanup (deliberate). Prune manually if needed:
+```sql
+DELETE FROM apis_refreshtoken WHERE expires_at < NOW();
 ```
 
-Backup taken first: `backups/pre-clienttype-20260909-094919.sql.gz`. The stale hashed secret
-is left in the row — inert once the client is public, and removing it buys nothing.
+**Client-side breaking change:** Old URLs `/auth/token` and `/auth/revoke-token` return 404.
+Clients must use `/api/auth/login` (username/password), `/api/auth/refresh` (refresh_token), and
+`/api/auth/logout` (refresh_token), dropping `client_id`/`client_secret`/`grant_type` entirely.
 
-**What clients must send now** — `client_id` only, on BOTH `/auth/token` and
-`/auth/revoke-token`:
-
-```
-client_id + no client_secret       -> 200
-client_id + client_secret=""       -> 200   ('' is falsy, client auth stays skipped)
-client_id + client_secret=anything -> 401 invalid_client
-```
-
-The third line is the trap: `OAuth2Validator.client_authentication_required` returns `True`
-the moment BOTH `client_id` and `client_secret` are truthy, *before* it ever looks at
-`client_type`. An old build that keeps the field with a junk value opts itself back into the
-confidential branch and fails. The field must be dropped, not blank-filled.
-
-Verified end to end on production against a throwaway account registered through
-`/api/auth/register` (deleted afterwards): `200` with `access_token` + `refresh_token`.
-
-Logout needed a code change to match: `_RevokeTokenSerializer` required `client_secret`, so a
-public client could not revoke at all (400 before oauthlib ever ran). It is now
-`required=False, allow_blank=True`; `PublicClientAuthTokenTests` pins the whole table above.
-
-### Known gap: `/auth/token` is unthrottled
-
-It is now the only login flow in the product and has no rate limit, so password-grant
-credential stuffing is unbounded. Pre-existing, tracked separately. Note that adding a DRF
-throttle scope only helps once `DJANGO_NUM_PROXIES` matches the real number of trusted
-proxies — at the current `0`, buckets key off `REMOTE_ADDR`.
+**Throttling closed:** `/api/auth/login` (20/hour per IP) and `/api/auth/refresh` (60/hour per IP)
+are now throttled via DRF scopes. Note that `DJANGO_NUM_PROXIES` must match the real trusted-proxy count
+for per-IP buckets to work correctly; at the current `0`, buckets key off `REMOTE_ADDR`.
 
 ## Email (password-reset OTP)
 
