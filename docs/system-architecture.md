@@ -44,15 +44,18 @@ and fetches the user (1 query).
 giapha/
 ├── models/
 │   ├── __init__.py
-│   ├── clan.py
-│   ├── person.py
-│   ├── marriage.py
+│   ├── clan.py                # Clan, ClanRevision
+│   ├── person.py              # Clan Person (separate from FamilyPerson)
+│   ├── marriage.py            # Clan Marriage
+│   ├── family.py              # Family, FamilyPerson, FamilySpouse (personal tree)
 │   ├── member.py              # ClanMember (person binding for reminders)
 │   ├── invite.py              # ClanInvite
 │   ├── notification.py        # GioFollow, DeviceToken, GioNotificationLog
 │   └── photo.py               # Photo references and CORS config
 ├── selectors/
 │   ├── person.py              # clan_edges, clan_edges_all, clan_kinship_rows
+│   ├── family.py              # family_for, person_rows, spouse_rows (personal tree)
+│   ├── family_write.py        # person_id_str, validate_person_draft
 │   ├── gio.py                 # deceased_with_lunar_death (death anniversary queries)
 │   ├── kinship.py             # clan_kinship_rows, clan_spouse_pairs
 │   └── gio_follow.py          # overrides_for_clan, active_tokens_for
@@ -60,42 +63,76 @@ giapha/
 │   ├── vn_lunar.py            # VIETNAMESE lunar calendar UTC+7 (deliberate split from apis)
 │   ├── gio.py                 # giỗ (death anniversary) date computation
 │   ├── can_chi.py             # Heavenly Stems / Earthly Branches (10-line copy from apis)
+│   ├── family_issue.py        # FamilyRuleError (personal tree error envelope)
+│   ├── family_rules.py        # Cycle detection, parent validation (personal tree)
+│   ├── family_labels.py       # Auto-link logic for relationship labels (personal tree)
+│   ├── family_dates.py        # Date formatting, epoch conversion (personal tree)
+│   ├── family_draft.py        # PersonDraft validation (personal tree)
+│   ├── family_graph.py        # In-memory FamilyGraph for analysis (personal tree)
 │   ├── gio_follow.py          # Ancestor resolution for reminders
 │   ├── person_rules.py        # Validation: cycle detection, generation propagation
 │   ├── kinship_*.py           # Kinship calculation (7 modules, phase 7)
 │   ├── fcm.py                 # Firebase Cloud Messaging (HTTP v1, unverified end-to-end)
 │   └── storage.py             # S3/R2 presigned URLs (unverified end-to-end)
 ├── views/
-│   ├── clan.py
-│   ├── person.py
-│   ├── marriage.py
+│   ├── clan.py                # Clan CRUD endpoints
+│   ├── person.py              # Clan Person endpoints
+│   ├── marriage.py            # Clan Marriage endpoints
+│   ├── family_base.py         # FamilyAPIView base (personal tree)
+│   ├── family.py              # GET, PATCH, DELETE /v1/family/persons (personal tree)
+│   ├── family_relations.py    # POST /v1/family/relations/* (personal tree)
+│   ├── family_link_flow.py    # Helper view for composing mutation responses (personal tree)
 │   ├── gio.py                 # GET /clans/{id}/lich-gio
 │   ├── gio_follow.py          # Follow overrides
 │   ├── member_binding.py      # /toi-la endpoint
 │   ├── device.py              # /devices token management
 │   ├── kinship.py             # GET /clans/{id}/xung-ho
-│   ├── invite.py
+│   ├── invite.py              # Clan invite endpoints
 │   ├── photo.py               # /photo-upload-url, /photo, /photo-urls
 │   ├── public.py              # Public share endpoint (noindex header)
 │   └── params.py              # Common parameter parsing
 ├── serializers/
-│   └── ...
+│   ├── family_output.py       # Person JSON output shape (personal tree)
+│   ├── family_draft.py        # PersonDraft input validation (personal tree)
+│   ├── family_relations.py    # Input validation for relation mutations (personal tree)
+│   └── ...other serializers
 ├── admin/
 │   └── ...
 ├── management/
 │   └── commands/
 │       └── remind_death_anniversary.py   # Nightly cron job
 ├── migrations/
+│   ├── 0009_family_person_spouse.py      # Initial family tree schema
 │   └── ...
 └── tests/
     ├── factories.py           # Fixture builders
     ├── snapshots/
     │   └── query_budgets.json # Query count assertions
+    ├── test_family_api.py     # Personal tree CRUD endpoints
+    ├── test_family_relations_api.py # Personal tree relation mutations
+    ├── test_family_rules.py   # Family rule validation
+    ├── test_family_query_counts.py # Family query budget enforcement
     ├── test_api_snapshots.py  # Response shape validation
     ├── test_query_counts.py   # Query ceiling enforcement
     ├── test_security.py       # Authorization, PII isolation
     └── test_*.py              # Unit and integration tests
 ```
+
+### Personal family tree (`/v1/family`)
+
+**Design:** Separate model set from clan (`Person`, `Marriage`, `ClanMember`). One user = one family tree, stored in `Family` (OTO with user), `FamilyPerson` (UUID pk, hard delete), `FamilySpouse` (undirected edge, one row per pair). Auto-created on first `/v1/family` access.
+
+**In-memory analysis:** Every request loads whole family with 2 queries (persons + spouse links) and builds an in-memory `FamilyGraph` in `family_graph.py` to detect cycles, compute generations, and resolve relationships. Graph is ephemeral (request-scoped).
+
+**Layering:**
+- `services/family_*.py`: Pure functions, no ORM. Rule validation, date handling, graph analysis.
+- `selectors/family_*.py`: ORM reads, bulk helpers.
+- `views/family_base.py`: HTTP → `FamilyAPIView` base with error envelope handling.
+- `views/family.py`: `GET /v1/family`, `GET/PATCH/DELETE /v1/family/persons/{id}`.
+- `views/family_relations.py`: Mutation endpoints (`add-relative`, `set-parent`, `link-spouse`, etc.).
+- `views/family_link_flow.py`: Helper to compose mutation responses (after write, reload and serialize family).
+
+**Payload shape:** Flat (no `{"data": ...}` wrapper). Success: `{ok:true, person, persons[], warning?}`. Error: `{ok:false, error:{code, personId, otherId, message, fields?}}`.
 
 ## The lunar calendar split: Vietnamese vs. Chinese
 

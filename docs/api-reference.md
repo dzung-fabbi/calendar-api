@@ -6,7 +6,8 @@ Tài liệu bao gồm ba nhóm, theo thứ tự trong file:
 |---|---|---|
 | Đăng nhập / đăng xuất (JWT) | `/api/auth/` | app `apis/` |
 | Tài khoản, tải tệp, lịch vạn niên, đặt lịch | `/api/` | app `apis/` |
-| Gia phả (26 endpoint) | `/api/gia-pha/` | app `giapha/` |
+| Gia phả cộng tộc (26 endpoint) | `/api/gia-pha/` | app `giapha/` |
+| Gia phả cá nhân (13 endpoint) | `/api/gia-pha/v1/family/` | app `giapha/` |
 
 Đường dẫn gốc mặc định của phần gia phả: `/api/gia-pha/`. Endpoint của `apis/` luôn ghi đủ tiền tố `/api/`.
 
@@ -52,8 +53,9 @@ Hầu hết endpoint trả về response bao trong `{"data": ...}`. **Ngoại l�
 - **204 No Content** (DELETE) không có body
 - Validation errors (400) trả dict lỗi trực tiếp, không bao
 - Ba endpoint xác thực `/api/auth/login`, `/api/auth/refresh`, `/api/auth/logout` trả payload phẳng, không bao
-- Bốn endpoint gia phả trả payload phẳng, không bao: `/clans/{id}/tree`, `/clans/{id}/lich-gio`,
+- Bốn endpoint gia phả cộng tộc trả payload phẳng, không bao: `/clans/{id}/tree`, `/clans/{id}/lich-gio`,
   `/clans/{id}/gio-follows`, `/clans/{id}/xung-ho`, và public `/public/{slug}/tree`
+- **Mười ba endpoint gia phả cá nhân** (`/v1/family/*`) trả payload phẳng, không bao (xem phần "Gia Phả Cá Nhân" bên dưới)
 - `/public/{slug}/persons/{person_id}` **có** bao `{"data": person}` (khác với public tree)
 - Ở `apis/`: `GET /api/so-hoc`, `GET /api/than-sat` và `POST /api/book-calendar` trả dữ liệu trực tiếp, không bao
 
@@ -543,6 +545,258 @@ Chỉ nhận `GET`/`HEAD` (kể cả `OPTIONS` → 405) và chỉ render JSON (`
 - **Public tree node:** `id`, `ho_ten`, `ten_huy`, `generation`, `branch`, `is_truong`, `birth_order`, `is_living`, `birth_year`, `death_year`, `death_lunar`, `has_photo`. Không có `gioi_tinh`.
 - **Public tree edge:** chỉ `{type: "parent", from, to, role}` — không có `kind` (không lộ con nuôi/con kế), không có edge marriage.
 - **Public person:** node + `ten_tu`, `ten_hieu`, `thuy_hieu`, `que_quan`, `nghe_nghiep`, `tieu_su`, `photo_url` (presigned 1h, chỉ người đã mất).
+
+---
+
+## Gia Phả Cá Nhân (`/api/gia-pha/v1/family/`)
+
+**Mục đích:** Cây phả hệ riêng của mỗi người dùng (một user = một gia phả). Không dùng chung với cây cộng tộc (clan); mỗi người dùng quản lý gia phả cá nhân độc lập.
+
+**Xác thực:** Tất cả endpoint cần token JWT bearer. Family tự động tạo lần đầu tiên khi user truy cập.
+
+**Hợp đồng API:** `docs/gia-pha-api-spec.md`, `docs/gia-pha-architecture.md`
+
+### Danh Sách Endpoint
+
+| Method | Path | Chức năng | Body |
+|--------|------|----------|------|
+| `GET` | `/v1/family` | Lấy toàn bộ cây + `selfId` | — |
+| `GET` | `/v1/family/persons/{id}` | Chi tiết một người | — |
+| `POST` | `/v1/family/persons` | Tạo người mới; tự nối theo `relationship` nếu có | `PersonDraft` |
+| `PATCH` | `/v1/family/persons/{id}` | Sửa thông tin (không cạnh quan hệ) | `PersonDraft` |
+| `DELETE` | `/v1/family/persons/{id}` | Xoá người, gỡ cạnh trỏ đến họ | — |
+| `PUT` | `/v1/family/self` | Đặt "Đây là tôi" | `{personId: uuid \| null}` |
+| `PUT` | `/v1/family/persons/{id}/gio-event` | Gắn/gỡ sự kiện giỗ | `{eventId: uuid \| null}` |
+| `POST` | `/v1/family/relations/add-relative` | Tạo người mới + nối 1 cạnh (`father`, `mother`, `spouse`, `child`, `sibling`) | `{anchorId, kind, person, otherParentId?}` |
+| `POST` | `/v1/family/relations/set-parent` | Đặt/xoá cha hoặc mẹ | `{childId, slot, parentId, rel?}` |
+| `POST` | `/v1/family/relations/link-spouse` | Nối vợ/chồng (2 chiều) | `{aId, bId, type?}` |
+| `POST` | `/v1/family/relations/unlink-spouse` | Gỡ vợ/chồng (2 chiều) | `{aId, bId}` |
+| `POST` | `/v1/family/relations/link-child` | Nối người đã có làm con | `{parentId, childId, otherParentId?}` |
+
+### Person JSON
+
+Tất cả response chứa mảng `persons[]` với structure sau (camelCase):
+
+```json
+{
+  "id": "uuid",
+  "name": "Nguyễn Văn A",
+  "gender": "male" | "female" | "unknown",
+  "deceased": false,
+  "fatherId": "uuid" | null,
+  "motherId": "uuid" | null,
+  "fatherRel": "blood" | "adopted" | null,
+  "motherRel": "blood" | "adopted" | null,
+  "spouses": [{"id": "uuid", "type": "married" | "divorced"}, ...],
+  "solarBirthDate": "DD-MM-YYYY" | null,
+  "birthTime": "HH:mm" | null,
+  "birthOrder": 1 | null,
+  "solarDeathDate": "DD-MM-YYYY" | null,
+  "deathTime": "HH:mm" | null,
+  "lunarDeathDay": 1–30 | null,
+  "lunarDeathMonth": 1–12 | null,
+  "lunarDeathYear": 1900–2100 | null,
+  "lunarLeap": true | false | null,
+  "relationship": "Cha" | "Mẹ" | "Vợ" | ... | null,
+  "note": "ghi chú tự do" | null,
+  "gioEventId": "event-id" | null,
+  "createdAt": 1726074000000,
+  "updatedAt": 1726074000000
+}
+```
+
+**Ghi chú:**
+- `createdAt`, `updatedAt` là **epoch milliseconds** (tính từ 1970-01-01 UTC).
+- `solarBirthDate`, `solarDeathDate`: định dạng `"DD-MM-YYYY"` (zero-pad, vd `"01-01-1990"`).
+- `birthTime`, `deathTime`: định dạng `"HH:mm"` 24h (vd `"14:30"`).
+- `solarDeathDate` suy ra từ `lunarDeathDay/Month/Year` khi đủ dữ liệu.
+- `fatherRel` / `motherRel`: chỉ ghi `"adopted"` khi nuôi; mặc định `"blood"` (lưu `null`).
+- `spouses`: luôn là mảng, có thể rỗng `[]`.
+- PATCH **không đổi** `fatherId`, `motherId`, `spouses` — dùng `/relations/*` để thay đổi cạnh.
+
+### Response Thành Công (Đọc)
+
+```json
+{
+  "selfId": "uuid" | null,
+  "persons": [{ ...person }, ...]
+}
+```
+
+`GET /v1/family` trả cả cây. `GET /persons/{id}` trả chi tiết người đó (tùy chọn; client có thể dẫn xuất từ cây).
+
+### Response Thành Công (Tạo/Sửa/Xoá)
+
+```json
+{
+  "ok": true,
+  "person": { ...person },
+  "persons": [{ ...person }, ...],
+  "warning": null | { "code": "SPOUSE_IS_ANCESTOR", "personId": "uuid", "otherId": "uuid", "message": "..." }
+}
+```
+
+- `person`: người vừa tạo/sửa/tham gia mutation.
+- `persons`: danh sách **sau** mutation (cây nhỏ, 2 query).
+- `warning`: `null` hoặc `{code, personId, otherId, message}`. Hai warning: `SPOUSE_IS_ANCESTOR` (link-spouse: hai người trực hệ, vẫn lưu) và `OTHER_PARENT_NOT_CANDIDATE` (link-child / add-relative kind=child: `otherParentId` không thuộc partners hợp lệ → ô còn lại để trống).
+
+### Response Thành Công (Xoá)
+
+```json
+{
+  "deleted": true,
+  "detachedFrom": ["uuid", ...],
+  "selfId": "uuid" | null
+}
+```
+
+- `detachedFrom`: danh sách người bị gỡ cạnh (cha/mẹ trỏ người bị xoá).
+- `selfId`: mới (nếu người xoá là `selfId`, nó trở `null`).
+
+### Response Lỗi
+
+Tất cả lỗi trả **400** (trừ `PERSON_NOT_FOUND` → **404**):
+
+```json
+{
+  "ok": false,
+  "error": {
+    "code": "SELF_PARENT" | "PARENT_CYCLE" | "PARENT_SLOT_TAKEN" | ... ,
+    "personId": "uuid" | null,
+    "otherId": "uuid" | null,
+    "message": "Không đặt được: người này đang là con cháu...",
+    "fields": { "name": ["error"], ... } | null
+  }
+}
+```
+
+**Mã lỗi (code):**
+
+| Code | Ý nghĩa | HTTP |
+|------|---------|------|
+| `SELF_PARENT` | A là cha/mẹ của chính A | 400 |
+| `SELF_SPOUSE` | A nối vợ/chồng với chính A | 400 |
+| `PARENT_CYCLE` | Sắp làm cha/mẹ nhưng đang là con cháu → vòng lặp | 400 |
+| `PARENT_SLOT_TAKEN` | Ô cha/mẹ đã có người khác | 400 |
+| `DANGLING_FATHER` / `DANGLING_MOTHER` / `DANGLING_SPOUSE` | ID trỏ người không tồn tại | 400 |
+| `SPOUSE_IS_ANCESTOR` | Hai người đang trực hệ (warning chỉ, vẫn lưu) | 200 |
+| `OTHER_PARENT_NOT_CANDIDATE` | `otherParentId` không phải vợ/chồng hay đồng phụ huynh hợp lệ (warning, ô để trống) | 200 |
+| `FAMILY_FULL` | Gia phả đạt giới hạn `FAMILY_MAX_PERSONS` (mặc định 1000, `settings.py`) | 400 |
+| `GENDER_MISMATCH` | Giới tính không hợp ô (nam ≠ mẹ, nữ ≠ cha) | 400 |
+| `NO_PARENT_FOR_SIBLING` | Thêm anh chị em khi chưa có cha **và** mẹ | 400 |
+| `SELF_ALREADY_SET` | Đã có "tôi", gỡ cái cũ trước khi đổi | 400 |
+| `PERSON_NOT_FOUND` | Người không tồn tại | 404 |
+| `VALIDATION` | Dữ liệu không hợp lệ (tên rỗng, ngày sai, ...) | 400 |
+
+**Đối với validation error (4xx với `code = "VALIDATION"`):** `fields` dict chứa lỗi từng trường (DRF format).
+
+### Ví Dụ: Thêm Anh Chị Em
+
+```bash
+POST /api/gia-pha/v1/family/relations/add-relative
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+  "anchorId": "123e4567-e89b-12d3-a456-426614174000",
+  "kind": "sibling",
+  "person": {
+    "name": "Nguyễn Văn B",
+    "gender": "male",
+    "relationship": "Em"
+  }
+}
+```
+
+**Response 200:**
+```json
+{
+  "ok": true,
+  "person": {
+    "id": "223e4567-e89b-12d3-a456-426614174001",
+    "name": "Nguyễn Văn B",
+    "gender": "male",
+    "deceased": false,
+    "fatherId": "uuid-of-father",
+    "motherId": "uuid-of-mother",
+    "spouses": [],
+    "relationship": "Em",
+    "createdAt": 1726074123000,
+    "updatedAt": 1726074123000,
+    ...
+  },
+  "persons": [
+    {...anchor with updated data...},
+    {...person vừa tạo...},
+    ...other persons...
+  ],
+  "warning": null
+}
+```
+
+### Ví Dụ: Nối Vợ/Chồng Lần Đầu Tiên (Auto-fill cha/mẹ con)
+
+Khi nối vợ/chồng đầu tiên của người có sẵn con chưa có mẹ (hoặc cha), server tự điền ô trống:
+
+```bash
+POST /api/gia-pha/v1/family/relations/link-spouse
+{
+  "aId": "dad-uuid",
+  "bId": "mom-uuid",
+  "type": "married"
+}
+```
+
+**Result:** Con chưa có mẹ tự động lấy `motherId = mom-uuid` (nếu giới tính hợp).
+
+### Ví Dụ: Lỗi Vòng Lặp
+
+```bash
+POST /api/gia-pha/v1/family/relations/set-parent
+{
+  "childId": "ông-uuid",
+  "slot": "father",
+  "parentId": "cháu-uuid"
+}
+```
+
+**Response 400:**
+```json
+{
+  "ok": false,
+  "error": {
+    "code": "PARENT_CYCLE",
+    "personId": "ông-uuid",
+    "otherId": "cháu-uuid",
+    "message": "Không đặt được: người này đang là con cháu trong nhánh đó, nối vào sẽ tạo vòng lặp."
+  }
+}
+```
+
+### Ví Dụ: Lỗi Validation
+
+```bash
+POST /api/gia-pha/v1/family/persons
+{
+  "name": "",
+  "gender": "invalid_gender"
+}
+```
+
+**Response 400:**
+```json
+{
+  "ok": false,
+  "error": {
+    "code": "VALIDATION",
+    "message": "Tên là bắt buộc.",
+    "fields": {
+      "name": ["This field may not be blank."],
+      "gender": ["Invalid choice."]
+    }
+  }
+}
+```
 
 ---
 

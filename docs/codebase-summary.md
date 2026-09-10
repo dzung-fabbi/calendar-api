@@ -41,9 +41,11 @@ Refresh tokens are stored as sha256-hashed opaque strings in `apis_refreshtoken`
 
 ### giapha/ (`/api/gia-pha/`)
 
-Routes: clan CRUD, person CRUD, marriages, invites, tree fetch, membership join, revisions.
+**26 clan endpoints:** Clan CRUD, person CRUD, marriages, invites, tree fetch, membership join, revisions.
 All tree operations enforce the [**3-query contract**](#giapha-design-decisions). Route
 prefix `/api/gia-pha/` is throttled on `/join` only (`giapha-join` scope: 10/hour).
+
+**13 personal family tree endpoints** (`/v1/family/`): User's own family, separate schema, flat responses, 2-query contract per endpoint.
 
 **giỗ (death anniversary) endpoint:**
 
@@ -121,6 +123,28 @@ falls back to day-29 in a 29-day month). Permission boundary: non-members receiv
   `settings.MAX_CLAN_PERSONS`** on purpose — truncating rows would not degrade the answer,
   it would falsify it (a missing ancestor turns a real relative into
   `khong_cung_huyet_thong` with `confident: true`).
+
+**Personal family tree endpoints (`/v1/family/`):**
+
+| Route | Methods | View | Auth | Queries |
+|---|---|---|---|---|
+| `v1/family` | GET | `views/family.py` | `IsAuthenticated` | 2 |
+| `v1/family/persons` | POST | `views/family.py` | `IsAuthenticated` | 2 |
+| `v1/family/persons/{id}` | GET, PATCH, DELETE | `views/family.py` | `IsAuthenticated` | 2 |
+| `v1/family/self` | PUT | `views/family.py` | `IsAuthenticated` | 2 |
+| `v1/family/persons/{id}/gio-event` | PUT | `views/family.py` | `IsAuthenticated` | 2 |
+| `v1/family/relations/add-relative` | POST | `views/family_relations.py` | `IsAuthenticated` | 2 |
+| `v1/family/relations/set-parent` | POST | `views/family_relations.py` | `IsAuthenticated` | 2 |
+| `v1/family/relations/link-spouse` | POST | `views/family_relations.py` | `IsAuthenticated` | 2 |
+| `v1/family/relations/unlink-spouse` | POST | `views/family_relations.py` | `IsAuthenticated` | 2 |
+| `v1/family/relations/link-child` | POST | `views/family_relations.py` | `IsAuthenticated` | 2 |
+
+- **Auth:** `IsAuthenticated` only; no clan/role layer. Family auto-created per user.
+- **Response:** Flat (no `{"data": ...}` wrapper). Success: `{ok:true, person, persons[]}`. Error: `{ok:false, error:{code, personId, otherId, message}}`.
+- **Query budget:** **2 queries per endpoint** (one fetch family, one refetch after mutation). Ceiling pinned in `tests/test_family_query_counts.py`.
+- **Models:** `Family` (OTO with user), `FamilyPerson` (UUID pk, hard delete), `FamilySpouse` (undirected edge). Separate from clan tables.
+- **Graph analysis:** In-memory `FamilyGraph` per request for cycle detection and relationship resolution (no recursive SQL).
+- **Rules:** Cycle detection, gender validation, auto-link by relationship label (spec §4.8), auto-fill co-parent on first spouse link.
 
 ## Query cost, before and after the refactor
 
