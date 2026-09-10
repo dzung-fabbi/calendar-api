@@ -2,6 +2,7 @@
 
 from apis.views.account import ConfigAPIView, UserAPIView
 from apis.views.almanac import CalendarAPIView, HomeAPIView, TietkhiAPIView
+from apis.views.auth_login import LoginAPIView, LogoutAPIView, RefreshTokenAPIView
 from apis.views.auth_password_change import ChangePasswordAPIView
 from apis.views.auth_password_reset import (
     ForgotPasswordAPIView,
@@ -31,6 +32,9 @@ __all__ = [
     'FileUploadUrlAPIView',
     'ForgotPasswordAPIView',
     'HomeAPIView',
+    'LoginAPIView',
+    'LogoutAPIView',
+    'RefreshTokenAPIView',
     'RegisterAPIView',
     'ResetPasswordAPIView',
     'SoHocAPIView',

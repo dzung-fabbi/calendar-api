@@ -1,49 +1,35 @@
-"""Bulk revocation of a user's OAuth2 tokens.
+"""Bulk eviction of a user's sessions after a password change or reset.
 
-Called after a password change or reset so that a session opened with the old
-password cannot outlive it -- the point of changing a password after a
-compromise is to evict whoever else is holding one.
+The point of changing a password after a compromise is to evict whoever else
+is holding a session. Two token kinds, two mechanisms:
 
-VERIFIED AGAINST django-oauth-toolkit 2.2.0 (`oauth2_provider/models.py`):
+  * REFRESH tokens are rows (`apis.RefreshToken`) and are DELETED here.
+  * ACCESS tokens are stateless JWTs and cannot be deleted. They die through
+    the `pwd` claim (`apis/services/jwt_tokens.password_fingerprint`): it is
+    derived from `user.password`, which `set_password()` rewrites with a fresh
+    salt, so every token minted before the change stops matching at once.
 
-  * `RefreshToken.access_token` is a `OneToOneField(..., on_delete=SET_NULL)`,
-    NOT a cascade. Deleting access tokens first therefore leaves the refresh
-    tokens alive with a null pointer -- still rows, still the user's. Refresh
-    tokens must go FIRST, or there is a window in which one can be swapped for
-    a brand-new access token.
-  * `RefreshToken.revoke()` marks a `revoked` timestamp instead of deleting,
-    and `Meta.unique_together = ('token', 'revoked')` makes revoking in bulk
-    that way awkward. Deleting is both simpler and more complete.
-  * There is no `token_family` in this version, so there is no third table to
-    clean up. OIDC `IDToken` rows are not touched either: the project sets no
-    `OAUTH2_PROVIDER` block and issues none. Add them here if OIDC is enabled.
+That second mechanism is why `revoke_all_tokens` is only ever correct when it
+runs in the SAME transaction as the `set_password()` -- on its own it leaves
+every access token alive for the rest of its lifetime.
 """
 
 from django.db import transaction
-from oauth2_provider.models import get_access_token_model, get_refresh_token_model
+
+from apis.models import RefreshToken
 
 
 def revoke_all_tokens(user):
-    """Delete every OAuth2 token belonging to `user`, refresh tokens first.
-
-    Returns `(refresh_deleted, access_deleted)` for logging and tests.
-
-    The caller is responsible for wrapping this and the `set_password` in one
-    `transaction.atomic()`, so a failure cannot leave the password changed and
-    the old sessions alive.
-    """
-    refresh_deleted, _ = get_refresh_token_model().objects.filter(user=user).delete()
-    access_deleted, _ = get_access_token_model().objects.filter(user=user).delete()
-    return refresh_deleted, access_deleted
+    """Delete every refresh token belonging to `user`. Returns the count."""
+    return RefreshToken.objects.filter(user=user).delete()[0]
 
 
 def set_password_and_revoke_tokens(user, new_password):
     """Change `user`'s password and evict every existing session, atomically.
 
     Shared by the reset and the change endpoints, which must behave identically
-    here. Revocation is the whole point of the operation in the compromise
-    case: were the two not in one transaction, a failure could leave the
-    password changed while the attacker's tokens stayed live.
+    here. Were the two writes not in one transaction, a failure could leave the
+    password changed while an attacker's refresh token stayed live.
     """
     with transaction.atomic():
         user.set_password(new_password)

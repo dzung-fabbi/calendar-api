@@ -55,7 +55,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
-    'oauth2_provider',
     'django_object_actions',
 ]
 
@@ -154,8 +153,10 @@ CORS_ALLOWED_ORIGINS = env_list('DJANGO_CORS_ALLOWED_ORIGINS')
 CORS_ALLOW_ALL_ORIGINS = not CORS_ALLOWED_ORIGINS
 
 REST_FRAMEWORK = {
+    # A SETTINGS STRING on purpose: DRF resolves it, so `giapha/` still imports
+    # nothing from `apis/` (docs/code-standards.md decoupling rule).
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',  # django-oauth-toolkit >= 1.0.0
+        'apis.authentication.JWTAuthentication',
     ),
     # No `DEFAULT_THROTTLE_CLASSES` -- deliberate, `apis/` has none and this
     # must not change project-wide. `giapha.views.clan_membership.JoinClanAPIView`
@@ -186,6 +187,12 @@ REST_FRAMEWORK = {
         'auth-forgot-password': '5/hour',
         'auth-reset-password': '10/hour',
         'auth-change-password': '10/hour',
+        # Login and refresh (`apis/views/auth_login.py`). Unauthenticated, so
+        # per-IP, with the NUM_PROXIES caveat above: this raises the cost of
+        # single-source credential stuffing and nothing more. The old
+        # `/auth/token` had NO limit at all, so this is strictly an improvement.
+        'auth-login': '20/hour',
+        'auth-refresh': '60/hour',
         # Generic file upload (`apis/views/file_upload.py`). Unauthenticated,
         # so there is no per-user bucket to use instead. Same PER-IP caveat as
         # everything above -- this raises the cost of a single-source flood and
@@ -209,9 +216,9 @@ REST_FRAMEWORK = {
     'NUM_PROXIES': int(os.environ.get('DJANGO_NUM_PROXIES', '0')),
 }
 
-# Username/password is the only login flow: `grant_type=password` against
-# `/auth/token` (see djangopj/auth_token_views.py), which django-oauth-toolkit's
-# validator serves through plain `authenticate()`.
+# Username/password is the only login flow: `POST /api/auth/login`
+# (`apis/views/auth_login.py`) calls `authenticate()` against this backend and
+# mints a JWT.
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
 )
@@ -263,6 +270,18 @@ DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'no-reply@localhost')
 # note in REST_FRAMEWORK above for why per-IP limits cannot be relied on.
 PASSWORD_RESET_CODE_TTL_SECONDS = int(os.environ.get('PASSWORD_RESET_CODE_TTL_SECONDS', '600'))
 PASSWORD_RESET_MAX_ATTEMPTS = int(os.environ.get('PASSWORD_RESET_MAX_ATTEMPTS', '5'))
+
+# JWT auth (`apis/services/jwt_tokens.py`, `apis/authentication.py`). A
+# DEDICATED signing key so that rotating it logs everyone out WITHOUT
+# invalidating the password-reset code hashes, session cookies and everything
+# else keyed on SECRET_KEY. Falls back to SECRET_KEY so an existing deployment
+# keeps working with no new variable. Rotating the key alone is NOT a full
+# logout: surviving `apis_refreshtoken` rows re-mint under the new key -- see
+# docs/deployment-guide.md. The algorithm (HS256) is a constant in the service,
+# not a setting.
+JWT_SIGNING_KEY = os.environ.get('JWT_SIGNING_KEY') or SECRET_KEY
+JWT_ACCESS_TOKEN_LIFETIME_SECONDS = int(os.environ.get('JWT_ACCESS_TOKEN_LIFETIME_SECONDS', '3600'))
+JWT_REFRESH_TOKEN_LIFETIME_SECONDS = int(os.environ.get('JWT_REFRESH_TOKEN_LIFETIME_SECONDS', '2592000'))
 
 # HTTPS hardening. Off by default because turning SSL redirect on behind a
 # proxy that does not forward the scheme causes a redirect loop; switch these

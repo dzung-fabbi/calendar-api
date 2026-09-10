@@ -19,6 +19,10 @@ from apis.services.otp import CODE_LENGTH
 EMAIL_TAKEN = 'Email này đã được sử dụng.'
 UNSUPPORTED_CHAR = 'Trường này chứa ký tự không được hỗ trợ.'
 SAME_AS_CURRENT = 'Mật khẩu mới phải khác mật khẩu hiện tại.'
+# One message for wrong password, unknown user AND disabled account -- the
+# login endpoint must not be an account-enumeration oracle.
+INVALID_CREDENTIALS = 'Tên đăng nhập hoặc mật khẩu không đúng.'
+INVALID_REFRESH_TOKEN = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.'
 
 
 def reject_non_bmp(value):
@@ -146,3 +150,16 @@ class ChangePasswordSerializer(serializers.Serializer):
         if attrs['current_password'] == attrs['new_password']:
             raise serializers.ValidationError({'new_password': [SAME_AS_CURRENT]})
         return attrs
+
+
+class LoginSerializer(serializers.Serializer):
+    # `max_length=150` matches `auth_user.username`; no normalisation here --
+    # `authenticate()` is the one that decides what a username means.
+    username = serializers.CharField(max_length=150)
+    password = serializers.CharField(write_only=True, max_length=128)
+
+
+class RefreshTokenSerializer(serializers.Serializer):
+    # A real token is 43 chars (`secrets.token_urlsafe(32)`); the cap only
+    # bounds junk input before it reaches the hash.
+    refresh_token = serializers.CharField(write_only=True, max_length=255)

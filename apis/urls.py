@@ -12,6 +12,9 @@ from apis.views import (
     FileUploadUrlAPIView,
     ForgotPasswordAPIView,
     HomeAPIView,
+    LoginAPIView,
+    LogoutAPIView,
+    RefreshTokenAPIView,
     RegisterAPIView,
     ResetPasswordAPIView,
     SoHocAPIView,
@@ -46,9 +49,12 @@ urlpatterns = [
     path("files/upload-url", FileUploadUrlAPIView.as_view(), name="file-upload-url"),
     path("files/confirm", FileConfirmAPIView.as_view(), name="file-confirm"),
 
-    # Account management. `/auth/token` and `/auth/revoke-token` (login and
-    # logout, mounted in `djangopj/urls.py`) are deliberately NOT part of this
-    # group -- shipped clients call them at the root and they stay there.
+    # Account management. Login/refresh/logout are the ONLY login path; the
+    # former root-level OAuth2 `/auth/token` and `/auth/revoke-token` were
+    # removed on 2026-09-10 (see `apis/views/auth_login.py`).
+    path("auth/login", LoginAPIView.as_view(), name="auth-login"),
+    path("auth/refresh", RefreshTokenAPIView.as_view(), name="auth-refresh"),
+    path("auth/logout", LogoutAPIView.as_view(), name="auth-logout"),
     path("auth/register", RegisterAPIView.as_view(), name="auth-register"),
     path(
         "auth/forgot-password",
