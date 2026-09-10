@@ -262,10 +262,20 @@ Project **không đặt `DEFAULT_PERMISSION_CLASSES`**, nên view nào không kh
   `so_nhan_cach`, `so_truong_thanh`, `so_phat_trien`, `so_noi_cam`, `the_nhan_dang`, `so_thieu` (luôn `""`),
   `so_dien_thoai`.
 - `POST /api/appointment-date` là **thay thế toàn bộ** danh sách của caller: item có `id` thuộc caller →
-  cập nhật; không có `id` → tạo mới; bản ghi cũ không xuất hiện trong body → **xoá**. `id` của người khác bị
-  bỏ qua im lặng. `before_days` gửi lên là **số ngày** (int); trả về dạng chuỗi duration của Django
-  (`"3 00:00:00"`), `convert_time` là cùng giá trị đó. Item trả về: `id`, `name`, `date`, `before_days`,
-  `user_id`, `convert_time`.
+  cập nhật; không có `id` → tạo mới; bản ghi cũ không xuất hiện trong body → **xoá**. `id` không tồn tại
+  hoặc của người khác → **400** `{"detail": "Lịch hẹn không tồn tại hoặc không thuộc bạn: <ids>"}`, cả batch
+  không đổi (một thông điệp chung, không lộ id của người khác có tồn tại hay không). `date` bắt buộc
+  (`YYYY-MM-DD`). `before_days` là **số ngày nguyên 0..365**, mặc định 0, **cùng dạng int ở cả request và
+  response** (trước 2026-09-10 response trả `"3 00:00:00"` và gửi lại y nguyên gây 500); bỏ trống → 0,
+  nhưng `null` → 400. Hai item cùng `id` trong một body → 400. `convert_time` là
+  alias cũ, cùng int với `before_days`. Item trả về: `id`, `name`, `date`, `before_days`, `user_id`,
+  `convert_time`.
+- **Nhắc lịch hẹn qua FCM, mỗi ngày cho tới hạn:** cron `manage.py remind_appointment_date` chạy mỗi sáng
+  (giờ VN) đẩy push tới mọi thiết bị active của chủ lịch (token đăng ký qua `POST /api/gia-pha/devices`)
+  trong cửa sổ `date - before_days ≤ hôm nay ≤ date`. Title `Sắp đến hạn lịch hẹn`; body
+  `Còn N ngày nữa đến hạn: {name} (dd/mm/yyyy).` hoặc `Hôm nay đến hạn: ...`; `data`
+  `{type: "appointment", appointment_id, date}` (chuỗi). Mỗi lịch hẹn tối đa một push/ngày
+  (`AppointmentReminderLog`). Không có thiết bị → không gửi, không lỗi. Xem `docs/deployment-guide.md`.
 - `get-bank`: `bank` là cấu hình chuyển khoản (`account_number`, `account_holder`, `bank`, `branch`,
   `qr_img`); `code` là mã tham chiếu 6 chữ in hoa của giao dịch đang chờ — gọi lại trả **cùng một `code`**
   cho tới khi giao dịch được duyệt.
@@ -855,7 +865,7 @@ còn lại không ảnh hưởng.
 - Hai lỗi từng làm hỏng toàn bộ luồng upload (sai signature version, sai region/endpoint) chỉ
   bị phát hiện bằng tay trên máy production, không phải bởi test — mock `boto3` nhận mọi kwarg
   mà không phàn nàn. `StorageClientConstructionTests` giờ ghim cả hai.
-- **Push nhắc giỗ / FCM:** `POST /devices` nhận và lưu token bình thường, nhưng **chưa có push nào tới máy thật**. Toàn bộ đường FCM chỉ nghiệm thu qua mock. Client đăng ký token thành công KHÔNG có nghĩa là sẽ nhận được thông báo.
+- **Push nhắc giỗ / nhắc lịch hẹn / FCM:** `POST /devices` nhận và lưu token bình thường, nhưng **chưa có push nào tới máy thật**. Toàn bộ đường FCM (cả `remind_death_anniversary` lẫn `remind_appointment_date`) chỉ nghiệm thu qua mock. Client đăng ký token thành công KHÔNG có nghĩa là sẽ nhận được thông báo.
 
 ---
 

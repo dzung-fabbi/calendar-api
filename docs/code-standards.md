@@ -23,6 +23,15 @@ Both `apis/` and `giapha/` follow these standards. Code is **never** shared betw
   10-line copy of `apis/services/can_chi.py`, not an import. This boundary allows
   each app to evolve independently (especially critical for the lunar calendars — see
   `docs/system-architecture.md` → "Dual Lunar Calendar Implementation").
+  **The one recorded exception (2026-09-10): the push channel.** `DeviceToken`,
+  `POST /devices` and `services/fcm.py` are user-level infrastructure that happens to
+  live in `giapha/`, and a device registers its token exactly once — a copy of the model
+  would make clients register twice. So `apis/` may import, and only import,
+  `giapha.models.DeviceToken`, `giapha.selectors.gio_follow.active_tokens_for` and
+  `giapha.services.fcm`. The import sites are `apis/selectors/appointment_remind.py`
+  and `apis/management/commands/{remind_appointment_date,_appointment_reminder_log}.py`;
+  nothing else crosses (tests of those modules may import giapha fixtures such as
+  `DeviceToken`), and `giapha/` still never imports `apis/`.
 
 ## Files
 

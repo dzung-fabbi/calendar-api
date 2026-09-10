@@ -180,6 +180,32 @@ that (person, recipient, date) permanently. A `failed` row does NOT block — re
 after an outage and only failed recipients are retried. **Do re-run it:** each person
 is due exactly once per year, so a missed morning never gets retried until next year.
 
+## Cron: appointment reminders (`remind_appointment_date`)
+
+The `apis/` counterpart for `/api/appointment-date` rows (vehicle inspection, insurance
+renewal, ...). Same FCM credentials, same device tokens (`POST /api/gia-pha/devices`),
+same schedule slot — add it right next to the giỗ entry:
+
+```cron
+# Nhắc lịch hẹn -- 07:00 Việt Nam (UTC+7), mỗi ngày. Host UTC -> `0 0`.
+0 0 * * * cd /srv/calendar-api && /usr/bin/docker compose -f docker-compose.prod.yml run --rm -T web python manage.py remind_appointment_date >> /var/log/calendar-api-appointment.log 2>&1
+```
+
+**Not yet installed** on 13.212.105.46 (added to the codebase 2026-09-10). Requires
+`python manage.py migrate apis` first (`0076` creates `appointment_reminder_logs` and
+clamps any legacy `before_days` outside 0..365 days into that range).
+
+Do not schedule two overlapping runs: the per-day de-duplication is read-then-write,
+so two processes starting together can both push once. One cron line is safe; if a
+second scheduler is ever added, prefix the command with `flock -n /tmp/remind-appt.lock`.
+
+Semantics differ from giỗ: the reminder is **daily**. An appointment on D with
+`before_days=3` pushes on each of D-3, D-2, D-1 and D. `AppointmentReminderLog` holds
+one row per (appointment, day): `sent` blocks a second push that day, `failed` does not,
+so a same-day re-run retries only what failed. Rows without an owner, without a date, or
+whose owner has no active device are skipped silently. With no Firebase credentials the
+command prints the same `Chưa cấu hình Firebase` warning as the giỗ job and exits 0.
+
 ### Firebase credentials
 
 `remind_death_anniversary` pushes through FCM HTTP v1 and needs a service

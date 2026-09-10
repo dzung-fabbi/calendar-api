@@ -30,7 +30,10 @@ with `SimpleTestCase` (no database).
 belongs there; what it may not do is write a model. See "Push Notification Channel".
 
 **Decoupling rule:** `giapha/` and `apis/` share no imports; code is duplicated if needed.
-This is enforced to allow independent evolution.
+This is enforced to allow independent evolution. One recorded exception: `apis/` reads
+giapha's push channel (`DeviceToken`, `active_tokens_for`, `services/fcm.py`) for
+`remind_appointment_date` — see `docs/code-standards.md` → Decoupling. `giapha/` still
+never imports `apis/`.
 
 **Authentication integration:** `djangopj/settings.py` sets `DEFAULT_AUTHENTICATION_CLASSES` to
 `('apis.authentication.JWTAuthentication',)` **as a settings string** — `giapha/` does not
@@ -298,6 +301,14 @@ only. One nightly management command, no Celery — one job a day does not justi
 
 > **Status: real-device delivery is UNVERIFIED.** No Firebase project has been created,
 > and every test mocks the FCM layer (`requests.post`, `_mint_token`, `send_multicast`).
+
+**Second consumer (2026-09-10): `apis/` appointment reminders.** `manage.py
+remind_appointment_date` pushes through the same `send_multicast` to the same
+`DeviceToken`s, but with a different cadence: **daily** from `date - before_days` up to
+and including `date`, de-duplicated per (appointment, day) by `apis.AppointmentReminderLog`.
+Shape mirrors the giỗ job — `selectors/appointment_remind.py` (reads),
+`services/appointment_remind.py` (wording, `today_vn`), `_appointment_reminder_log.py`
+(the two ORM writes). Three reads per run, plus one write per push attempted.
 > What is proven is recipient resolution, de-duplication, and failure classification.
 > What is not proven is that a handset ever receives a notification.
 

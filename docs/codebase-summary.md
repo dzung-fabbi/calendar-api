@@ -294,8 +294,15 @@ Allocation: `apis/` count includes 17 new `test_auth_login_api.py` tests (JWT lo
 - `test_file_upload_api.py` -- the presigned file endpoints; `boto3` fully mocked,
   never touches the network. Clears the throttle cache per test because both
   endpoints are unauthenticated and bucket by IP.
-- `test_management_commands.py` -- `remind_appointment_date` (the `apis/` reminder;
-  unrelated to `giapha/`'s `remind_death_anniversary`).
+- Appointment reminder modules (2026-09-10): `models/appointment_reminder_log.py`
+  (+ migration `0076`), `selectors/appointment_remind.py`, `services/appointment_remind.py`,
+  `management/commands/remind_appointment_date.py` + `_appointment_reminder_log.py`.
+- `test_management_commands.py` -- `remind_appointment_date` (the `apis/` daily FCM
+  reminder for `/api/appointment-date` rows; `send_multicast` mocked, window D-n..D,
+  same-day de-dup, retry of `failed`, dead-token deactivation, query budget).
+- `test_appointment_date_api.py` -- the replace-list contract of `/api/appointment-date`:
+  `before_days` as whole days both ways, round-trip of the response, 400s for range,
+  missing `date` and unknown `id`.
 
 ### giapha/tests/
 - Query budgets asserted; 3-query `/tree` contract is verified per-test with `assertNumQueries`.
