@@ -13,6 +13,7 @@ from rest_framework.views import APIView
 from giapha.exceptions import BadRequestException
 from giapha.models import ClanMember
 from giapha.permissions import IsClanMember, IsClanOwner
+from giapha.selectors.family_link_detach import detach_for_clan
 from giapha.selectors.clan import clans_for_user, get_clan_or_none, roles_for_clans
 from giapha.serializers.clan import ClanSerializer
 from giapha.services.public_slug import generate_public_slug
@@ -23,7 +24,7 @@ SLUG_RETRY_EXHAUSTED_DETAIL = 'Không thể tạo link công khai, vui lòng th�
 # unique column -- a collision is astronomically unlikely. This cap exists
 # only so a freak collision degrades to a clear 400, never a 500, matching
 # the retry-loop shape already used for invite codes
-# (`views.clan_membership.ClanInviteListCreateAPIView`).
+# (`views.clan_invite.ClanInviteListCreateAPIView`).
 MAX_SLUG_ATTEMPTS = 5
 
 
@@ -84,8 +85,11 @@ class ClanDetailAPIView(APIView):
         clan = get_clan_or_none(clan_id)
         if clan is None:
             raise NotFound(NOT_FOUND_DETAIL)
-        clan.is_deleted = True
-        clan.save(update_fields=['is_deleted'])
+        with transaction.atomic():
+            clan.is_deleted = True
+            clan.save(update_fields=['is_deleted'])
+            # Every personal tree linked into this clan detaches (snapshot).
+            detach_for_clan(clan.id)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 

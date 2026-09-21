@@ -50,6 +50,11 @@ class Person(models.Model):
     death_lunar_day = models.IntegerField(null=True, blank=True, verbose_name='Ngày mất âm lịch')
     death_lunar_month = models.IntegerField(null=True, blank=True, verbose_name='Tháng mất âm lịch')
     death_lunar_leap = models.BooleanField(default=False, verbose_name='Tháng nhuận (mất)')
+    # Explicit "đã mất" flag (plan 260919 phase 4): a person can be known dead
+    # with no date at all. Effective deceased = `da_mat` OR any death marker --
+    # see `services.person_status.is_deceased`. The public page keeps its own
+    # stricter liveness rule (`selectors.public._is_living`).
+    da_mat = models.BooleanField(default=False, verbose_name='Đã mất')
 
     # Hồ sơ.
     que_quan = models.CharField(max_length=255, blank=True, verbose_name='Quê quán')
@@ -66,6 +71,10 @@ class Person(models.Model):
         max_digits=9, decimal_places=6, null=True, blank=True, verbose_name='Kinh độ mộ phần',
     )
     mo_phan_note = models.CharField(max_length=255, blank=True, verbose_name='Ghi chú mộ phần')
+
+    # Optimistic lock (plan 260919 phase 5): +1 on every write path, see
+    # `selectors.person_version.lock_and_bump`.
+    version = models.IntegerField(default=1, verbose_name='Phiên bản')
 
     is_deleted = models.BooleanField(default=False, verbose_name='Đã xoá (mềm)')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Ngày tạo')

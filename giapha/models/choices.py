@@ -16,16 +16,27 @@ PARENT_KIND = (
     ('ke', 'Kế'),
 )
 
+# Hierarchy: owner (trưởng họ) > manager (Ban quản lý) > editor > viewer.
+# Never compare role strings inline -- use the tuples in `giapha.permissions`
+# (`EDITOR_ROLES`, `APPROVER_ROLES`) so adding a role is a one-file change.
 CLAN_ROLE = (
     ('owner', 'Chủ sở hữu'),
+    ('manager', 'Ban quản lý'),
     ('editor', 'Biên tập viên'),
     ('viewer', 'Người xem'),
 )
+
+# Role groups -- the ONLY place role strings are grouped. `permissions.py`
+# re-exports them; selectors import them from here (no import cycle).
+EDITOR_ROLES = ('owner', 'manager', 'editor')
+# May approve invites (viewer role), verify bindings, review change requests.
+APPROVER_ROLES = ('owner', 'manager')
 
 # Roles an invite code may grant. Deliberately excludes 'owner' -- ownership
 # transfer is a separate, explicit, owner-only action
 # (`PATCH /clans/{id}/members/{user_id}`), never a side effect of redeeming a
 # bearer code that could leak.
+# Also excludes 'manager': Ban quản lý is only ever assigned by the owner.
 INVITE_ROLE = (
     ('editor', 'Biên tập viên'),
     ('viewer', 'Người xem'),
@@ -38,6 +49,14 @@ INVITE_ROLE = (
 VISIBILITY = (
     ('private', 'Riêng tư'),
     ('public_link', 'Công khai qua link'),
+)
+
+# `pending_approval` invites have no code yet (NULL) -- the code is minted on
+# approval, so a link never exists before an approver has seen the request.
+INVITE_STATUS = (
+    ('active', 'Đang hiệu lực'),
+    ('pending_approval', 'Chờ duyệt'),
+    ('rejected', 'Bị từ chối'),
 )
 
 MARRIAGE_STATUS = (

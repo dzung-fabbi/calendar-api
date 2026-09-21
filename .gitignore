@@ -90,7 +90,8 @@ venv
 
 ### Firebase / FCM credentials ###
 # Service account JSON grants send-as-the-app rights; keep it out of git.
-firebase*.json
+*firebase*.json
+*adminsdk*.json
 *service-account*.json
 *serviceAccount*.json
 secrets/

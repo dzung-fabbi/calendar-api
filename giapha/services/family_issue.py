@@ -31,6 +31,12 @@ MESSAGES = {
     'FAMILY_FULL': 'Gia phả đã đạt giới hạn {} người.',
     'OTHER_PARENT_NOT_CANDIDATE': 'Người được chọn làm cha/mẹ còn lại không phải vợ/chồng hay đồng phụ huynh hợp lệ; ô đó để trống.',
     'VALIDATION': 'Dữ liệu không hợp lệ.',
+    'FAMILY_NOT_EMPTY': 'Tài khoản đã có gia phả trên server. Không nhập đè được.',
+    'CLAN_NOT_FOUND': 'Không tìm thấy dòng họ.',
+    'CLAN_PERSON_NOT_FOUND': 'Không tìm thấy người này trong dòng họ.',
+    'LINK_NOT_FOUND': 'Không tìm thấy liên kết.',
+    'LINK_CONFLICT': 'Người này đã được liên kết với dòng họ đó rồi.',
+    'CLAN_TOO_LARGE': 'Nhánh này vượt quá giới hạn {} người của một dòng họ.',
 }
 
 

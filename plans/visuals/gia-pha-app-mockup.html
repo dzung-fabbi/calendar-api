@@ -1,0 +1,617 @@
+<title>Mockup Gia phả Lịch Việt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Noto+Serif:wght@600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+:root{
+  --bg:#EEF0EC;--surface:#FFFFFF;--ink:#1B211E;--muted:#5F6863;--line:#D8DCD6;
+  --accent:#9E2A20;--chip:#F3E7E4;--code:#F4F5F2;
+  --get:#2E6B5B;--post:#3B5B82;--patch:#8A6A1F;--put:#6B4C8A;--del:#9E2A20;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#121614;--surface:#1A1F1C;--ink:#E6EAE7;--muted:#9AA39E;--line:#2C332F;
+  --accent:#E0806F;--chip:#3A2522;--code:#232925;
+  --get:#6FC2A8;--post:#8FB0DA;--patch:#D9B560;--put:#B99BDA;--del:#E0806F;}}
+:root[data-theme="dark"]{
+  --bg:#121614;--surface:#1A1F1C;--ink:#E6EAE7;--muted:#9AA39E;--line:#2C332F;
+  --accent:#E0806F;--chip:#3A2522;--code:#232925;
+  --get:#6FC2A8;--post:#8FB0DA;--patch:#D9B560;--put:#B99BDA;--del:#E0806F;}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.55 "Be Vietnam Pro",system-ui,sans-serif;padding:24px 16px 48px}
+.wrap{max-width:1180px;margin:0 auto}
+header.page h1{font:700 clamp(26px,4vw,36px)/1.15 "Noto Serif",Georgia,serif;margin:0 0 6px;text-wrap:balance}
+header.page p{margin:0;color:var(--muted);max-width:68ch}
+.legend{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:14px;font-size:13px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:14px;height:14px;border-radius:4px;border:1px solid rgba(0,0,0,.15)}
+.layout{display:grid;grid-template-columns:220px 380px minmax(0,1fr);gap:28px;margin-top:28px;align-items:start}
+nav.screens{display:flex;flex-direction:column;gap:4px;position:sticky;top:16px}
+nav.screens button{all:unset;cursor:pointer;padding:9px 12px;border-radius:8px;font-size:14px;color:var(--muted);display:flex;gap:10px}
+nav.screens button b{font:500 12px "JetBrains Mono",monospace;color:var(--muted);opacity:.7;padding-top:2px}
+nav.screens button:hover{color:var(--ink);background:var(--surface)}
+nav.screens button[aria-selected="true"]{background:var(--surface);color:var(--ink);font-weight:600;box-shadow:0 1px 0 var(--line)}
+nav.screens button:focus-visible{outline:2px solid var(--accent)}
+.notes{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px 24px}
+.notes h2{font:700 22px/1.25 "Noto Serif",Georgia,serif;margin:0 0 8px}
+.notes .lead{color:var(--muted);margin:0 0 16px}
+.notes h3{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:20px 0 8px}
+.notes ul{margin:0;padding-left:18px;display:grid;gap:6px}
+.api{display:grid;gap:8px}
+.api div{background:var(--code);border-radius:8px;padding:9px 12px;font-size:13.5px}
+.api code{font:500 12.5px "JetBrains Mono",monospace;word-break:break-all}
+.m{font:600 11px "JetBrains Mono",monospace;padding:2px 6px;border-radius:4px;margin-right:6px;color:var(--surface)}
+.m.GET{background:var(--get)}.m.POST{background:var(--post)}.m.PATCH{background:var(--patch)}.m.PUT{background:var(--put)}.m.DELETE{background:var(--del)}
+.api small{display:block;color:var(--muted);margin-top:3px;font-size:12.5px}
+.tip{margin-top:18px;font-size:13px;color:var(--muted);border-top:1px dashed var(--line);padding-top:12px}
+
+/* ---------- Phone + app (single fixed light palette: this is the app itself) ---------- */
+.phone{width:380px;max-width:100%;height:780px;background:#101312;border-radius:48px;padding:12px;box-shadow:0 30px 60px -30px rgba(0,0,0,.45)}
+.app{--p:#FAFAF7;--i:#1D2320;--mu:#6B736E;--ln:#E3E5E0;--red:#9E2A20;--gold:#A87522;--jade:#2E6B5B;
+  --mt:#E7EDF4;--mi:#34557D;--ft:#F5E8EB;--fi:#94405A;--dt:#E9E7E1;--di:#5E5A52;
+  position:relative;height:100%;border-radius:37px;overflow:hidden;background:var(--p);color:var(--i);font-size:14px;display:flex;flex-direction:column}
+.status{height:40px;display:flex;justify-content:space-between;align-items:center;padding:0 26px;font-size:13px;font-weight:600;flex:none}
+.bar{display:flex;align-items:center;gap:10px;padding:6px 16px 10px;flex:none}
+.bar h4{margin:0;font:700 19px "Noto Serif",Georgia,serif;flex:1}
+.bar .ic{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#fff;border:1px solid var(--ln);font-size:15px;flex:none}
+.body{flex:1;overflow:auto;position:relative}
+.tabs{display:flex;border-top:1px solid var(--ln);background:#fff;padding:8px 0 22px;flex:none}
+.tabs span{flex:1;text-align:center;font-size:11px;color:var(--mu)}
+.tabs span i{display:block;font-style:normal;font-size:17px;line-height:1.3}
+.tabs span.on{color:var(--red);font-weight:600}
+.chips{display:flex;gap:6px;padding:0 16px 10px;overflow-x:auto;flex:none}
+.chip{white-space:nowrap;padding:6px 11px;border-radius:999px;border:1px solid var(--ln);background:#fff;font-size:12.5px}
+.chip.on{background:var(--i);color:#fff;border-color:var(--i)}
+.chip.warn{border-style:dashed;color:var(--mu)}
+
+/* tree */
+.canvas{position:relative;width:440px;height:500px;margin:4px 0 80px 0}
+.canvas svg{position:absolute;inset:0}
+.node{position:absolute;width:88px;height:50px;border-radius:10px;padding:5px 7px;font-size:11.5px;line-height:1.25;cursor:pointer;border:1px solid transparent;transition:transform .15s}
+.node:hover{transform:translateY(-1px)}
+.node b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.node small{color:inherit;opacity:.75;font-size:10.5px}
+.node.male{background:var(--mt);color:var(--mi)}
+.node.female{background:var(--ft);color:var(--fi)}
+.node.dead{background:var(--dt);color:var(--di);border-color:#D2CEC4}
+.node.dead b::after{content:" 🕯";font-size:10px}
+.node.self{outline:2.5px solid var(--jade);outline-offset:2px}
+.node .me{position:absolute;top:-9px;right:-6px;background:var(--jade);color:#fff;font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:999px}
+.node.pick{outline:2.5px solid var(--red);outline-offset:2px}
+.fab{position:absolute;right:16px;bottom:16px;background:var(--red);color:#fff;border-radius:999px;padding:11px 16px;font-weight:600;font-size:13.5px;box-shadow:0 8px 20px -8px rgba(158,42,32,.7)}
+.zoom{position:absolute;left:16px;bottom:16px;display:flex;flex-direction:column;background:#fff;border:1px solid var(--ln);border-radius:10px;overflow:hidden}
+.zoom span{width:34px;height:32px;display:grid;place-items:center;font-size:16px}
+.zoom span+span{border-top:1px solid var(--ln)}
+
+/* sheet + dialog */
+.scrim{position:absolute;inset:0;background:rgba(16,19,18,.42)}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:22px 22px 0 0;padding:10px 16px 26px}
+.grab{width:40px;height:4px;border-radius:4px;background:var(--ln);margin:0 auto 12px}
+.who{display:flex;gap:12px;align-items:center;padding-bottom:12px;border-bottom:1px solid var(--ln)}
+.av{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-weight:700;flex:none}
+.av.male{background:var(--mt);color:var(--mi)}.av.female{background:var(--ft);color:var(--fi)}.av.dead{background:var(--dt);color:var(--di)}
+.who b{display:block;font-size:15.5px}.who small{color:var(--mu)}
+.row{display:flex;align-items:center;gap:12px;padding:11px 2px;border-bottom:1px solid var(--ln)}
+.row:last-child{border-bottom:0}
+.row .t{flex:1}.row .t small{display:block;color:var(--mu);font-size:12px}
+.row .g{width:30px;text-align:center;font-size:17px}
+.row.off{opacity:.45}
+.row .chev{color:var(--mu)}
+.dialog{position:absolute;left:22px;right:22px;top:180px;background:#fff;border-radius:18px;padding:20px}
+.dialog h5{margin:0 0 8px;font:700 17px "Noto Serif",Georgia,serif}
+.dialog p{margin:0 0 10px;color:#3E4541;font-size:13.5px}
+.btns{display:flex;gap:8px;margin-top:14px}
+.btn{flex:1;text-align:center;padding:11px;border-radius:12px;font-weight:600;font-size:13.5px;border:1px solid var(--ln);background:#fff}
+.btn.pri{background:var(--red);color:#fff;border-color:var(--red)}
+.btn.ok{background:var(--i);color:#fff;border-color:var(--i)}
+
+/* forms */
+.form{padding:0 16px 24px;display:grid;gap:14px}
+.f label{display:block;font-size:12px;color:var(--mu);margin-bottom:5px;font-weight:500}
+.in{background:#fff;border:1px solid var(--ln);border-radius:11px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.in.focus{border-color:var(--i)}
+.in .ph{color:#A3A9A5}
+.seg{display:flex;background:#EFF0EC;border-radius:11px;padding:3px}
+.seg span{flex:1;text-align:center;padding:7px 4px;border-radius:9px;font-size:13px;color:var(--mu)}
+.seg span.on{background:#fff;color:var(--i);font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.tog{display:flex;justify-content:space-between;align-items:center}
+.sw2{width:42px;height:25px;border-radius:999px;background:#D5D8D2;position:relative;flex:none}
+.sw2::after{content:"";position:absolute;top:3px;left:3px;width:19px;height:19px;border-radius:50%;background:#fff;transition:.2s}
+.sw2.on{background:var(--jade)}.sw2.on::after{left:20px}
+.pills{display:flex;flex-wrap:wrap;gap:6px}
+.pill{padding:5px 10px;border-radius:999px;border:1px solid var(--ln);font-size:12.5px;background:#fff}
+.pill.on{background:var(--i);color:#fff;border-color:var(--i)}
+.pill.no{opacity:.4;text-decoration:line-through}
+.hintbox{background:#F1F5F3;border-radius:11px;padding:10px 12px;font-size:12.5px;color:#3D5A51}
+.warnbox{background:#FBF1E3;border-radius:11px;padding:10px 12px;font-size:12.5px;color:#7A5518}
+.errbox{background:#FBEAE7;border-radius:11px;padding:10px 12px;font-size:12.5px;color:#8A2A1E}
+.sec{font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--mu);font-weight:600;margin:6px 0 -4px}
+.card{background:#fff;border:1px solid var(--ln);border-radius:14px;padding:4px 14px}
+.radio{width:18px;height:18px;border-radius:50%;border:2px solid #C4C8C2;flex:none}
+.radio.on{border:5px solid var(--red)}
+.act{color:var(--red);font-weight:600;font-size:13px}
+.savebar{display:flex;gap:8px;padding:10px 16px 12px;border-top:1px solid var(--ln);background:#fff;flex:none}
+
+/* detail */
+.hero{padding:6px 16px 16px;text-align:center}
+.hero .av{width:72px;height:72px;font-size:24px;margin:0 auto 8px}
+.hero h5{margin:0;font:700 21px "Noto Serif",Georgia,serif}
+.hero small{color:var(--mu)}
+.tags{display:flex;justify-content:center;gap:6px;margin-top:8px}
+.tag{font-size:11.5px;padding:3px 9px;border-radius:999px;background:#EFF0EC;color:#4A524D}
+.tag.dead{background:var(--dt);color:var(--di)}
+.gio{margin:0 16px 14px;border-radius:16px;padding:14px 16px;background:linear-gradient(135deg,#7E231B,#A33A22);color:#FBEFE6}
+.gio .big{font:700 30px/1 "Noto Serif",Georgia,serif}
+.gio small{opacity:.85}
+.gio .gb{display:flex;justify-content:space-between;align-items:flex-end;gap:8px}
+.gio .pillw{background:rgba(255,255,255,.16);border-radius:999px;padding:4px 10px;font-size:12px}
+.kv{display:grid;grid-template-columns:110px 1fr;gap:8px 10px;padding:12px 0;font-size:13.5px}
+.kv dt{color:var(--mu)}.kv dd{margin:0}
+.rel{display:flex;flex-wrap:wrap;gap:6px}
+.rel span{background:#fff;border:1px solid var(--ln);border-radius:999px;padding:3px 9px;font-size:12.5px}
+.rel span em{font-style:normal;color:var(--mu);font-size:11px}
+.list{padding:0 16px 90px}
+.list .row .av{width:36px;height:36px;font-size:13px}
+.cd{font-size:12px;font-weight:600;color:var(--red);text-align:right}
+.toast{position:absolute;left:14px;right:14px;bottom:18px;background:#1D2320;color:#fff;border-radius:14px;padding:12px 14px;font-size:13px;display:flex;gap:10px}
+.toast b{color:#F2A89C}
+
+.navg{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600;padding:14px 12px 4px;white-space:nowrap}
+.nb{display:inline-block;font:600 10.5px "JetBrains Mono",monospace;color:var(--accent);background:var(--chip);border-radius:4px;padding:1px 6px;margin-left:6px;vertical-align:1px}
+.node.scope{box-shadow:inset 0 0 0 2px rgba(46,107,91,.75)}
+.node .lk,.node .acct{position:absolute;font-style:normal;line-height:1}
+.node .lk{bottom:4px;right:5px;font-size:9px}
+.node .acct{top:-8px;left:-6px;width:17px;height:17px;border-radius:50%;background:#fff;border:1px solid var(--ln);font-size:9px;display:grid;place-items:center}
+.scopehint{margin:0 16px 6px;font-size:11.5px;color:var(--mu);display:flex;gap:6px;align-items:center;flex:none}
+.scopehint i{width:14px;height:10px;box-shadow:inset 0 0 0 2px rgba(46,107,91,.75);border-radius:3px;flex:none}
+.role{font-size:11px;padding:2px 8px;border-radius:999px;background:#EFF0EC;color:#4A524D;white-space:nowrap}
+.role.own{background:#F6E6E3;color:var(--red)}.role.ed{background:var(--mt);color:var(--mi)}.role.mgr{background:#EEE6F5;color:#5E3F82}.role.pend{background:#FBF1E3;color:#7A5518}
+.old{text-decoration:line-through;color:#9A6B63}.new{color:var(--jade);font-weight:600}
+.src{font-size:10.5px;color:var(--jade);margin-left:4px;white-space:nowrap}.priv{font-size:10.5px;color:var(--mu);margin-left:4px}
+.conf{font-size:10.5px;font-weight:600;padding:2px 7px;border-radius:999px;white-space:nowrap}.conf.hi{background:#E3F0EB;color:var(--jade)}.conf.lo{background:#FBF1E3;color:#7A5518}
+.check{width:18px;height:18px;border-radius:5px;border:2px solid #C4C8C2;flex:none;display:grid;place-items:center;font-size:11px;color:#fff}.check.on{background:var(--jade);border-color:var(--jade)}.check.on::after{content:"✓"}
+.qr{width:132px;height:132px;margin:4px auto 0;background:repeating-conic-gradient(#1D2320 0 25%,#fff 0 50%) 0 0/12px 12px;border:8px solid #fff;outline:1px solid var(--ln);border-radius:6px}
+.code{text-align:center;font:600 15px "JetBrains Mono",monospace;letter-spacing:.08em;margin-top:8px}
+.crd{background:#fff;border:1px solid var(--ln);border-radius:14px;padding:12px 14px;display:grid;gap:8px}
+.crd .kv{padding:0;grid-template-columns:96px 1fr}
+.invite{background:linear-gradient(160deg,#1F3A33,#2E6B5B);color:#EAF4F0;border-radius:18px;padding:18px;text-align:center}
+.invite h5{margin:4px 0 2px;font:700 22px "Noto Serif",Georgia,serif}
+.invite small{opacity:.8}
+@media (max-width:1100px){.layout{grid-template-columns:380px minmax(0,1fr)}nav.screens{grid-column:1/-1;flex-direction:row;overflow-x:auto;position:static;padding-bottom:4px}nav.screens button{white-space:nowrap}}
+@media (max-width:760px){.layout{grid-template-columns:minmax(0,1fr)}.phone{margin:0 auto;height:720px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="page">
+    <h1>Gia phả trong app Lịch Việt</h1>
+    <p>Mockup bấm được, gồm hai phần. <b>Gia phả của tôi</b> dựng từ 13 endpoint <code>/v1/family</code>. <b>Dòng họ dùng chung</b> dựng từ API <code>/clans</code> đang có, cộng với plan “liên kết tham chiếu, không đồng bộ”. Endpoint gắn nhãn <span class="nb">Mới · phase N</span> là chưa làm. Hôm nay là 19/09/2026 (mùng 9 tháng 8 âm lịch).</p>
+    <div class="legend">
+      <span><i class="sw" style="background:#E7EDF4"></i>Nam</span>
+      <span><i class="sw" style="background:#F5E8EB"></i>Nữ</span>
+      <span><i class="sw" style="background:#E9E7E1"></i>Đã mất 🕯</span>
+      <span><i class="sw" style="background:#fff;outline:2px solid #2E6B5B"></i>“Tôi” (selfId)</span>
+      <span>🔗 Đã liên kết với dòng họ</span>
+      <span><i class="sw" style="background:#fff;box-shadow:inset 0 0 0 2px #2E6B5B"></i>Gia đình bạn: sửa trực tiếp</span>
+    </div>
+  </header>
+
+  <div class="layout">
+    <nav class="screens" id="nav" role="tablist" aria-label="Màn hình"></nav>
+    <div class="phone"><div class="app" id="app"></div></div>
+    <article class="notes" id="notes" aria-live="polite"></article>
+  </div>
+</div>
+
+<script>
+/* ---------- Sample family (mirrors Person model: upward edges + spouses only) ---------- */
+const P = {
+  khai:{n:"Nguyễn Văn Khải",g:"male",d:1,y:"1912 – ?",x:150,yy:16,lk:1},
+  luu:{n:"Trần Thị Lựu",g:"female",d:1,y:"1918 – 1998",x:250,yy:16,lk:1},
+  binh:{n:"Nguyễn Văn Bình",g:"male",d:1,y:"1940 – 2010",x:100,yy:120,lk:1},
+  mai:{n:"Lê Thị Mai",g:"female",y:"1943",x:200,yy:120,lk:1},
+  hoa:{n:"Nguyễn Thị Hoa",g:"female",y:"1945",x:340,yy:120,lk:1},
+  thu:{n:"Phạm Thị Thu",g:"female",y:"1970",x:50,yy:224,lk:1},
+  hung:{n:"Nguyễn Văn Hùng",g:"male",y:"1968",x:150,yy:224,lk:1,acct:"👤"},
+  dung:{n:"Nguyễn Văn Dũng",g:"male",y:"1972",x:290,yy:224,lk:1,acct:"✉"},
+  chi:{n:"Đỗ Lan Chi",g:"female",y:"1996",x:0,yy:328},
+  anh:{n:"Nguyễn Minh Anh",g:"male",y:"1995",x:100,yy:328,self:1,lk:1,acct:"👤"},
+  ha:{n:"Nguyễn Thu Hà",g:"female",y:"1999",x:240,yy:328},
+  khang:{n:"Nguyễn Minh Khang",g:"male",y:"2022",x:50,yy:432},
+};
+/* connector paths: spouse bars + parent-to-children forks */
+const LINES = "M238 41H250 M244 41V100 M144 100H384 M144 100V120 M384 100V120 " +
+  "M188 145H200 M194 145V224 M194 204H334V224 " +
+  "M138 249H150 M144 249V308 M144 308H284V328 " +
+  "M88 353H100 M94 353V432";
+
+/* o.clan = clan view (accounts + family scope); otherwise personal view (🔗 links) */
+function tree(o = {}){
+  const {pick, clan, scope = [], go = {binh:"sheet"}} = o;
+  let h = `<div class="canvas"><svg viewBox="0 0 440 500" width="440" height="500"><path d="${LINES}" fill="none" stroke="#B9BDB6" stroke-width="1.6"/></svg>`;
+  for (const [id,p] of Object.entries(P)){
+    const cls = [p.g, p.d?"dead":"", p.self?"self":"", pick===id?"pick":"", scope.includes(id)?"scope":""].join(" ");
+    const mark = clan ? (p.acct?`<i class="acct">${p.acct}</i>`:"") : (p.lk?'<i class="lk">🔗</i>':"");
+    h += `<div class="node ${cls}" ${go[id]?`data-go="${go[id]}" title="Bấm để xem"`:""} style="left:${p.x}px;top:${p.yy}px"><b>${p.n.split(" ").slice(-2).join(" ")}</b><small>${p.y}</small>${p.self?'<span class="me">Tôi</span>':""}${mark}</div>`;
+  }
+  return h + "</div>";
+}
+const status = `<div class="status"><span>9:41</span><span>●●● 5G ▮</span></div>`;
+const tabs = `<div class="tabs"><span><i>▦</i>Lịch</span><span><i>◷</i>Sự kiện</span><span class="on"><i>❦</i>Gia phả</span><span><i>◉</i>Cá nhân</span></div>`;
+const bar = (t,l="‹",r="") => `<div class="bar">${l?`<span class="ic">${l}</span>`:""}<h4>${t}</h4>${r}</div>`;
+const av = (p) => `<span class="av ${p.d?"dead":p.g}">${p.n.split(" ").pop()[0]}</span>`;
+const treeHead = `${bar(`<span data-go="clans" style="cursor:pointer">Gia phả của tôi ▾</span>`,"",`<span class="ic">⌕</span><span class="ic">☰</span>`)}
+  <div class="chips"><span class="chip on">Nhà Nguyễn Văn Khải · 12</span><span class="chip warn">Chưa nối vào cây · 2</span><span class="chip">Theo dòng: Cha ▾</span></div>`;
+
+/* ---------- Screens ---------- */
+const S = [
+{ id:"tree", grp:"Gia phả của tôi", nav:"Cây gia phả",
+  app: () => `${status}${treeHead}<div class="body">${tree()}</div>
+    <div class="zoom"><span>＋</span><span>－</span><span>⤢</span></div><span class="fab" data-go="list">＋ Thêm người</span>${tabs}`,
+  h:"Cây gia phả", lead:"Màn chính. Tải cả cây một lần, client tự dựng layout và tự suy ra con, anh chị em, cụm, đời.",
+  f:["Mở mặc định từ <b>tổ xa nhất của “tôi”</b>, leo theo cha trước, hết cha thì sang mẹ","Chip cụm: <i>“Nhà {người đời cao nhất}”</i>; hai họ nối qua hôn nhân thành một cụm","Chip “Chưa nối vào cây”: người lẻ (cụm 1 người) không vẽ thành cây","Chip “Theo dòng”: đổi nhánh đang xem (state UI, không lưu server)","Bấm một node để mở menu thêm người thân (thử bấm <b>Nguyễn Văn Bình</b>)","Kéo, phóng to/thu nhỏ: chỉ chạy trên client","🔗 = người đã liên kết với một dòng họ. Bấm tiêu đề <b>Gia phả của tôi ▾</b> để chuyển sang cây dòng họ"],
+  api:[["GET","/v1/family","Trả { selfId, persons[] } với mọi người (<500). Không phân trang."]],
+  tip:"Server không trả children hay siblings. Client dựng Map từ fatherId/motherId/spouses mỗi lần đọc." },
+
+{ id:"sheet", nav:"Bấm vào một người",
+  app: () => `${status}${treeHead}<div class="body">${tree({pick:"binh"})}</div><div class="scrim"></div>
+    <div class="sheet"><div class="grab"></div>
+      <div class="who">${av(P.binh)}<div><b>Nguyễn Văn Bình</b><small>Ông nội · 1940 – 2010 · đã mất</small></div></div>
+      <div class="row" data-go="detail"><span class="g">👁</span><span class="t">Xem chi tiết</span><span class="chev">›</span></div>
+      <div class="row off"><span class="g">♂</span><span class="t">Thêm cha<small>Đã có cha: Nguyễn Văn Khải</small></span></div>
+      <div class="row off"><span class="g">♀</span><span class="t">Thêm mẹ<small>Đã có mẹ: Trần Thị Lựu</small></span></div>
+      <div class="row"><span class="g">⚭</span><span class="t">Thêm vợ / chồng</span><span class="chev">›</span></div>
+      <div class="row" data-go="addchild"><span class="g">⇣</span><span class="t">Thêm con</span><span class="chev">›</span></div>
+      <div class="row"><span class="g">⇄</span><span class="t">Thêm anh / chị / em<small>Dùng chung cha mẹ với Bình</small></span><span class="chev">›</span></div>
+    </div>`,
+  h:"Menu thêm người thân", lead:"Cách dựng cây chính: bấm một người → chọn vai → điền form. Tạo người và nối quan hệ trong một lần gọi.",
+  f:["5 vai: <b>cha, mẹ, vợ/chồng, con, anh/chị/em</b>","“Thêm cha/mẹ” bị khoá khi đã có người ở vai đó. Cha dượng hay mẹ kế thì nhập là vợ/chồng của mẹ hoặc cha","“Thêm anh chị em” bị khoá khi người này chưa có cả cha lẫn mẹ (app không tự tạo cha mẹ ảo)","Server kiểm luật <b>trước khi tạo</b>, nên không bao giờ sinh ra người mồ côi"],
+  api:[["POST","/v1/family/relations/add-relative","{ anchorId, kind: father|mother|spouse|child|sibling, person: PersonDraft, otherParentId? }"]],
+  tip:"Lỗi PARENT_SLOT_TAKEN: “Người này đã có cha. Cha dượng nên nhập là vợ/chồng của mẹ.”" },
+
+{ id:"addchild", nav:"Form thêm con",
+  app: () => `${status}${bar("Thêm con cho Hùng","✕")}<div class="body"><div class="form">
+    <div class="f"><label>Họ tên *</label><div class="in focus">Nguyễn Minh Tuấn<span class="ph">|</span></div></div>
+    <div class="f"><label>Giới tính</label><div class="seg"><span class="on">Nam</span><span>Nữ</span><span>Chưa rõ</span></div></div>
+    <div class="f"><label>Cha / mẹ còn lại</label><div class="card">
+      <div class="row"><span class="radio on"></span><span class="t">Phạm Thị Thu<small>Vợ của Hùng</small></span></div>
+      <div class="row"><span class="radio"></span><span class="t">Chưa rõ</span></div></div></div>
+    <div class="hintbox">Hùng chỉ có 1 vợ nên ô mẹ được điền sẵn. Nếu có từ 2 vợ/chồng trở lên, phải chọn ở đây.</div>
+    <div class="f"><label>Ngày sinh (dương)</label><div class="grid3"><div class="in">12</div><div class="in">03</div><div class="in">2001</div></div></div>
+    <div class="f"><label>Giờ sinh</label><div class="in">08:30<span class="ph">24h</span></div></div>
+    <div class="f tog"><span>Đã mất</span><span class="sw2"></span></div>
+    <div class="f"><label>Quan hệ với bạn</label><div class="pills"><span class="pill on">Em</span><span class="pill">Anh</span><span class="pill">Con</span><span class="pill">Cháu</span><span class="pill">+ Tự nhập</span></div></div>
+    <div class="f"><label>Ghi chú</label><div class="in"><span class="ph">Tối đa 200 ký tự</span></div></div>
+  </div></div><div class="savebar"><span class="btn">Lưu và thêm tiếp</span><span class="btn pri">Lưu</span></div>`,
+  h:"Form thêm người", lead:"Dùng chung cho mọi vai. Chỉ tên là bắt buộc; giới tính mặc định “Chưa rõ”, “Đã mất” mặc định tắt.",
+  f:["Khi thêm con: người đang được bấm vào ô cha hoặc ô mẹ theo giới tính, ô còn lại lấy từ vợ/chồng hoặc người có con chung (partners)","Có 2 vợ/chồng trở lên thì <b>bắt buộc chọn</b> cha/mẹ còn lại","“Lưu và thêm tiếp” chỉ có khi thêm con hoặc anh chị em","“Quan hệ với bạn” là nhãn chữ tự do (tối đa 24 ký tự), không phải cạnh đồ thị","Ngày dương lưu dạng DD-MM-YYYY, giờ HH:mm lưu ở field riêng"],
+  api:[["POST","/v1/family/relations/add-relative","kind: \"child\", otherParentId: id của Thu"]],
+  tip:"Model có sẵn birthOrder và quan hệ con nuôi (adopted) nhưng UI chưa nhập. Nên giữ chỗ trong form cho bản sau." },
+
+{ id:"detail", nav:"Chi tiết người",
+  app: () => `${status}${bar("","‹",`<span class="ic">✎</span><span class="ic">⋯</span>`)}<div class="body">
+    <div class="hero">${av(P.binh)}<h5>Nguyễn Văn Bình</h5><small>1940 – 2010</small>
+      <div class="tags"><span class="tag">Ông nội</span><span class="tag dead">Đã mất</span></div></div>
+    <div class="gio"><small>Giỗ · 24 tháng 8 âm lịch</small>
+      <div class="gb"><div><div class="big">Còn 15 ngày</div><small>Chủ nhật, 04/10/2026</small></div><span class="pillw">🔔 Đã đặt nhắc</span></div></div>
+    <div style="padding:0 16px 24px">
+      <dl class="kv"><dt>Ngày sinh</dt><dd>05-02-1940</dd><dt>Ngày mất</dt><dd>24/8 âm, năm 2010<br><small style="color:#6B736E">→ dương: 01-10-2010</small></dd><dt>Ghi chú</dt><dd>Liệt sĩ thời chống Mỹ, mộ ở quê nội</dd></dl>
+      <div class="sec">Quan hệ (client tự tính)</div>
+      <dl class="kv">
+        <dt>Cha · Mẹ</dt><dd class="rel"><span>Nguyễn Văn Khải</span><span>Trần Thị Lựu</span></dd>
+        <dt>Vợ / chồng</dt><dd class="rel"><span>Lê Thị Mai</span></dd>
+        <dt>Anh chị em</dt><dd class="rel"><span>Nguyễn Thị Hoa</span></dd>
+        <dt>Con</dt><dd class="rel"><span>Nguyễn Văn Hùng</span><span>Nguyễn Văn Dũng</span></dd>
+        <dt>Cháu</dt><dd class="rel"><span>Nguyễn Minh Anh <em>tôi</em></span><span>Nguyễn Thu Hà</span></dd>
+      </dl>
+    </div></div>${tabs}`,
+  h:"Chi tiết một người", lead:"Hồ sơ người và thẻ giỗ. Danh sách quan hệ tính trên client từ cây đã tải, không phải field lưu trên server.",
+  f:["Thẻ giỗ chỉ hiện khi <b>đã mất</b> và có đủ ngày + tháng âm; không cần năm","Số ngày còn lại tính theo lịch âm mỗi năm, không cộng 365 ngày","Ngày mất dương chỉ suy ra khi có đủ ngày/tháng/năm âm","Tháng nhuận: cúng giỗ theo tháng thường, cờ nhuận chỉ dùng để hiển thị","Anh chị em cùng cha khác mẹ chỉ đánh dấu khi đã biết cả hai mẹ và hai mẹ khác nhau","Nút ✎ mở màn Sửa; ⋯ có mục Xoá"],
+  api:[["GET","/v1/family/persons/{id}","Không bắt buộc, client có thể lấy từ cây. Nếu gọi thì server join với sự kiện giỗ, không trả mỗi gioEventId."]],
+  tip:"Hai người đã mất mà không nhớ ngày mất vẫn có deceased: true. Không suy “đã mất” từ việc có ngày mất." },
+
+{ id:"edit", nav:"Sửa & quan hệ",
+  app: () => `${status}${bar("Sửa · Minh Anh","✕")}<div class="body"><div class="form">
+    <div class="f"><label>Họ tên *</label><div class="in">Nguyễn Minh Anh</div></div>
+    <div class="f tog"><span><b>Đây là tôi</b><br><small style="color:#6B736E">Cây sẽ mở từ tổ của người này</small></span><span class="sw2 on"></span></div>
+    <div class="sec">Cha mẹ</div>
+    <div class="card">
+      <div class="row"><span class="g">♂</span><span class="t">Cha<small>Nguyễn Văn Hùng</small></span><span class="act">Đổi</span><span class="act" style="color:#6B736E">Chưa rõ</span></div>
+      <div class="row"><span class="g">♀</span><span class="t">Mẹ<small>Phạm Thị Thu</small></span><span class="act">Đổi</span><span class="act" style="color:#6B736E">Chưa rõ</span></div>
+    </div>
+    <div class="sec">Vợ / chồng</div>
+    <div class="card">
+      <div class="row">${av(P.chi)}<span class="t">Đỗ Lan Chi<small>Đã kết hôn</small></span><span class="act">Gỡ</span></div>
+      <div class="row"><span class="g">＋</span><span class="t act">Thêm vợ/chồng từ danh sách</span></div>
+    </div>
+    <div class="sec">Con</div>
+    <div class="card">
+      <div class="row">${av(P.khang)}<span class="t">Nguyễn Minh Khang<small>Mẹ: Đỗ Lan Chi</small></span></div>
+      <div class="row"><span class="g">⇣</span><span class="t act">Nối người đã có làm con</span></div>
+    </div>
+    <div class="warnbox"><small>Ví dụ, nếu chọn vợ/chồng là người trực hệ:</small><br>⚠ Hai người này có quan hệ trực hệ (ông – cháu). Vẫn lưu, nhưng hãy kiểm tra lại.<br><small>SPOUSE_IS_ANCESTOR: chỉ cảnh báo, không chặn lưu</small></div>
+  </div></div><div class="savebar"><span class="btn pri">Lưu thay đổi</span></div>`,
+  h:"Sửa thông tin & quan hệ", lead:"Thông tin và quan hệ đi qua API riêng. Sửa thông tin không bao giờ đổi được cha, mẹ hay vợ/chồng.",
+  f:["Công tắc <b>“Đây là tôi”</b>: mỗi gia phả chỉ có một người; không lấy được vai này từ người khác","Ô cha/mẹ: “Đổi” chọn người khác, “Chưa rõ” gỡ ra. Không có ô cha/mẹ thứ hai","Vợ/chồng: thêm từ danh sách, gỡ được (ghi và gỡ ở cả hai phía)","Kết hôn lần đầu khi đã có con thiếu cha/mẹ: server tự điền ô còn trống. Từ vợ/chồng thứ hai trở đi không tự đoán","“Nối người đã có làm con”: giới tính người đang sửa quyết định ô cha hay ô mẹ"],
+  api:[["PATCH","/v1/family/persons/{id}","PersonDraft: tên, giới tính, ngày tháng, nhãn, ghi chú"],["PUT","/v1/family/self","{ personId | null }"],["POST","/v1/family/relations/set-parent","{ childId, slot, parentId | null, rel? }; null là gỡ"],["POST","/v1/family/relations/link-spouse","{ aId, bId, type: married | divorced }"],["POST","/v1/family/relations/unlink-spouse","{ aId, bId }"],["POST","/v1/family/relations/link-child","{ parentId, childId, otherParentId? }"]],
+  tip:"Nút “Gỡ” vợ/chồng hiện chưa có trên app thật dù API đã hỗ trợ. Mockup thêm vào để bàn." },
+
+{ id:"picker", nav:"Chọn cha & lỗi",
+  app: () => `${status}${bar("Chọn cha cho Khải","✕")}<div class="body"><div class="form">
+    <div class="in"><span class="ph">⌕ Tìm theo tên</span></div>
+    <div class="hintbox">App đã lọc sẵn: nam hoặc chưa rõ giới tính, đời trên Khải, cùng cụm hoặc chưa nối với ai. Dòng thứ hai cố tình để sai, để minh hoạ lỗi server trả về khi client cũ gửi lên.</div>
+    <div class="sec">Người chưa nối</div>
+    <div class="card">
+      <div class="row"><span class="av male">T</span><span class="t">Bác Tư<small>Cụ / Tổ tiên · chưa nối vào cây</small></span><span class="radio"></span></div>
+    </div>
+    <div class="sec">Trong cây</div>
+    <div class="card">
+      <div class="row"><span class="av male">A</span><span class="t">Nguyễn Minh Anh<small>Tôi · chắt của Khải (minh hoạ lỗi)</small></span><span class="radio on"></span></div>
+    </div>
+    <div class="errbox"><b>Không đặt được</b>: người này đang là con cháu trong nhánh đó, nối vào sẽ tạo vòng lặp.<br><small>PARENT_CYCLE · HTTP 4xx</small></div>
+  </div></div><div class="savebar"><span class="btn">Huỷ</span><span class="btn ok" style="opacity:.4">Chọn</span></div>`,
+  h:"Chọn người có sẵn & lỗi luật", lead:"Danh sách lọc trên client; server vẫn kiểm lại mọi luật và trả mã lỗi kèm câu tiếng Việt để UI hiện nguyên văn.",
+  f:["Ô cha không hiện nữ, ô mẹ không hiện nam; giới tính “chưa rõ” hiện ở cả hai","Không mời người đã có vai vế ở cụm khác (tránh trộn hai gia phả)","Nếu ô kia đã có người, ưu tiên vợ/chồng hoặc người có con chung với họ","Mockup cố tình chọn sai để thấy lỗi <b>PARENT_CYCLE</b>"],
+  api:[["POST","/v1/family/relations/set-parent","Lỗi chặn ghi: SELF_PARENT, PARENT_CYCLE, PARENT_SLOT_TAKEN, DANGLING_*"],["POST","/v1/family/relations/link-spouse","Lỗi chặn: SELF_SPOUSE. Chỉ cảnh báo: SPOUSE_IS_ANCESTOR"]],
+  tip:"Mẫu lỗi: { ok:false, error:{ code, personId, otherId, message } }." },
+
+{ id:"gio", nav:"Nhắc giỗ",
+  app: () => `${status}${bar("Nhắc giỗ","✕")}<div class="body"><div class="form">
+    <div class="f"><label>Tên sự kiện</label><div class="in">Giỗ Nguyễn Văn Bình</div></div>
+    <div class="f"><label>Ngày (âm lịch)</label><div class="grid3"><div class="in">24</div><div class="in">Tháng 8</div><div class="in">2026</div></div><small style="color:#6B736E;font-size:12px">→ Chủ nhật 04/10/2026 dương lịch</small></div>
+    <div class="f"><label>Lặp lại</label><div class="pills"><span class="pill">Không</span><span class="pill">Hằng năm (dương)</span><span class="pill on">Hằng năm (âm)</span></div></div>
+    <div class="f"><label>Nhắc trước</label><div class="pills"><span class="pill">Khi diễn ra</span><span class="pill on">1 ngày</span><span class="pill on">3 ngày</span><span class="pill">7 ngày</span></div></div>
+    <div class="hintbox">Gắn với <b>Nguyễn Văn Bình</b>. Mỗi người có tối đa một sự kiện giỗ. Sự kiện vẫn xem được ở tab Sự kiện.</div>
+  </div></div>
+  <div class="toast"><span>🔔</span><span><b>Lịch Việt</b> · Còn 3 ngày nữa là giỗ ông Nguyễn Văn Bình (24/8 âm, Chủ nhật 04/10).</span></div>
+  <div class="savebar"><span class="btn pri">Lưu nhắc giỗ</span></div>`,
+  h:"Tạo nhắc giỗ", lead:"Mở từ thẻ giỗ ở màn chi tiết. Form được điền sẵn tên “Giỗ {tên}” và lặp theo năm âm.",
+  f:["Chỉ có khi người đó đã mất và có ngày + tháng âm","Lặp theo năm âm (repeatType = 5): mỗi năm tra lại lịch âm, không cộng 365 ngày dương","Ngày 30 mà năm đó tháng chỉ có 29 ngày thì nhắc vào ngày 29","Lưu xong, gắn id sự kiện vào người qua gioEventId","Toast minh hoạ thông báo đẩy của cron nhắc hằng ngày"],
+  api:[["POST","/v1/events","Tạo sự kiện (lunarDate bắt buộc khi repeatType = 5)"],["PUT","/v1/family/persons/{id}/gio-event","{ eventId | null }: gắn hoặc gỡ"]],
+  tip:"Xoá sự kiện không dọn gioEventId. Client và server luôn kiểm tra sự kiện còn tồn tại không." },
+
+{ id:"list", nav:"Danh sách & thêm lẻ",
+  app: () => `${status}${bar("Mọi người","‹",`<span class="ic">＋</span>`)}
+    <div class="chips"><span class="chip on">Tất cả · 14</span><span class="chip">Sắp giỗ</span><span class="chip warn">Chưa nối · 2</span></div>
+    <div class="body"><div class="list">
+      <div class="sec" style="margin:4px 0 2px">Sắp giỗ</div>
+      <div class="row">${av(P.binh)}<span class="t">Nguyễn Văn Bình<small>Ông nội · 24/8 âm</small></span><span class="cd">15 ngày</span></div>
+      <div class="row">${av(P.khai)}<span class="t">Nguyễn Văn Khải<small>Cụ · 20 tháng Chạp</small></span><span class="cd">130 ngày</span></div>
+      <div class="sec" style="margin:14px 0 2px">Chưa nối vào cây</div>
+      <div class="row"><span class="av male">T</span><span class="t">Bác Tư<small>Cụ / Tổ tiên</small></span><span class="act">Nối</span></div>
+      <div class="row"><span class="av female">B</span><span class="t">Bé Bin<small>Cháu</small></span><span class="act">Nối</span></div>
+      <div class="sec" style="margin:14px 0 2px">Nhà Nguyễn Văn Khải</div>
+      <div class="row">${av(P.anh)}<span class="t">Nguyễn Minh Anh<small>Tôi · 1995</small></span></div>
+      <div class="row">${av(P.hung)}<span class="t">Nguyễn Văn Hùng<small>Cha · 1968</small></span></div>
+      <div class="row">${av(P.thu)}<span class="t">Phạm Thị Thu<small>Mẹ · 1970</small></span></div>
+    </div></div>
+    <div class="toast"><span>ℹ</span><span>Đã lưu “Bé Bin”. Nhãn <b>Cháu</b> không rõ là cháu của ai nên chưa nối vào cây.</span></div>${tabs}`,
+  h:"Danh sách & thêm người lẻ", lead:"Nút “+ Thêm người” (không bấm từ node nào) tạo người mới, rồi tự nối vào cây nếu nhãn quan hệ chỉ ra đúng một chỗ.",
+  f:["Tự nối theo nhãn: Cha/Mẹ, Ông bà nội/ngoại, Vợ/Chồng, Con, Anh/Chị/Em","Không tự nối các nhãn mơ hồ (Cụ, Cháu, Chắt, Hậu duệ, nhãn tự nhập): vẫn lưu người, đưa vào nhóm “Chưa nối”","Nhóm “Sắp giỗ” sắp theo số ngày còn lại (client tính)","Nút “Nối” mở trình chọn để đưa người lẻ vào cây"],
+  api:[["POST","/v1/family/persons","PersonDraft + relationship. Trả linked: true/false kèm hint"],["GET","/v1/family","Nguồn dữ liệu cho danh sách và các nhóm"]],
+  tip:"Vai chỉ có một người (Cha, Mẹ, Ông/Bà) mà “tôi” đã có thì form không gợi ý lại nhãn đó." },
+
+{ id:"delete", nav:"Xoá người",
+  app: () => `${status}${bar("","‹",`<span class="ic">✎</span><span class="ic">⋯</span>`)}<div class="body">
+    <div class="hero">${av(P.binh)}<h5>Nguyễn Văn Bình</h5><small>1940 – 2010</small></div></div>
+    <div class="scrim"></div>
+    <div class="dialog"><h5>Xoá Nguyễn Văn Bình?</h5>
+      <p>Chỉ xoá người này. <b>Con cháu vẫn giữ lại</b>: Hùng và Dũng sẽ để trống ô cha, và không tự nối lên cụ Khải.</p>
+      <p>Lê Thị Mai được gỡ khỏi quan hệ vợ chồng. Nhắc giỗ vẫn còn trong tab Sự kiện.</p>
+      <div class="warnbox">Cây có thể tách thành 2 nhánh sau khi xoá.</div>
+      <div class="btns"><span class="btn">Huỷ</span><span class="btn pri">Xoá</span></div></div>${tabs}`,
+  h:"Xoá người", lead:"Xoá một người không xoá con cháu. Server gỡ mọi quan hệ trỏ tới người đó rồi trả về danh sách người bị gỡ.",
+  f:["Xoá bản ghi, gỡ cha/mẹ/vợ chồng đang trỏ tới người đó","Không xoá con cháu, không tự nối cháu lên ông","Xoá người đang là “tôi” thì selfId thành null","Sự kiện giỗ vẫn được giữ; gioEventId trỏ tới sự kiện đó thì bỏ qua","Sau khi xoá, cây có thể tách thành nhiều cụm hoặc sinh ra người lẻ","Xoá người đã 🔗 liên kết chỉ xoá trong cây của bạn; người đó trong dòng họ vẫn giữ nguyên"],
+  api:[["DELETE","/v1/family/persons/{id}","Trả { deleted, detachedFrom: [ids], selfId }"]],
+  tip:"Cần chốt: xoá người có xoá luôn sự kiện giỗ không? Hiện đang giữ lại." },
+
+{ id:"import", nav:"Đưa lên tài khoản",
+  app: () => `${status}${bar("Đưa gia phả lên tài khoản","✕")}<div class="body"><div class="form">
+    <div class="card" style="padding:12px 14px"><b>Gia phả trên máy này</b><br><small style="color:#6B736E">14 người · 5 cặp vợ chồng · 3 nhắc giỗ · lưu lần cuối 18/09/2026</small></div>
+    <div class="hintbox">Đưa lên tài khoản để: không mất khi đổi máy, và <b>ghép được với dòng họ</b>. Chỉ bạn xem được, cho tới khi bạn liên kết với một dòng họ.</div>
+    <div class="f tog"><span>Tôi đồng ý lưu gia phả lên máy chủ của Lịch Việt</span><span class="sw2 on"></span></div>
+    <div class="sec">Kết quả</div>
+    <div class="card">
+      <div class="row"><span class="g">✓</span><span class="t">Đã đưa lên 14 người<small>Giữ nguyên quan hệ, “tôi”, nhắc giỗ</small></span></div>
+      <div class="row"><span class="g">⚠</span><span class="t">1 quan hệ không nhập được<small>Bình vừa được ghi là con, vừa là cha của Khải (vòng lặp) → bỏ quan hệ “cha của Khải”</small></span><span class="act">Xem</span></div>
+      <div class="row"><span class="g">ℹ</span><span class="t">1 tên để trống<small>Đã đặt “Chưa đặt tên”, bạn sửa lại sau</small></span></div>
+    </div>
+  </div></div><div class="savebar"><span class="btn pri" data-go="clans">Xong · ghép với dòng họ</span></div>`,
+  h:"Đưa gia phả lên tài khoản", lead:"Người dùng cũ đang lưu gia phả trên máy. Một lần bấm, cả cây lên tài khoản với id mới; từ đó dùng được liên kết dòng họ.",
+  f:["Chỉ chạy khi tài khoản chưa có gia phả trên server; đã có thì báo, không ghi đè","Mạng rớt giữa chừng: bấm lại an toàn, không nhân đôi người (idempotent theo importKey)","Người luôn được đưa lên; quan hệ lỗi (vòng lặp, trỏ người không có, sai giới tính ô cha/mẹ) bị bỏ và báo lại từng cái","Giữ nguyên nhắc giỗ (kể cả id cũ gio_*) và thứ tự tạo","Hỏi đồng ý trước, vì dữ liệu trước đây cam kết “không rời khỏi máy”"],
+  api:[["PUT","/v1/family/import","{ importKey, selfId, persons[] } → { idMap, selfId, persons, skippedEdges, warnings }",3]],
+  tip:"App dùng idMap để đổi id trên máy sang id server, rồi chuyển hẳn sang gọi API. Bản trên máy giữ làm dự phòng tới khi đổi xong." },
+
+/* ================= Dòng họ dùng chung (plan 260919-shared-clan-tree-collaboration) ================= */
+{ id:"clans", grp:"Dòng họ dùng chung", nav:"Chọn gia phả",
+  app: () => `${status}${bar("Chọn gia phả","✕")}<div class="body"><div class="list" style="padding-bottom:24px">
+    <div class="sec" style="margin:4px 0 2px">Của riêng bạn</div>
+    <div class="row" data-go="tree"><span class="av male">🌳</span><span class="t">Gia phả của tôi<small>14 người · chỉ mình bạn xem · 🔗 liên kết 2 họ</small></span><span class="radio on"></span></div>
+    <div class="sec" style="margin:14px 0 2px">Dòng họ bạn tham gia</div>
+    <div class="row" data-go="clantree"><span class="av dead">N</span><span class="t">Họ Nguyễn Văn · Lý Nhân, Hà Nam<small>186 người · 12 thành viên · Bạn là Nguyễn Minh Anh ✓</small></span><span class="role">Thành viên</span></div>
+    <div class="row"><span class="av female">P</span><span class="t">Họ Phạm · bên ngoại<small>58 người · Bạn tự nhận là Nguyễn Minh Anh</small></span><span class="role pend">Chờ xác minh</span></div>
+    <div class="sec" style="margin:14px 0 2px">Thêm</div>
+    <div class="row" data-go="bootstrap"><span class="g">＋</span><span class="t act">Tạo dòng họ từ cây của tôi</span><span class="chev">›</span></div>
+    <div class="row" data-go="join"><span class="g">⌨</span><span class="t act">Nhập mã hoặc quét QR mời</span><span class="chev">›</span></div>
+  </div></div>${tabs}`,
+  h:"Chọn gia phả", lead:"Mỗi người có một gia phả riêng và có thể tham gia nhiều dòng họ (nội, ngoại, nhà vợ). Bấm vào tiêu đề ở màn Cây để mở danh sách này.",
+  f:["<b>Gia phả của tôi</b>: riêng tư, là góc nhìn của bạn qua nhiều họ, có ghi chú riêng và nhắc giỗ riêng","<b>Dòng họ</b>: dùng chung, nhiều người cùng xem, mỗi người có vai trò riêng","Trạng thái “Chờ xác minh”: bạn tự nhận mình là ai trong cây; vẫn nhận nhắc giỗ nhưng chưa sửa được gì","Thử bấm <b>Họ Nguyễn Văn</b>, <b>Tạo dòng họ</b> hoặc <b>Nhập mã</b>"],
+  api:[["GET","/clans","Các họ bạn tham gia (đã có)"],["GET","/clans/{id}/toi-la","Bạn là ai + person_verified",1],["GET","/v1/family","Thêm links[] để biết người nào đã liên kết họ nào",4]],
+  tip:"Hai cây không đồng bộ ngầm. Người đã 🔗 liên kết thì đọc tên, ngày sinh, ngày giỗ thẳng từ dòng họ; ghi chú và nhắc giỗ vẫn là của riêng bạn." },
+
+{ id:"clantree", nav:"Cây dòng họ & phạm vi",
+  app: () => `${status}${bar("Họ Nguyễn Văn","‹",`<span class="ic" data-go="members">👥</span><span class="ic">⋯</span>`)}
+    <div class="chips"><span class="chip on">186 người</span><span class="chip warn" data-go="review">Đề xuất chờ duyệt · 3</span><span class="chip">Chi 2 ▾</span></div>
+    <div class="scopehint"><i></i>Gia đình bạn: sửa trực tiếp. Người khác: gửi đề xuất. 👤 có tài khoản · ✉ đã mời</div>
+    <div class="body">${tree({clan:1, scope:["anh","chi","hung","thu","khang","ha"], go:{khai:"propose", dung:"invite"}})}</div>
+    <span class="fab" data-go="invite">＋ Mời người nhà</span>${tabs}`,
+  h:"Cây dòng họ và phạm vi sửa", lead:"Cùng một cây cho mọi thành viên. Viền xanh bên trong thẻ là “gia đình bạn”: server tính từ việc bạn đã được xác minh là Nguyễn Minh Anh.",
+  f:["Phạm vi gia đình = bản thân, vợ/chồng, cha mẹ, con cháu và vợ/chồng của con cháu, cộng <b>anh chị em ruột chưa vào app</b> (em Hà đang trong viền)","Trong phạm vi: sửa, thêm con, thêm vợ/chồng trực tiếp (có lịch sử để khôi phục)","Ngoài phạm vi (tổ tiên, nhánh khác): nút Sửa thành <b>Đề xuất sửa</b>. Thử bấm <b>Cụ Khải</b>","Trưởng họ, Ban quản lý, biên tập viên sửa toàn họ; trưởng chi sửa nhánh của mình","Bấm <b>Dũng</b> (✉) để mời chú vào đúng vị trí"],
+  api:[["GET","/clans/{id}/tree","Đã có; thêm my_editable_ids để vẽ viền “gia đình bạn”",1],["GET","/clans/{id}/persons/{pid}","Thêm can_edit: direct | propose để app chọn nút Sửa hay Đề xuất sửa",1]],
+  tip:"Khi em Hà vào app và được xác minh, node của Hà ra khỏi viền của anh: từ đó chỉ Hà và người duyệt sửa phần của Hà." },
+
+{ id:"invite", nav:"Mời vào họ",
+  app: () => `${status}${bar("Mời vào họ","✕")}<div class="body"><div class="form">
+    <div class="f"><label>Mời ai?</label><div class="card">
+      <div class="row">${av(P.chi)}<span class="t">Đỗ Lan Chi · vợ<small>Trong gia đình bạn</small></span><span class="conf hi">Gửi ngay</span><span class="radio"></span></div>
+      <div class="row">${av(P.dung)}<span class="t">Nguyễn Văn Dũng · chú<small>Ngoài gia đình bạn</small></span><span class="conf lo">Cần duyệt</span><span class="radio on"></span></div>
+      <div class="row"><span class="g">?</span><span class="t">Không gắn người<small>Người lạ tự chọn mình trong cây</small></span><span class="conf lo">Cần duyệt</span><span class="radio"></span></div></div></div>
+    <div class="warnbox">Chú Dũng ngoài gia đình bạn, nên lời mời cần <b>trưởng họ hoặc Ban quản lý duyệt</b>. Duyệt xong bạn nhận thông báo và link để gửi chú.</div>
+    <div class="f"><label>Quyền</label><div class="seg"><span class="on">Thành viên</span><span>Biên tập viên</span></div></div>
+    <div class="f"><label>Lời nhắn cho người duyệt</label><div class="in">Chú Dũng ở Sài Gòn, chưa có ai trong họ mời.</div></div>
+    <div class="card" style="text-align:center;padding:14px;color:#6B736E;font-size:12.5px"><div class="qr" style="opacity:.18"></div>Link và QR có sau khi được duyệt</div>
+  </div></div><div class="savebar"><span class="btn pri">Gửi duyệt</span></div>`,
+  h:"Mời người nhà", lead:"Con cháu mời được người nhà. Mời trong gia đình mình thì có link ngay; mời vượt cấp gia đình thì trưởng họ hoặc Ban quản lý duyệt trước.",
+  f:["Ai mời được: trưởng họ, Ban quản lý, biên tập viên và thành viên <b>đã xác minh</b>","<b>Gửi ngay</b>: người được mời nằm trong phạm vi sửa của bạn (gia đình bạn; trưởng chi: cả chi), quyền Thành viên","<b>Cần duyệt</b> (trưởng họ hoặc Ban quản lý): người ngoài phạm vi, lời mời không gắn người","Mời làm Biên tập viên: chỉ trưởng họ duyệt","Lời mời gắn người: 1 lần dùng, người nhận được xác minh ngay","Chia sẻ bằng link, QR, Zalo; người mời hoặc trưởng họ thu hồi được"],
+  api:[["POST","/clans/{id}/invites","Thành viên gọi được; trả status: active | pending_approval",1],["GET","/clans/{id}/invites?mine=1","Lời mời của tôi và trạng thái",1],["DELETE","/clans/{id}/invites/{invite_id}","Thu hồi: người tạo, trưởng họ hoặc Ban quản lý",1]],
+  tip:"Mã mời chỉ sinh ra khi lời mời active, nên lời mời đang chờ duyệt không có link nào bị lộ ra ngoài." },
+
+{ id:"join", nav:"Nhận lời mời",
+  app: () => `${status}${bar("Lời mời","✕")}<div class="body"><div class="form">
+    <div class="invite"><small>Minh Anh mời chú vào · Ban quản lý đã duyệt</small><h5>Họ Nguyễn Văn</h5><small>Lý Nhân, Hà Nam · 186 người · 12 thành viên</small></div>
+    <div class="sec">Bạn là người này trong cây?</div>
+    <div class="card"><div class="row">${av(P.dung)}<span class="t"><b>Nguyễn Văn Dũng</b><small>Sinh 1972 · con ông Nguyễn Văn Bình và bà Lê Thị Mai</small></span></div></div>
+    <div class="hintbox">Xác nhận xong, bạn sửa trực tiếp được thông tin của mình, vợ/chồng, cha mẹ và con cháu. Phần còn lại thì gửi đề xuất.</div>
+    <div class="btns"><span class="btn">Không phải tôi</span><span class="btn pri">Đúng, là tôi</span></div>
+    <div style="text-align:center;font-size:12.5px;color:#6B736E">Không phải bạn? Bạn vẫn vào họ được và tự chọn mình trong cây, <b>trưởng họ, Ban quản lý hoặc trưởng chi sẽ xác minh</b>.</div>
+  </div></div>`,
+  h:"Nhận lời mời", lead:"Góc nhìn của chú Dũng khi mở link. Lời mời đã gắn người nên chỉ cần xác nhận.",
+  f:["“Đúng, là tôi”: vào họ, gắn với Nguyễn Văn Dũng, được xác minh ngay","“Không phải tôi”: vào họ với quyền xem, tự chọn mình trong cây, chờ xác minh","Nếu người trong cây đã có ai nhận trước thì vẫn vào họ, nhưng không được gắn","Chưa xác minh vẫn nhận nhắc giỗ tổ tiên trực hệ như hiện nay"],
+  api:[["POST","/join","{ code }: đã có; thêm bước tự gắn người + xác minh",1],["PUT","/clans/{id}/toi-la","Tự nhận: thành viên thường → chờ xác minh",1]],
+  tip:"Tự nhận “tôi là X” trước đây chỉ để nhận nhắc giỗ. Khi nó còn cho quyền sửa, phải có người xác minh, nếu không ai cũng nhận bừa để sửa được." },
+
+{ id:"members", nav:"Thành viên & quyền",
+  app: () => `${status}${bar("Thành viên","‹",`<span class="ic" data-go="invite">＋</span>`)}<div class="body"><div class="list" style="padding-bottom:24px">
+    <div class="sec" style="margin:4px 0 2px">Chờ xác minh · 1</div>
+    <div class="crd"><div class="row" style="border:0;padding:0"><span class="av male">T</span><span class="t">Nguyễn Văn Tâm<small>Tự nhận là Nguyễn Văn Tâm · chi 1 · sinh 1980</small></span></div>
+      <div class="btns" style="margin-top:0"><span class="btn">Từ chối</span><span class="btn ok">Xác minh</span></div></div>
+    <div class="sec" style="margin:14px 0 2px">Lời mời chờ duyệt · 1</div>
+    <div class="crd"><div class="row" style="border:0;padding:0">${av(P.anh)}<span class="t"><b>Minh Anh</b> mời <b>Nguyễn Văn Dũng</b> (chú)<small>Thành viên · “Chú Dũng ở Sài Gòn, chưa có ai trong họ mời.” · Trưởng họ hoặc Ban quản lý duyệt</small></span></div>
+      <div class="btns" style="margin-top:0"><span class="btn">Từ chối</span><span class="btn ok">Duyệt lời mời</span></div></div>
+    <div class="sec" style="margin:14px 0 2px">Thành viên · 12</div>
+    <div class="row">${av(P.hung)}<span class="t">Nguyễn Văn Hùng<small>Là Nguyễn Văn Hùng ✓</small></span><span class="role own">Trưởng họ</span></div>
+    <div class="row"><span class="av male">L</span><span class="t">Nguyễn Văn Lộc<small>Duyệt thay trưởng họ · sửa toàn họ</small></span><span class="role mgr">Ban quản lý</span></div>
+    <div class="row"><span class="av male">P</span><span class="t">Nguyễn Văn Phúc<small>Sửa toàn họ</small></span><span class="role ed">Biên tập</span></div>
+    <div class="row"><span class="av male">Q</span><span class="t">Nguyễn Văn Quang<small>Phạm vi: con cháu cụ Nguyễn Văn Thành</small></span><span class="role ed">Trưởng chi 2</span></div>
+    <div class="row">${av(P.anh)}<span class="t">Nguyễn Minh Anh<small>Là Nguyễn Minh Anh ✓ · sửa gia đình mình</small></span><span class="role">Thành viên</span></div>
+    <div class="row">${av(P.thu)}<span class="t">Phạm Thị Thu<small>Chưa chọn mình là ai</small></span><span class="role">Thành viên</span></div>
+  </div></div>${tabs}`,
+  h:"Thành viên và quyền", lead:"Màn của trưởng họ và Ban quản lý: duyệt lời mời vượt cấp gia đình, xác minh người tự nhận, đổi vai trò, giao chi cho trưởng chi.",
+  f:["<b>Trưởng họ</b>: toàn quyền, đổi vai trò, gán Ban quản lý, bật link công khai, duyệt lời mời làm Biên tập viên","<b>Ban quản lý</b> (mới): duyệt thay trưởng họ: lời mời, xác minh, đề xuất; sửa toàn họ. Không đổi vai trò, không cấp quyền biên tập, không đụng cài đặt họ","<b>Biên tập</b>: sửa toàn họ, duyệt đề xuất (không xác minh người tự nhận)","<b>Trưởng chi</b>: biên tập nhưng chỉ trong nhánh con cháu của một cụ","<b>Thành viên</b>: xem cả họ; khi đã xác minh thì sửa và mời người trong gia đình mình, còn lại gửi đề xuất hoặc chờ duyệt","<b>Lời mời chờ duyệt</b>: trưởng họ hoặc Ban quản lý duyệt; duyệt xong người mời nhận thông báo kèm link","Xác minh người tự nhận: trưởng họ, Ban quản lý, trưởng chi (chỉ trong chi mình). Biên tập thường không xác minh"],
+  api:[["GET","/clans/{id}/members","Đã có; thêm person_verified (phase 1), scope_root_person (phase 6)",1],["POST","/clans/{id}/members/{user_id}/verify","Xác minh; DELETE cùng path để từ chối",1],["POST","/clans/{id}/invites/{invite_id}/approve","Trưởng họ hoặc Ban quản lý (lời mời Biên tập viên: chỉ trưởng họ). /reject để từ chối",1],["PATCH","/clans/{id}/members/{user_id}","{ role: manager }: chỉ trưởng họ gán Ban quản lý",1],["PATCH","/clans/{id}/members/{user_id}","{ role, scope_root_person_id }: thêm phạm vi chi",6]],
+  tip:"Vai trò trong database: owner > manager (mới) > editor > viewer. “Thành viên” là viewer có binding đã xác minh; “Trưởng chi” là editor có scope_root_person." },
+
+{ id:"propose", nav:"Đề xuất sửa",
+  app: () => `${status}${bar("Sửa · Cụ Khải","✕")}<div class="body"><div class="form">
+    <div class="warnbox">Cụ Nguyễn Văn Khải nằm ngoài gia đình bạn. Thay đổi sẽ gửi tới ban biên tập họ duyệt.</div>
+    <div class="f"><label>Họ tên</label><div class="in">Nguyễn Văn Khải</div></div>
+    <div class="f"><label>Tên huý</label><div class="in focus">Khải Đức</div><small style="color:#2E6B5B;font-size:12px">Hiện tại: trống</small></div>
+    <div class="f"><label>Ngày mất (âm lịch)</label><div class="grid3"><div class="in">20</div><div class="in">Tháng Chạp</div><div class="in focus">1978</div></div><small style="color:#2E6B5B;font-size:12px">Hiện tại: chưa rõ năm</small></div>
+    <div class="f"><label>Nguồn / lý do (người duyệt sẽ thấy)</label><div class="in" style="align-items:flex-start;min-height:64px">Theo bia mộ ở quê, bố cháu đã chụp ảnh gửi vào nhóm họ.</div></div>
+  </div></div><div class="savebar"><span class="btn pri">Gửi đề xuất</span></div>`,
+  h:"Đề xuất sửa", lead:"Sửa người ngoài phạm vi gia đình vẫn dùng form quen thuộc, chỉ khác nút cuối là “Gửi đề xuất” và có ô ghi nguồn.",
+  f:["Kiểm tra ngay lúc gửi, cùng luật với sửa thật: ngày âm sai thì báo lỗi luôn, không đợi đến lúc duyệt","Loại đề xuất: sửa/thêm/xoá người, thêm/sửa/xoá quan hệ vợ chồng","Người gửi theo dõi trạng thái và rút lại được khi còn chờ","Tối đa 20 đề xuất đang chờ mỗi người mỗi họ","Không ai duyệt: ngày 7 nhắc người duyệt, <b>ngày 30 hết hạn</b> và báo người gửi (gửi lại được)","Có thông báo đẩy cho người duyệt; khi có kết quả, thông báo cho người gửi"],
+  api:[["POST","/clans/{id}/change-requests","{ action: update_person, target_person, payload, note }",2],["GET","/clans/{id}/change-requests?mine=1","Đề xuất của tôi",2],["DELETE","/clans/{id}/change-requests/{cr_id}","Rút lại khi còn chờ",2]],
+  tip:"Trong cây dòng họ, app đọc can_edit: “direct” thì gọi PATCH, “propose” thì gọi change-requests. Nếu gọi PATCH ngoài phạm vi, server trả 403 kèm gợi ý gửi đề xuất. Chỉ khi sửa từ cây cá nhân (phase 5) server mới tự chuyển thành đề xuất." },
+
+{ id:"review", nav:"Duyệt đề xuất",
+  app: () => `${status}${bar("Đề xuất","‹")}<div class="chips"><span class="chip on">Chờ duyệt · 3</span><span class="chip">Đã xử lý / hết hạn</span><span class="chip">Của tôi</span></div>
+    <div class="body"><div class="list" style="display:grid;gap:10px;padding-bottom:24px">
+    <div class="crd"><div class="row" style="border:0;padding:0">${av(P.anh)}<span class="t"><b>Minh Anh</b> đề xuất sửa <b>Cụ Nguyễn Văn Khải</b><small>2 giờ trước</small></span></div>
+      <dl class="kv"><dt>Tên huý</dt><dd><span class="old">trống</span> → <span class="new">Khải Đức</span></dd><dt>Năm mất (âm)</dt><dd><span class="old">chưa rõ</span> → <span class="new">1978</span></dd><dt>Nguồn</dt><dd>Theo bia mộ ở quê, bố cháu đã chụp ảnh…</dd></dl>
+      <div class="btns" style="margin-top:0"><span class="btn">Từ chối</span><span class="btn ok">Duyệt</span></div></div>
+    <div class="crd"><div class="row" style="border:0;padding:0">${av(P.thu)}<span class="t"><b>Thu</b> đề xuất thêm con cho <b>Nguyễn Thị Hoa</b><small>1 ngày trước</small></span></div>
+      <div class="warnbox">Bà Hoa đã được sửa sau khi đề xuất này được gửi. Xem lại trước khi duyệt.</div></div>
+    <div class="crd"><div class="row" style="border:0;padding:0"><span class="av male">T</span><span class="t"><b>Tâm</b> đề xuất xoá <b>Nguyễn Văn Tý</b><small>28 ngày trước · còn 2 ngày trước khi hết hạn</small></span><span class="chev">›</span></div></div>
+  </div></div>${tabs}`,
+  h:"Duyệt đề xuất", lead:"Hàng đợi của biên tập viên. Mỗi đề xuất hiện rõ cũ → mới; duyệt thì áp đúng như sửa trực tiếp, có lịch sử và khôi phục được.",
+  f:["Duyệt: ghi thay đổi, lịch sử ghi người duyệt và mã đề xuất","Nếu người đó đã bị sửa sau khi đề xuất được gửi: cảnh báo “đã cũ”, phải xác nhận ghi đè","Từ chối kèm lý do, người gửi nhận thông báo","Đề xuất chờ quá 30 ngày tự hết hạn","Trưởng chi chỉ thấy đề xuất trong chi mình","Xoá người qua đề xuất vẫn theo luật cũ: không xoá được khi còn con"],
+  api:[["GET","/clans/{id}/change-requests?status=pending","Kèm current để hiện cũ → mới",2],["POST","/clans/{id}/change-requests/{cr_id}/approve","{ note?, override_stale? }; 409 khi đã cũ",2],["POST","/clans/{id}/change-requests/{cr_id}/reject","{ note }",2],["GET","/clans/{id}/persons/{pid}/revisions","Lịch sử + khôi phục (đã có)"]],
+  tip:"Đường ghi khi duyệt và khi sửa trực tiếp là cùng một service. Vì vậy luật kiểm tra không bao giờ lệch nhau." },
+
+{ id:"match", nav:"Ghép với cây của tôi",
+  app: () => `${status}${bar("Ghép với cây của tôi","✕")}<div class="body"><div class="list" style="padding-bottom:24px">
+    <div class="hintbox" style="margin-bottom:6px">So sánh <b>Gia phả của tôi</b> với <b>Họ Nguyễn Văn</b>. Không ghép tự động, bạn xác nhận từng cặp.</div>
+    <div class="sec" style="margin:8px 0 2px">Khớp theo quan hệ · 7</div>
+    <div class="row"><span class="check on"></span><span class="t">Nguyễn Văn Hùng ⇄ Nguyễn Văn Hùng<small>Cha của bạn ở cả hai cây</small></span><span class="conf hi">Chắc</span></div>
+    <div class="row"><span class="check on"></span><span class="t">Nguyễn Văn Bình ⇄ Nguyễn Văn Bình<small>Ông nội · năm mất 2010 khớp</small></span><span class="conf hi">Chắc</span></div>
+    <div class="row"><span class="check on"></span><span class="t">Trần Thị Lựu ⇄ Trần Thị Lựu<small>Vợ cụ Khải ở cả hai cây</small></span><span class="conf hi">Chắc</span></div>
+    <div class="sec" style="margin:14px 0 2px">Chỉ trùng tên · 1</div>
+    <div class="row"><span class="check"></span><span class="t">Nguyễn Văn Tuấn ⇄ Nguyễn Văn Tuấn (1985)<small>Trùng tên và năm sinh, chưa rõ quan hệ; kiểm tra lại</small></span><span class="conf lo">Có thể</span></div>
+    <div class="sec" style="margin:14px 0 2px">Họ có, bạn chưa có · 174</div>
+    <div class="row"><span class="av dead">T</span><span class="t">Cụ Nguyễn Văn Thành và 173 người<small>Chọn người muốn đưa về cây của bạn</small></span><span class="act">Nhận về</span></div>
+    <div class="sec" style="margin:14px 0 2px">Bạn có, họ chưa có · 2</div>
+    <div class="row">${av(P.khang)}<span class="t">Nguyễn Minh Khang<small>Con bạn: thêm thẳng vào họ</small></span><span class="act">Đóng góp</span></div>
+    <div class="row">${av(P.ha)}<span class="t">Nguyễn Thu Hà<small>Em bạn, chưa vào app: thêm thẳng được</small></span><span class="act">Đóng góp</span></div>
+  </div></div><div class="savebar"><span class="btn pri">Liên kết 3 cặp đã chọn</span></div>`,
+  h:"Ghép với cây của tôi", lead:"Sau khi vào họ, app so hai cây và gợi ý những người có vẻ là một. Ghép xong, người đó mang 🔗 và đọc thông tin chung từ họ.",
+  f:["Neo từ “tôi”: bạn trong cây riêng ⇄ bạn trong họ, rồi lan theo cha, mẹ, vợ chồng, con → độ tin cậy <b>Chắc</b>","Chỉ trùng tên bỏ dấu + <b>trùng năm sinh</b> → <b>Có thể</b>, mặc định không chọn. Thiếu năm sinh thì không gợi ý theo tên","<b>Nhận về</b>: chép người từ họ sang cây riêng và liên kết luôn","<b>Đóng góp</b>: đưa người của bạn lên họ; trong phạm vi thì thêm thẳng, ngoài phạm vi thì thành đề xuất","Không có gì ghi sang họ nếu bạn không bấm"],
+  api:[["GET","/v1/family/links/suggestions?clanId=","Cặp gợi ý + confidence + reason",4],["POST","/v1/family/links","{ clanId, pairs: [{ personId, clanPersonId }] }",4],["POST","/v1/family/links/import","{ clanId, clanPersonIds[] }",4],["POST","/v1/family/links/contribute","{ personId, clanId }",4]],
+  tip:"“Nguyễn Văn Hùng” là tên rất phổ biến. Vì vậy chỉ ghép theo tên thì luôn ở mức “Có thể”, bắt buộc người dùng tự kiểm tra." },
+
+{ id:"linked", nav:"Người đã liên kết",
+  app: () => `${status}${bar("","‹",`<span class="ic">✎</span><span class="ic">⋯</span>`)}<div class="body">
+    <div class="hero">${av(P.dung)}<h5>Nguyễn Văn Dũng</h5><small>1972</small>
+      <div class="tags"><span class="tag">Chú</span><span class="tag" style="background:#E3F0EB;color:#2E6B5B">🔗 Họ Nguyễn Văn</span></div></div>
+    <div style="padding:0 16px 24px">
+      <dl class="kv"><dt>Họ tên</dt><dd>Nguyễn Văn Dũng<span class="src">🔗 từ họ</span></dd><dt>Ngày sinh</dt><dd>03-11-1972<span class="src">🔗 từ họ</span></dd><dt>Giờ sinh</dt><dd>06:15<span class="priv">riêng</span></dd><dt>Ghi chú</dt><dd>Hay về quê dịp giỗ tổ<span class="priv">riêng</span></dd></dl>
+      <div class="warnbox">Khác với cây họ: họ ghi Dũng có vợ <b>Trần Thị Nga</b> (đã ly hôn); cây của bạn chưa có. Bạn tự thêm nếu muốn, app không tự đổi.</div>
+      <div class="sec" style="margin:14px 0 4px">Liên kết</div>
+      <div class="card"><div class="row"><span class="t">Họ Nguyễn Văn<small>Nguyễn Văn Dũng · ✉ đã mời</small></span><span class="act">Tách</span></div>
+        <div class="row"><span class="t">Họ Phạm<small>Không có trong họ này</small></span></div></div>
+    </div></div>${tabs}`,
+  h:"Người đã liên kết", lead:"Trong cây riêng, người đã 🔗 hiện thông tin chung đọc thẳng từ họ. Ai sửa trong họ, bạn thấy ngay, không cần đồng bộ.",
+  f:["Thông tin chung (🔗 từ họ): tên, giới tính, đã mất, ngày sinh, ngày mất (âm + dương)","Thông tin riêng: nhãn quan hệ, ghi chú, giờ sinh/mất, nhắc giỗ. Ảnh chỉ có ở dòng họ","Cha mẹ, vợ chồng: mỗi cây giữ riêng; lệch thì chỉ báo khác biệt","<b>Tách</b>: chép giá trị hiện tại của họ về cây riêng rồi bỏ liên kết","Rời họ hoặc bị xoá khỏi họ: tự tách, cây riêng không mất gì"],
+  api:[["GET","/v1/family","persons[] đã ghép field chung từ họ + links[]",4],["GET","/v1/family/links/diff?clanId=","Cặp có cha/mẹ/vợ chồng lệch",4],["DELETE","/v1/family/links/{id}","Tách (snapshot rồi xoá liên kết)",4]],
+  tip:"Dòng họ sẽ có cờ “đã mất” riêng như cây cá nhân (đã chốt, phase 4): cụ tổ đã mất mà không nhớ ngày vẫn là đã mất, không bị hiện thành người còn sống ở cây công khai." },
+
+{ id:"bootstrap", nav:"Tạo họ từ cây của tôi",
+  app: () => `${status}${bar("Tạo dòng họ","✕")}<div class="body"><div class="form">
+    <div class="f"><label>Tên dòng họ</label><div class="in">Họ Nguyễn Văn</div></div>
+    <div class="f"><label>Quê / thuỷ tổ</label><div class="in">Lý Nhân, Hà Nam</div></div>
+    <div class="f"><label>Bắt đầu từ cụ tổ</label><div class="card">
+      <div class="row">${av(P.khai)}<span class="t">Cụ Nguyễn Văn Khải<small>Đời cao nhất bên nội · 11 người</small></span><span class="radio on"></span></div>
+      <div class="row">${av(P.binh)}<span class="t">Ông Nguyễn Văn Bình<small>Ông nội · 8 người</small></span><span class="radio"></span></div></div></div>
+    <div class="hintbox">Sẽ chép cụ Khải, toàn bộ con cháu và vợ/chồng của họ. <b>Không chép</b> ghi chú riêng, nhắc giỗ của bạn và người bên ngoại.</div>
+    <div class="f"><label>Sau khi tạo</label><div class="card" style="font-size:13px;padding:8px 14px;display:grid;gap:4px"><span>✓ Bạn là trưởng họ, đã xác minh là Nguyễn Minh Anh</span><span>✓ 11 người được 🔗 liên kết với cây của bạn</span><span>→ Mời người nhà vào đúng vị trí</span></div></div>
+  </div></div><div class="savebar"><span class="btn pri" data-go="invite">Tạo và mời người nhà</span></div>`,
+  h:"Tạo dòng họ từ cây của tôi", lead:"Đường nhanh nhất để có cây dùng chung: chọn cụ tổ, app chép nhánh đó thành dòng họ mới và liên kết sẵn.",
+  f:["Chép người gốc, con cháu và vợ/chồng của con cháu; giữ nguyên quan hệ","Tự liên kết từng người; bạn thành trưởng họ","Chỉ chép, không di chuyển: cây riêng vẫn nguyên, ghi chú vẫn riêng","Chặn nếu vượt giới hạn 5000 người/họ"],
+  api:[["POST","/v1/family/clans","{ rootPersonId, tenHo, thuyTo? }",4],["POST","/clans/{id}/invites","Bước tiếp: mời gắn người",1]],
+  tip:"Toàn bộ thao tác chạy trong một transaction: lỗi giữa chừng thì không có họ nào bị tạo dở." },
+
+{ id:"linkedit", nav:"Sửa người đã liên kết",
+  app: () => `${status}${bar("Sửa · Mẹ Thu","✕")}<div class="body"><div class="form">
+    <div class="f"><label>Họ tên <span class="src">🔗 từ họ</span></label><div class="in">Phạm Thị Thu</div></div>
+    <div class="f"><label>Ngày sinh <span class="src">🔗 từ họ</span></label><div class="grid3"><div class="in">21</div><div class="in">04</div><div class="in focus">1971</div></div></div>
+    <div class="f"><label>Ghi chú <span class="priv">riêng</span></label><div class="in focus">Thích hoa sen, nhớ mua dịp 20/10</div></div>
+  </div></div>
+  <div class="scrim"></div>
+  <div class="sheet"><div class="grab"></div><h4 style="margin:0 0 6px;font:700 17px 'Noto Serif',Georgia,serif">Đã lưu</h4>
+    <div class="row"><span class="g">✓</span><span class="t">Cây của tôi<small>Ghi chú đã lưu</small></span></div>
+    <div class="row"><span class="g">✓</span><span class="t">Họ Nguyễn Văn<small>Ngày sinh đã cập nhật (mẹ bạn, trong gia đình bạn)</small></span></div>
+    <div class="row"><span class="g">⏳</span><span class="t">Họ Phạm<small>Ngày sinh đã gửi thành đề xuất (bạn chưa được xác minh ở họ này)</small></span></div>
+    <div class="errbox" style="margin-top:8px">Nếu người khác vừa sửa trước bạn: “Cậu Tú vừa đổi năm sinh thành 1970. Xem lại rồi lưu tiếp.”<br><small>VERSION_CONFLICT · 409</small></div>
+  </div>`,
+  h:"Sửa người đã liên kết", lead:"Một lần lưu, mỗi phần đi đúng chỗ: thông tin riêng lưu ở cây của bạn; thông tin chung đi vào từng họ theo quyền của bạn ở họ đó.",
+  f:["Thông tin riêng: luôn lưu ngay","Thông tin chung, với từng họ đã liên kết: có quyền thì ghi thẳng, không có quyền thì thành đề xuất","Họ này lỗi không chặn phần riêng hay họ khác; kết quả báo riêng từng họ","Hai người sửa cùng lúc: số version chặn ghi đè, báo 409 kèm giá trị mới nhất","Thêm hoặc đổi cha mẹ, vợ chồng trong cây riêng <b>không</b> lan sang họ"],
+  api:[["PATCH","/v1/family/persons/{id}","Body thêm clanVersions; response thêm clanWrites[]",5],["PATCH","/clans/{id}/persons/{pid}","Nhận version; lệch thì 409 VERSION_CONFLICT",5],["POST","/clans/{id}/change-requests","Tự tạo khi không có quyền ghi thẳng",2]],
+  tip:"Client cũ không gửi version vẫn chạy như trước (không kiểm). Nên bật dần trên app mới." },
+];
+
+/* ---------- Render ---------- */
+const nav = document.getElementById("nav"), app = document.getElementById("app"), notes = document.getElementById("notes");
+nav.innerHTML = S.map((s,i)=>`${s.grp?`<div class="navg">${s.grp}</div>`:""}<button role="tab" id="tab-${s.id}" data-id="${s.id}"><b>${String(i+1).padStart(2,"0")}</b>${s.nav}</button>`).join("");
+function show(id){
+  const s = S.find(x=>x.id===id) || S[0];
+  app.innerHTML = s.app();
+  notes.innerHTML = `<h2>${s.h}</h2><p class="lead">${s.lead}</p><h3>Chức năng</h3><ul>${s.f.map(x=>`<li>${x}</li>`).join("")}</ul>
+    <h3>API</h3><div class="api">${s.api.map(([m,p,d,ph])=>`<div><span class="m ${m}">${m}</span><code>${p}</code>${ph?`<span class="nb">Mới · phase ${ph}</span>`:""}<small>${d}</small></div>`).join("")}</div>
+    <p class="tip">${s.tip}</p>`;
+  nav.querySelectorAll("button").forEach(b=>b.setAttribute("aria-selected", b.dataset.id===s.id));
+  try{ localStorage.setItem("giapha-screen", s.id) }catch(e){}
+}
+nav.addEventListener("click", e=>{ const b=e.target.closest("button"); if(b) show(b.dataset.id) });
+app.addEventListener("click", e=>{ const t=e.target.closest("[data-go]"); if(t) show(t.dataset.go) });
+let start="tree"; try{ start = localStorage.getItem("giapha-screen") || "tree" }catch(e){}
+show(start);
+</script>

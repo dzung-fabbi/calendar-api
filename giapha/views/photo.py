@@ -33,8 +33,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from giapha.exceptions import BadRequestException, ServiceUnavailableException
-from giapha.permissions import IsClanEditor
+from giapha.permissions import IsClanMember
+from giapha.permissions_scope import require_write
 from giapha.selectors.person import get_person_or_none
+from giapha.selectors.person_version import lock_and_bump
 from giapha.selectors.revision import record
 from giapha.serializers.person import PersonReadSerializer
 from giapha.serializers.photo import (
@@ -121,18 +123,19 @@ def _swallow_delete(key):
 
 
 class PersonPhotoUploadUrlAPIView(APIView):
-    """`POST` -- editor only. Mints a presigned `PUT` URL; writes nothing to
+    """`POST` -- editor+ or a verified member in scope. Mints a presigned `PUT` URL; writes nothing to
     the database. The client must still call `PersonPhotoAPIView.post` (the
     confirm step) after uploading for the photo to actually attach.
     """
 
-    permission_classes = [IsAuthenticated, IsClanEditor]
+    permission_classes = [IsAuthenticated, IsClanMember]
 
     def post(self, request, clan_id, person_id):
         require_storage()
         person = get_person_or_none(clan_id, person_id)
         if person is None:
             raise NotFound(PERSON_NOT_FOUND)
+        require_write(request, clan_id, [person.id])
 
         serializer = PhotoUploadUrlRequestSerializer(data=request.data)
         if not serializer.is_valid():
@@ -152,16 +155,17 @@ class PersonPhotoUploadUrlAPIView(APIView):
 
 class PersonPhotoAPIView(APIView):
     """`POST` confirms an already-uploaded object as `person.photo_key`;
-    `DELETE` removes the current photo. Both editor-only.
+    `DELETE` removes the current photo. Both editor+ or in-scope member.
     """
 
-    permission_classes = [IsAuthenticated, IsClanEditor]
+    permission_classes = [IsAuthenticated, IsClanMember]
 
     def post(self, request, clan_id, person_id):
         require_storage()
         person = get_person_or_none(clan_id, person_id)
         if person is None:
             raise NotFound(PERSON_NOT_FOUND)
+        require_write(request, clan_id, [person.id])
 
         serializer = PhotoConfirmSerializer(data=request.data)
         if not serializer.is_valid():
@@ -187,9 +191,10 @@ class PersonPhotoAPIView(APIView):
 
         old_key = person.photo_key
         with transaction.atomic():
+            lock_and_bump(person)
             record(person, actor=request.user, action='update')
             person.photo_key = key
-            person.save(update_fields=['photo_key'])
+            person.save(update_fields=['photo_key', 'version', 'updated_at'])
 
         # New key is written FIRST, old object deleted AFTER (phase-08 spec):
         # a failed delete only leaves garbage, it never loses the new photo.
@@ -206,12 +211,14 @@ class PersonPhotoAPIView(APIView):
         person = get_person_or_none(clan_id, person_id)
         if person is None:
             raise NotFound(PERSON_NOT_FOUND)
+        require_write(request, clan_id, [person.id])
 
         old_key = person.photo_key
         with transaction.atomic():
+            lock_and_bump(person)
             record(person, actor=request.user, action='update')
             person.photo_key = ''
-            person.save(update_fields=['photo_key'])
+            person.save(update_fields=['photo_key', 'version', 'updated_at'])
 
         if old_key:
             _swallow_delete(old_key)

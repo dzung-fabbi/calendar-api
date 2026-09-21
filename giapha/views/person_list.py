@@ -1,29 +1,26 @@
 """Person list (search/filter/paginate) + bulk/single create.
 
 Split out of `views/person.py` to keep that file under 200 lines, mirroring
-how phase 2 split `views/clan.py` into two modules. `clan_edges`/
-`birth_solar_by_id` are loaded ONCE per request (even for a 200-row bulk
-create) and updated in memory as the batch is walked, so validating record N
-doesn't cost N queries.
+how phase 2 split `views/clan.py` into two modules. Creation runs
+through `selectors.person_write.apply_person_create_many` (shared with
+change-request approval), which loads the edge set ONCE per request and
+updates it in memory as the batch is walked.
 """
 
-from django.conf import settings
-from django.db import transaction
 from rest_framework import status
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.permissions import SAFE_METHODS, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from giapha.exceptions import BadRequestException
-from giapha.models import Person
-from giapha.permissions import IsClanEditor, IsClanMember
-from giapha.selectors.person import active_person_count, birth_solar_by_id, clan_edges, search_persons
-from giapha.selectors.revision import record
+from giapha.permissions import IsClanMember
+from giapha.permissions_scope import require_write
+from giapha.selectors.person import search_persons
+from giapha.selectors.person_write import apply_person_create_many
 from giapha.serializers.person import PersonReadSerializer, PersonWriteSerializer
-from giapha.services.person_rules import PersonValidationError, ids_from_edges, validate_person_write
-from giapha.services.tree import compute_generations
+from giapha.services.person_rules import PersonValidationError
 
 MAX_BULK_CREATE = 200
 # Bounds Django's `YearLookup` (builds `datetime.date(year, 1, 1)`) against a
@@ -78,11 +75,7 @@ class PersonListCreateAPIView(APIView):
     `MAX_BULK_CREATE`).
     """
 
-    permission_classes = [IsAuthenticated]
-
-    def get_permissions(self):
-        classes = [IsClanMember] if self.request.method in SAFE_METHODS else [IsClanEditor]
-        return [IsAuthenticated()] + [cls() for cls in classes]
+    permission_classes = [IsAuthenticated, IsClanMember]
 
     def get(self, request, clan_id):
         queryset = search_persons(
@@ -115,59 +108,18 @@ class PersonListCreateAPIView(APIView):
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+        # A verified member may add a person under parents in their family
+        # scope -- EVERY given parent (review L3: an in-scope father must not
+        # let an arbitrary outsider be set as mother). Checked for every item
+        # before anything is written: one bad item rejects the whole batch.
+        for item in serializer.validated_data:
+            require_write(request, clan_id, [item.get('father_id'), item.get('mother_id')])
+
         force = _wants_force(request, clan_id)
-        created = self._create_all(clan_id, serializer.validated_data, request.user, force)
+        try:
+            created = apply_person_create_many(clan_id, serializer.validated_data, request.user, force=force)
+        except PersonValidationError as exc:
+            raise BadRequestException(str(exc))
 
         out = PersonReadSerializer(created, many=True).data
         return Response({'data': out if is_bulk else out[0]}, status=status.HTTP_201_CREATED)
-
-    @staticmethod
-    def _create_all(clan_id, items, actor, force):
-        edges = clan_edges(clan_id)
-        ids_in_clan = ids_from_edges(edges)
-        birth_map = birth_solar_by_id(clan_id)
-        person_count = active_person_count(clan_id)
-
-        created = []
-        with transaction.atomic():
-            for item in items:
-                try:
-                    validate_person_write(
-                        item, edges=edges, ids_in_clan=ids_in_clan, birth_map=birth_map,
-                        existing_count=person_count, max_persons=settings.MAX_CLAN_PERSONS,
-                        force=force, person_id=None,
-                    )
-                except PersonValidationError as exc:
-                    raise BadRequestException(str(exc))
-
-                person = Person.objects.create(clan_id=clan_id, **item)
-                record(person, actor=actor, action='create')
-
-                edges.append((person.id, item.get('father_id'), item.get('mother_id')))
-                ids_in_clan.add(person.id)
-                birth_map[person.id] = item.get('birth_solar')
-                person_count += 1
-                created.append(person)
-
-            # `generation` is derived state (H1): compute it for every row
-            # just inserted, over the FULL updated edge set -- a new row can
-            # be the parent of another new row later in the same batch, so
-            # the edge list must include everything created so far. One pass
-            # over the whole batch is enough; nothing here recurses per row.
-            generations = compute_generations(edges)
-            for person in created:
-                person.generation = generations.get(person.id)
-            Person.objects.bulk_update(created, ['generation'])
-
-        # Re-fetch through the selector-equivalent query instead of reusing
-        # the in-memory `created` instances (H2): those have empty
-        # `father`/`mother` relation caches, so `PersonReadSerializer.
-        # get_father_name` would issue one SELECT per row with a parent set.
-        # One extra query total, regardless of batch size, replaces what
-        # would otherwise be O(n) queries. `order_by('id')` preserves
-        # creation order (MySQL auto-increment is monotonic per connection).
-        return list(
-            Person.objects.filter(id__in=[person.id for person in created])
-            .select_related('father', 'mother')
-            .order_by('id')
-        )

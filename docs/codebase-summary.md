@@ -257,6 +257,46 @@ migration**: the answer is computed from rows already in the tree.
 Central usage differs; regional variants are out of scope and would be a second table, not
 edits to this one.
 
+## Shared clan tree collaboration (Phases 1–6, 2026-09-19)
+
+**Permission scope (phase 1):** `services/family_scope.py` computes writable person IDs per member:
+family scope (verified binding + kin), branch scope (editor with `scope_root_person_id`),
+or full clan (owner/manager). `permissions_scope.py` enforces via `can_write_persons()`;
+`IsClanApprover` permission for verify/duyệt (owner, manager, branch editor). Model:
+`ClanMember.person_verified`, `ClanMember.scope_root_person_id`, `CLAN_ROLE` includes `'manager'`.
+
+**Change request (phase 2):** `selectors/person_write.py`, `selectors/marriage_write.py`, 
+`selectors/change_request_apply.py` separate write logic from views (DRY); model
+`ChangeRequest(action, payload_json, base_version, status)` with approve/reject/expire flow.
+`management/commands/expire_change_requests.py` runs daily (day 7 push, day 30 expire).
+
+**Family import (phase 3):** `services/family_import.py`, `services/family_import_fields.py`
+normalize + validate fields; idempotent on `importKey`. Response: `idMap`, `skippedEdges` (dangling/cycle/gender),
+`warnings` (field truncation). Throttle `giapha-family-import` 5/hour.
+
+**Personal-clan link (phase 4):** Model `FamilyPersonLink(family_person, clan_person)`,
+reference not sync. Field overlay (name, gender, deceased, birth/death dates) read from
+clan, snapshot on detach. `services/family_clan_matching.py` suggests pairs (structure-based +
+name+year, no auto-link). `services/family_clan_bootstrap.py` creates clan from family tree.
+`selectors/family_link_detach.py` snapshots and severs. Query: +2 for `/v1/family`.
+
+**Optimistic lock (phase 5):** `Person.version` increments on PATCH/restore/approve-CR/photo.
+`PATCH /clans/{pid}` + `version?`: 409 if mismatch. `ChangeRequest.base_version` detects stale
+(after-created edits). `PATCH /v1/family/persons` (linked) sends `clanVersions{clanId:n}` per clan;
+response includes `clanWrites: [{clanId, result, current?}]` for each link.
+
+**Branch editor (phase 6):** `ClanMember.scope_root_person_id` (editor only, PROTECT foreign key).
+`family_scope.branch_scope_ids()` computes descendants. CR list/approve/notify scoped.
+Verify binding includes branch editor.
+
+**New models** (migrations `0010–0015`): `0010` adds `ClanMember.person_verified`, `ClanInvite.person`, 
+`ClanInvite.status`, roles. `0011` adds `ChangeRequest`. `0012` adds `Family.import_key`, 
+`FamilyPerson.legacy_id`. `0013` adds `FamilyPersonLink`, `Person.da_mat`. `0014` adds 
+`Person.version`, `ChangeRequest.base_version`. `0015` adds `ClanMember.scope_root_person_id`.
+
+**New endpoints** (~15 total): member verify/reject, invite approve/reject/detail, change request
+list/detail/approve/reject, family import/clan-bootstrap, link confirm/import/suggest/contribute/diff/detail.
+
 ## Giapha query budgets (Phase 10)
 
 Query ceilings are enforced per test; numbers are **measured from the snapshot**, not

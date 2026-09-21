@@ -16,6 +16,7 @@ from rest_framework.views import APIView
 
 from giapha.exceptions import BadRequestException
 from giapha.permissions import IsClanMember
+from giapha.permissions_scope import writable_ids
 from giapha.selectors.tree import tree_payload
 from giapha.serializers.tree import TreeSerializer
 
@@ -53,4 +54,9 @@ class ClanTreeAPIView(APIView):
         if payload is None:
             raise NotFound(PERSON_NOT_FOUND)
 
+        # `null` = the caller edits the whole clan; otherwise the ids the
+        # client draws with an "editable" border. Free for editor+; a verified
+        # viewer pays the 2-query scope graph (`selectors.scope`).
+        scope = writable_ids(request, clan_id)
+        payload['my_editable_ids'] = None if scope is None else sorted(scope)
         return Response(TreeSerializer(payload).data)

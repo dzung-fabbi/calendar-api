@@ -176,6 +176,11 @@ REST_FRAMEWORK = {
     # the only real defence.
     'DEFAULT_THROTTLE_RATES': {
         'giapha-join': '10/hour',
+        # Member-issued invites (plan 260919 phase 1); approvers are exempt.
+        # Per authenticated user, not per IP.
+        'giapha-invite-create': '20/day',
+        # One-off MMKV -> server import (plan 260919 phase 3), per user.
+        'giapha-family-import': '5/hour',
         'giapha-public': '60/hour',
         # Account endpoints (`apis/views/auth_register.py`,
         # `apis/views/auth_password_reset.py`). Same PER-IP caveat as above -- these

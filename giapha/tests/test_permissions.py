@@ -70,11 +70,18 @@ class ClanPermissionMatrixTests(TestCase):
         self.assertEqual(204, response.status_code)
 
     # -- Sinh mã mời / đổi vai trò / gỡ thành viên: owner only --
-    def test_only_owner_can_create_invite(self):
-        for role, expected in (('editor', 403), ('viewer', 403), ('owner', 201)):
+    def test_invite_create_by_role(self):
+        # Plan 260919 phase 1: an editor may REQUEST an invite (pending, no
+        # code); an unverified viewer may not; only the owner gets a code at
+        # once for an invite naming nobody.
+        for role, expected, invite_status in (
+            ('editor', 201, 'pending_approval'), ('viewer', 403, None), ('owner', 201, 'active'),
+        ):
             with self.subTest(role=role):
                 response = client_for(self.fixture[role]).post(self.invites_url(), {}, format='json')
                 self.assertEqual(expected, response.status_code)
+                if invite_status:
+                    self.assertEqual(invite_status, response.json()['data']['status'])
 
     def test_only_owner_can_change_member_role(self):
         target = self.fixture['viewer']

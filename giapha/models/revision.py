@@ -14,6 +14,11 @@ class PersonRevision(models.Model):
     # Snapshot JSON trước khi đổi. TextField vì MySQL 5.7 + Django 3.1 hỗ trợ
     # JSONField kém tin cậy.
     payload_json = models.TextField(verbose_name='Dữ liệu snapshot (JSON)')
+    # Set when this write applied an approved ChangeRequest (audit link).
+    change_request = models.ForeignKey(
+        'giapha.ChangeRequest', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='revisions', verbose_name='Theo đề xuất',
+    )
     created_at = models.DateTimeField(auto_now_add=True, db_index=True, verbose_name='Ngày tạo')
 
     class Meta:

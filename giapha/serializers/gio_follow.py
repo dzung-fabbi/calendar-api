@@ -23,6 +23,8 @@ class MemberBindingSerializer(serializers.Serializer):
 
     person_id = serializers.IntegerField()
     ho_ten = serializers.CharField()
+    # False = self-claimed, awaiting an approver: reminders work, edits don't.
+    person_verified = serializers.BooleanField()
 
 
 class MemberBindingWriteSerializer(serializers.Serializer):

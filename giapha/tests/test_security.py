@@ -36,7 +36,20 @@ DUMMY_ID = 999999
 #   THEIR OWN reminder preference.
 # - `clan-photo-urls` (`ClanPhotoUrlsAPIView`): POST verb, read-only intent
 #   (batched presigned GET) -- see that view's docstring.
-ANY_MEMBER_WRITE_NAMES = frozenset({'clan-toi-la', 'clan-gio-follow-detail', 'clan-photo-urls'})
+# - `change-request-list-create`: proposing a change IS the viewer's way to
+#   edit outside their scope (plan 260919 phase 2) -- see test_change_request_api.
+ANY_MEMBER_WRITE_NAMES = frozenset({
+    'clan-toi-la', 'clan-gio-follow-detail', 'clan-photo-urls', 'change-request-list-create',
+})
+# Row-scoped writes (plan 260919 phase 1): the role gate is `IsClanMember`
+# and the real check is per person (`permissions_scope.require_write`) or per
+# invite creator, AFTER the row is loaded -- so a dummy id answers 404 (or 503
+# for photos without storage) before any 403 could. Their viewer-403 matrix,
+# with real rows, lives in `test_family_scope_permissions.py`.
+ROW_SCOPED_WRITE_NAMES = frozenset({
+    'person-list-create', 'person-detail', 'person-photo-upload-url', 'person-photo',
+    'marriage-list-create', 'marriage-detail', 'clan-invite-detail', 'change-request-detail',
+})
 _WRITE_METHODS = ('post', 'put', 'patch', 'delete')
 
 
@@ -141,7 +154,7 @@ class ViewerGets403OnWriteEndpointsTests(TestCase):
         viewer = client_for(self.fixture['viewer'])
         cases = 0
         for entry in _clan_scoped_entries():
-            if entry.name in ANY_MEMBER_WRITE_NAMES:
+            if entry.name in ANY_MEMBER_WRITE_NAMES or entry.name in ROW_SCOPED_WRITE_NAMES:
                 continue
             kwargs = _dummy_kwargs(entry, self.clan.id)
             for method in _write_methods_of(entry):

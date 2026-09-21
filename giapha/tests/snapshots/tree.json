@@ -12,6 +12,7 @@
       "type": "str"
     }
   ],
+  "my_editable_ids": [],
   "nodes": [
     {
       "birth_order": "null",

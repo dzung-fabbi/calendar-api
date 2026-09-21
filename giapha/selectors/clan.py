@@ -5,6 +5,7 @@ needs to remember `is_deleted=False` itself.
 """
 
 from giapha.models import Clan, ClanInvite, ClanMember
+from giapha.models.choices import APPROVER_ROLES
 
 
 def get_clan_or_none(clan_id):
@@ -64,6 +65,23 @@ def clan_role_for(user, clan_id):
     return member.role if member else None
 
 
+def clan_member_for(user, clan_id):
+    """The caller's `ClanMember` row (role + binding columns only), or None.
+
+    Same None semantics as `clan_role_for`. `permissions._role_for` uses this
+    instead so the write-scope check (`permissions_scope`) gets the binding
+    for free from the one role query every request already pays.
+    """
+    if not clan_id:
+        return None
+    return (
+        ClanMember.objects
+        .filter(clan_id=clan_id, clan__is_deleted=False, user=user)
+        .only('id', 'role', 'person_id', 'person_verified', 'scope_root_person_id')
+        .first()
+    )
+
+
 def roles_for_clans(user, clan_ids):
     """{clan_id: role} for `user` across `clan_ids`, in one query.
 
@@ -85,6 +103,22 @@ def members_of(clan_id):
 
 def member_by_user_id(clan_id, user_id):
     return ClanMember.objects.filter(clan_id=clan_id, user_id=user_id).select_related('user').first()
+
+
+def approver_user_ids(clan_id):
+    """User ids of the owner(s) and managers -- who gets "needs approval" pushes."""
+    return list(
+        ClanMember.objects.filter(clan_id=clan_id, role__in=APPROVER_ROLES)
+        .values_list('user_id', flat=True)
+    )
+
+
+def branch_editor_rows(clan_id):
+    """`[(user_id, scope_root_person_id)]` of editors limited to a branch."""
+    return list(
+        ClanMember.objects.filter(clan_id=clan_id, role='editor', scope_root_person__isnull=False)
+        .values_list('user_id', 'scope_root_person_id')
+    )
 
 
 def owner_count(clan_id):

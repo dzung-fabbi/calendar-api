@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db import models
 
-from giapha.models.choices import CLAN_ROLE, INVITE_ROLE, VISIBILITY
+from giapha.models.choices import CLAN_ROLE, INVITE_ROLE, INVITE_STATUS, VISIBILITY
 
 
 class Clan(models.Model):
@@ -69,6 +69,20 @@ class ClanMember(models.Model):
         'giapha.Person', on_delete=models.SET_NULL, null=True, blank=True,
         related_name='member_link', verbose_name='Là ai trong cây',
     )
+    # A self-claimed binding (`PUT toi-la` by a viewer) is only a claim: it
+    # drives giỗ reminders but grants NO write access until an approver
+    # (owner/manager) verifies it. Bindings set by an editor+ or through an
+    # invite that named the person are verified on write.
+    person_verified = models.BooleanField(default=False, verbose_name='Đã xác minh')
+    # Trưởng chi (plan 260919 phase 6): an `editor` with a branch root edits,
+    # reviews and verifies only inside root + descendants + their spouses.
+    # NULL = whole clan. Meaningless for owner/manager (always whole clan) --
+    # the member PATCH view refuses it for them. PROTECT: hard-deleting a
+    # branch root must be a deliberate admin act (clear the scope first).
+    scope_root_person = models.ForeignKey(
+        'giapha.Person', on_delete=models.PROTECT, null=True, blank=True,
+        related_name='+', verbose_name='Gốc chi (trưởng chi)',
+    )
     joined_at = models.DateTimeField(auto_now_add=True, verbose_name='Ngày tham gia')
 
     class Meta:
@@ -89,11 +103,21 @@ class ClanMember(models.Model):
         super().clean()
         if self.person_id and self.person.clan_id != self.clan_id:
             raise ValidationError({'person': 'Người này không thuộc dòng họ đã chọn.'})
+        if self.scope_root_person_id:
+            if self.scope_root_person.clan_id != self.clan_id:
+                raise ValidationError({'scope_root_person': 'Gốc chi không thuộc dòng họ đã chọn.'})
+            if self.role != 'editor':
+                raise ValidationError({'scope_root_person': 'Chỉ biên tập viên mới được giới hạn theo chi.'})
 
 
 class ClanInvite(models.Model):
+    """An invite code. `code` is NULL while `status='pending_approval'`: the
+    code is minted on approval, so no redeemable link exists before an
+    approver saw the request (MySQL unique allows many NULLs).
+    """
+
     clan = models.ForeignKey(Clan, on_delete=models.CASCADE, related_name='invites', verbose_name='Dòng họ')
-    code = models.CharField(max_length=12, unique=True, db_index=True, verbose_name='Mã mời')
+    code = models.CharField(max_length=12, unique=True, null=True, blank=True, db_index=True, verbose_name='Mã mời')
     # INVITE_ROLE, not CLAN_ROLE: an invite must never be able to grant
     # ownership. Redemption re-checks this too -- admin writes bypass the
     # serializer, so the model choices alone are not a guarantee.
@@ -105,6 +129,19 @@ class ClanInvite(models.Model):
     created_by = models.ForeignKey(
         User, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='Người tạo',
     )
+    status = models.CharField(max_length=20, choices=INVITE_STATUS, default='active', verbose_name='Trạng thái')
+    # Pre-bound node: redeeming binds the new member to it, verified. Same
+    # clan invariant as `ClanMember.person` -- enforced by the create view.
+    person = models.ForeignKey(
+        'giapha.Person', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='invites', verbose_name='Mời người',
+    )
+    request_note = models.CharField(max_length=255, blank=True, verbose_name='Ghi chú của người mời')
+    review_note = models.CharField(max_length=255, blank=True, verbose_name='Ghi chú khi duyệt')
+    approved_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='approved_clan_invites', verbose_name='Người duyệt',
+    )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Ngày tạo')
 
     class Meta:
@@ -112,4 +149,4 @@ class ClanInvite(models.Model):
         verbose_name_plural = 'Mã mời dòng họ'
 
     def __str__(self):
-        return self.code
+        return self.code or '(chờ duyệt #{})'.format(self.id)

@@ -1,34 +1,28 @@
 """Person detail/update/soft-delete. List/create lives in `views/person_list.py`
 (split to keep both files under 200 lines).
 
-Write endpoints run `services.person_rules` before touching the database.
-`father_id`/`mother_id` changing on `PATCH` also triggers a descendant-subtree
-`generation` recompute -- see `selectors.tree.recompute_descendant_generations`.
+Writes go through `selectors.person_write` -- the same path change-request
+approval uses -- which runs `services.person_rules`, records a revision and
+recomputes generations when parents change.
 """
 
-from django.conf import settings
-from django.db import transaction
 from rest_framework import status
 from rest_framework.exceptions import NotFound, PermissionDenied
-from rest_framework.permissions import SAFE_METHODS, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from giapha.exceptions import BadRequestException
-from giapha.permissions import IsClanEditor, IsClanMember
-from giapha.selectors.person import birth_solar_by_id, children_count, clan_edges, get_person_or_none
-from giapha.selectors.revision import record
-from giapha.selectors.tree import recompute_descendant_generations
+from giapha.permissions import IsClanMember
+from giapha.permissions_scope import can_edit_mode, require_parent_change_write, require_write
+from giapha.selectors.person import get_person_or_none
+from giapha.selectors.person_version import VersionConflict
+from giapha.selectors.person_write import apply_person_delete, apply_person_update
 from giapha.serializers.person import PersonReadSerializer, PersonWriteSerializer
-from giapha.services.person_rules import PersonValidationError, ids_from_edges, validate_person_write
+from giapha.services.person_rules import PersonValidationError
 
 PERSON_NOT_FOUND = 'Không tìm thấy thành viên.'
-# The fields `validate_person_write` cares about; used to build the "merged
-# current + incoming" payload for a partial update.
-_RULE_FIELDS = ('father_id', 'mother_id', 'birth_solar', 'death_solar', 'death_lunar_day', 'death_lunar_month')
-# `father_id`/`mother_id` changing is what triggers the descendant-subtree
-# generation recompute after a PATCH.
-_PARENT_FIELDS = ('father_id', 'mother_id')
+VERSION_CONFLICT_DETAIL = 'Người này vừa được người khác sửa. Hãy xem bản mới nhất rồi sửa lại.'
 
 
 def _wants_force(request, clan_id):
@@ -46,81 +40,78 @@ def _wants_force(request, clan_id):
     return wants
 
 
+def _expected_version(request):
+    """Optional `version` in the PATCH body (plan 260919 phase 5). Absent
+    means no check, so clients predating versions keep working."""
+    raw = request.data.get('version') if hasattr(request.data, 'get') else None
+    if raw is None:
+        return None
+    if isinstance(raw, bool) or not isinstance(raw, int) or raw < 1:
+        raise BadRequestException('Tham số version phải là số nguyên dương.')
+    return raw
+
+
+def _detail_payload(request, clan_id, person):
+    """Detail shape + `can_edit` ('direct' | 'propose') for the caller."""
+    # `with_photo_url`: this is the detail response the phase-08 spec
+    # scopes `photo_url` to (H3) -- see `PersonReadSerializer.get_photo_url`.
+    data = PersonReadSerializer(person, context={'with_photo_url': True}).data
+    data['can_edit'] = can_edit_mode(request, clan_id, person.id)
+    return {'data': data}
+
+
 class PersonDetailAPIView(APIView):
-    """`GET` for any member. `PATCH`/`DELETE` (soft) for editor+."""
+    """`GET` for any member. `PATCH`/`DELETE` (soft) for editor+, or a
+    verified member inside their family scope (`permissions_scope`).
+    """
 
-    permission_classes = [IsAuthenticated]
-
-    def get_permissions(self):
-        classes = [IsClanMember] if self.request.method in SAFE_METHODS else [IsClanEditor]
-        return [IsAuthenticated()] + [cls() for cls in classes]
+    permission_classes = [IsAuthenticated, IsClanMember]
 
     def get(self, request, clan_id, person_id):
         person = get_person_or_none(clan_id, person_id)
         if person is None:
             raise NotFound(PERSON_NOT_FOUND)
-        # `with_photo_url`: this is the detail response the phase-08 spec
-        # scopes `photo_url` to (H3) -- see `PersonReadSerializer.get_photo_url`.
-        return Response({'data': PersonReadSerializer(person, context={'with_photo_url': True}).data})
+        return Response(_detail_payload(request, clan_id, person))
 
     def patch(self, request, clan_id, person_id):
         person = get_person_or_none(clan_id, person_id)
         if person is None:
             raise NotFound(PERSON_NOT_FOUND)
+        require_write(request, clan_id, [person.id])
 
         serializer = PersonWriteSerializer(person, data=request.data, partial=True)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+        changed_parents = {
+            key: value for key, value in serializer.validated_data.items()
+            if key in ('father_id', 'mother_id') and value != getattr(person, key)
+        }
+        require_parent_change_write(request, clan_id, changed_parents)
         force = _wants_force(request, clan_id)
-        edges = clan_edges(clan_id)
-        merged = {field: getattr(person, field) for field in _RULE_FIELDS}
-        merged.update({k: v for k, v in serializer.validated_data.items() if k in _RULE_FIELDS})
-
+        expected = _expected_version(request)
         try:
-            validate_person_write(
-                merged, edges=edges, ids_in_clan=ids_from_edges(edges),
-                birth_map=birth_solar_by_id(clan_id), existing_count=0,
-                max_persons=settings.MAX_CLAN_PERSONS, force=force, person_id=person.id,
+            apply_person_update(
+                clan_id, person, serializer.validated_data, request.user, force=force, expected_version=expected,
             )
         except PersonValidationError as exc:
             raise BadRequestException(str(exc))
-
-        parent_changed = any(
-            field in serializer.validated_data and serializer.validated_data[field] != getattr(person, field)
-            for field in _PARENT_FIELDS
-        )
-
-        with transaction.atomic():
-            record(person, actor=request.user, action='update')
-            for field, value in serializer.validated_data.items():
-                setattr(person, field, value)
-            person.save()
-
-            if parent_changed:
-                # Only the descendant subtree, not the whole clan -- see
-                # `selectors.tree.recompute_descendant_generations`. This
-                # person is always in its own target set, so its in-memory
-                # `generation` (serialized below) may now be stale.
-                recompute_descendant_generations(clan_id, person.id)
-                person.refresh_from_db(fields=['generation'])
-
-        return Response({'data': PersonReadSerializer(person, context={'with_photo_url': True}).data})
+        except VersionConflict:
+            current = get_person_or_none(clan_id, person_id)
+            return Response(
+                {'code': 'VERSION_CONFLICT', 'detail': VERSION_CONFLICT_DETAIL,
+                 'current': PersonReadSerializer(current).data},
+                status=status.HTTP_409_CONFLICT,
+            )
+        return Response(_detail_payload(request, clan_id, person))
 
     def delete(self, request, clan_id, person_id):
         person = get_person_or_none(clan_id, person_id)
         if person is None:
             raise NotFound(PERSON_NOT_FOUND)
-
-        blocking = children_count(person.id)
-        if blocking:
-            raise BadRequestException(
-                'Không thể xoá vì còn {} người con đang tham chiếu người này làm cha/mẹ.'.format(blocking)
-            )
-
-        with transaction.atomic():
-            record(person, actor=request.user, action='delete')
-            person.is_deleted = True
-            person.save(update_fields=['is_deleted'])
-
+        require_write(request, clan_id, [person.id])
+        try:
+            apply_person_delete(person, request.user)
+        except PersonValidationError as exc:
+            raise BadRequestException(str(exc))
         return Response(status=status.HTTP_204_NO_CONTENT)

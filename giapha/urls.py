@@ -1,16 +1,23 @@
 from django.urls import path
 
 from giapha.views import (
+    ChangeRequestApproveAPIView,
+    ChangeRequestDetailAPIView,
+    ChangeRequestListCreateAPIView,
+    ChangeRequestRejectAPIView,
     ClanDetailAPIView,
     ClanGioCalendarAPIView,
     ClanGioFollowDetailAPIView,
     ClanGioFollowListAPIView,
+    ClanInviteApproveAPIView,
     ClanInviteDetailAPIView,
     ClanInviteListCreateAPIView,
+    ClanInviteRejectAPIView,
     ClanKinshipAPIView,
     ClanListCreateAPIView,
     ClanMemberBindingAPIView,
     ClanMemberDetailAPIView,
+    ClanMemberVerifyAPIView,
     ClanMembersAPIView,
     ClanPhotoUrlsAPIView,
     ClanPublicLinkAPIView,
@@ -19,7 +26,15 @@ from giapha.views import (
     ClanTreeAPIView,
     DeviceTokenAPIView,
     FamilyAddRelativeAPIView,
+    FamilyClanBootstrapAPIView,
     FamilyGioEventAPIView,
+    FamilyImportAPIView,
+    FamilyLinkContributeAPIView,
+    FamilyLinkDetailAPIView,
+    FamilyLinkDiffAPIView,
+    FamilyLinkImportAPIView,
+    FamilyLinkListCreateAPIView,
+    FamilyLinkSuggestionsAPIView,
     FamilyLinkChildAPIView,
     FamilyLinkSpouseAPIView,
     FamilyPersonCreateAPIView,
@@ -44,6 +59,15 @@ urlpatterns = [
     # (`docs/gia-pha-api-spec.md`). Independent of the clan endpoints below.
     path('v1/family', FamilyRootAPIView.as_view(), name='family-root'),
     path('v1/family/self', FamilySelfAPIView.as_view(), name='family-self'),
+    path('v1/family/import', FamilyImportAPIView.as_view(), name='family-import'),
+    # Liên kết cá nhân <-> dòng họ (plan 260919 phase 4, spec §14).
+    path('v1/family/clans', FamilyClanBootstrapAPIView.as_view(), name='family-clan-bootstrap'),
+    path('v1/family/links', FamilyLinkListCreateAPIView.as_view(), name='family-links'),
+    path('v1/family/links/suggestions', FamilyLinkSuggestionsAPIView.as_view(), name='family-link-suggestions'),
+    path('v1/family/links/import', FamilyLinkImportAPIView.as_view(), name='family-link-import'),
+    path('v1/family/links/contribute', FamilyLinkContributeAPIView.as_view(), name='family-link-contribute'),
+    path('v1/family/links/diff', FamilyLinkDiffAPIView.as_view(), name='family-link-diff'),
+    path('v1/family/links/<int:link_id>', FamilyLinkDetailAPIView.as_view(), name='family-link-detail'),
     path('v1/family/persons', FamilyPersonCreateAPIView.as_view(), name='family-person-create'),
     path('v1/family/persons/<uuid:person_id>', FamilyPersonDetailAPIView.as_view(), name='family-person-detail'),
     path(
@@ -65,11 +89,26 @@ urlpatterns = [
         ClanMemberDetailAPIView.as_view(),
         name='clan-member-detail',
     ),
+    path(
+        'clans/<int:clan_id>/members/<int:user_id>/verify',
+        ClanMemberVerifyAPIView.as_view(),
+        name='clan-member-verify',
+    ),
     path('clans/<int:clan_id>/invites', ClanInviteListCreateAPIView.as_view(), name='clan-invite-create'),
     path(
         'clans/<int:clan_id>/invites/<int:invite_id>',
         ClanInviteDetailAPIView.as_view(),
         name='clan-invite-detail',
+    ),
+    path(
+        'clans/<int:clan_id>/invites/<int:invite_id>/approve',
+        ClanInviteApproveAPIView.as_view(),
+        name='clan-invite-approve',
+    ),
+    path(
+        'clans/<int:clan_id>/invites/<int:invite_id>/reject',
+        ClanInviteRejectAPIView.as_view(),
+        name='clan-invite-reject',
     ),
     path('join', JoinClanAPIView.as_view(), name='clan-join'),
 
@@ -126,6 +165,28 @@ urlpatterns = [
         name='person-photo',
     ),
     path('clans/<int:clan_id>/photo-urls', ClanPhotoUrlsAPIView.as_view(), name='clan-photo-urls'),
+
+    # Đề xuất thay đổi (plan 260919 phase 2).
+    path(
+        'clans/<int:clan_id>/change-requests',
+        ChangeRequestListCreateAPIView.as_view(),
+        name='change-request-list-create',
+    ),
+    path(
+        'clans/<int:clan_id>/change-requests/<int:cr_id>',
+        ChangeRequestDetailAPIView.as_view(),
+        name='change-request-detail',
+    ),
+    path(
+        'clans/<int:clan_id>/change-requests/<int:cr_id>/approve',
+        ChangeRequestApproveAPIView.as_view(),
+        name='change-request-approve',
+    ),
+    path(
+        'clans/<int:clan_id>/change-requests/<int:cr_id>/reject',
+        ChangeRequestRejectAPIView.as_view(),
+        name='change-request-reject',
+    ),
 
     path('clans/<int:clan_id>/marriages', MarriageListCreateAPIView.as_view(), name='marriage-list-create'),
     path(

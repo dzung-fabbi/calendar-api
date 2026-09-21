@@ -4,7 +4,7 @@ Tài liệu cho người sửa tính năng này về sau. Phần "bẫy" quan tr
 mỗi mục ở đó là một lỗi đã được chặn bằng test, gỡ ra là nó quay lại.
 
 Hợp đồng dữ liệu cho backend (entity, bất biến quan hệ, đề xuất API): `docs/gia-pha-api-spec.md`.
-File này nói **cách app đang chạy trên máy** — chưa có API, chưa có Redux.
+File này nói **cách app đang chạy trên máy** (MMKV, chưa Redux). Backend `/api/gia-pha/v1/family` **đã có** nhưng app chưa nối; kế hoạch nối và phần liên kết dòng họ ở hai mục cuối ("Nối API server", "Liên kết dòng họ").
 
 ## Bối cảnh
 
@@ -125,7 +125,8 @@ Cả hai **không persist**. Đừng nhầm.
    thêm một bà vợ nữa không làm bà thành mẹ của những đứa đó — sửa ở từng người con.
 
 Nét đứt trên cây **chỉ** nghĩa là ô trống. Người đã mất ghi `(đã mất)` bằng chữ, thẻ "tôi"
-khác bằng nền tím — không dùng viền nét đứt cho hai nghĩa đó.
+khác bằng nền tím — không dùng viền nét đứt cho hai nghĩa đó. Cây dòng họ đánh dấu "gia đình
+bạn / sửa trực tiếp được" bằng **viền trong liền màu**, cũng **không** dùng nét đứt.
 
 Mọi thẻ (thật và trống) cùng `width`/`height` (`DEFAULT_METRICS`). Layout thư viện giả định
 mọi node cùng size; làm một thẻ to hơn là đường nối lệch.
@@ -148,6 +149,7 @@ mọi node cùng size; làm một thẻ to hơn là đường nối lệch.
 | Lưu gốc cây thay vì người được bấm | Thêm một đời tổ là trạng thái xem trỏ sai nhánh | `family_lineage_of_id` = id thẻ được bấm; gốc = `getLineageRootId` |
 | `key={treeId}` trên canvas | Remount mất số đo khung nhìn; cây mới vẽ 1:1 rồi mới fit, nhảy một nhịp | `FamilyCanvas` nhận `treeId` qua prop, không unmount |
 | Gắn pinch/pan vào view đang `transform` | Gesture-handler trả toạ độ cây (đã chia cho scale); tiêu điểm pinch lệch, kéo bị chậm theo zoom | Detector bọc lớp phủ **không** transform, kín khung nhìn |
+| App và server dùng hai nguồn âm lịch khác nhau | Giỗ nhắc lệch một ngày (có năm lệch một tháng) giữa máy và FCM dòng họ, không lỗi nào báo | Một nguồn: Hồ Ngọc Đức UTC+7; test vector spec §7.0 ở cả hai phía |
 | `ZOOM_MIN` cứng 0.4 | Cây đông người có mức fit < 0.4 → chụm hết cỡ vẫn không thấy cả cây | `minZoom` = `min(ZOOM_MIN, fitZoom)` |
 
 **Đơn vị toạ độ thư viện:** một node rộng/cao đúng 2 đơn vị (`UNITS_PER_NODE = 2`),
@@ -168,7 +170,13 @@ theo — `gioEventId` đứt, event vẫn trong tab Sự kiện.
 ## Lặp hằng năm theo âm lịch
 
 `src/utils/lunar-recurrence.ts` (trước đây là `gio-anniversary.ts`). Dùng cặp
-`getLunarDate` / `getSolarDateSafe` — cả hai cùng đọc bảng tra TK nên round-trip đúng. Repo
+`getLunarDate` / `getSolarDateSafe` — cả hai cùng đọc bảng tra TK nên round-trip đúng.
+
+> **Cần chốt trước khi nối API** (spec §7.0): backend tính âm lịch bằng Hồ Ngọc Đức **UTC+7**
+> (`giapha/services/vn_lunar.py`). Nếu bảng TK của app là lịch Trung Quốc (UTC+8) thì app và
+> server lệch ở 462 tháng trong 1900–2100 — gần nhất 2030 tháng Giêng, 2031 tháng 3 nhuận,
+> 2032 tháng 2. Nhắc giỗ local (Notifee) và `solarDeathDate` / nhắc giỗ dòng họ (server) sẽ
+> khác ngày. Kiểm bằng vector §7.0: `21/01/1985` phải là mùng 1 Tết, không phải mùng 1 tháng Chạp. Repo
 còn cặp `convertSolar2Lunar` / `convertLunar2Solar` tính theo thiên văn và `date-chinese`;
 **trộn các họ này với nhau lệch tới một tháng.**
 
@@ -204,5 +212,123 @@ thiếu ngày sẽ mặc định hôm nay.
 - Ảo hoá node khi cây vượt ~200 người (hiện `FamilyCanvas` render hết; `TreeLayout` đã có
   rect từng node nên cắt theo khung nhìn là đủ).
 - UI nhập `birthOrder` — layout đã xếp theo field này, form chưa có ô.
-- Nút gỡ vợ/chồng — `unlinkSpouse` có, form sửa chỉ **thêm** spouse, không gỡ.
+- Nút gỡ vợ/chồng — `unlinkSpouse` có (server: `POST /relations/unlink-spouse`), form sửa chỉ **thêm** spouse, không gỡ. Mockup/prototype đã có nút "Gỡ".
+- Nối API server (mục dưới) + màn "Đưa gia phả lên tài khoản" (import một lần).
+- Liên kết dòng họ và quyền dòng họ (mục dưới) — theo plan `260919-shared-clan-tree-collaboration`.
 - Xoá `local_memorials` + `src/types/memorial.ts` sau khi migration chạy thực địa vài bản.
+
+## Nối API server (kế hoạch)
+
+Hợp đồng: `docs/gia-pha-api-spec.md` §8 (đã triển khai), §12 (import). Thứ tự khi bật:
+
+1. **Import một lần** (`PUT /v1/family/import`) cho máy đã có dữ liệu: hỏi đồng ý → gửi
+   snapshot schema v2 → dùng `idMap` đổi id → giữ MMKV làm dự phòng tới khi đổi xong.
+   Máy trống: CRUD thẳng server.
+2. **Nguồn sự thật là server.** `family-storage.ts` thay bằng client API. MMKV còn là cache
+   đọc offline; v1 **không** ghi offline (hiện "Không có mạng, chỉ xem") — tránh phải gộp.
+   **Đã chốt 2026-09-19.** Nút thêm/sửa/xoá khoá khi mất mạng; nhắc giỗ local vẫn chạy.
+3. **Mỗi thao tác UI = một endpoint** (§8.3). Sau mutation, **thay cả danh sách** bằng
+   `persons[]` server trả; không vá cục bộ, để dẫn xuất (con, anh em, cụm) không lệch.
+4. `family-relations.ts` / `relative-link-rules.ts` giữ làm **kiểm tra trước** (khoá nút,
+   lọc ứng viên). Server là trọng tài: luôn hiện nguyên `error.message` / `warning.message`.
+5. `family_self_id` → `selfId` của server. `family_lineage_of_id` vẫn là state máy.
+6. Sự kiện giỗ **vẫn local** (Notifee); tạo xong gọi `PUT /persons/{id}/gio-event`. Xoá người
+   không xoá sự kiện (server cũng giữ), chi tiết người vẫn tra lại sự kiện còn không.
+7. Mọi bẫy ở trên (layout, ghost-spouse, chu trình) vẫn đúng: layout là việc của client.
+
+## Liên kết dòng họ (kế hoạch)
+
+Spec §14–§15; mockup `plans/visuals/gia-pha-app-mockup.html`; bản dùng thử
+`plans/visuals/gia-pha-prototype/` (có ghi API mỗi thao tác).
+
+- **Một engine cho hai loại cây.** `/clans/{id}/tree` trả node/edge với field tiếng Việt
+  (`ho_ten`, `gioi_tinh`, `death_lunar_*`, `Marriage.status`). Thêm **một** adapter
+  `clan-tree-adapter.ts` đổi sang `Person` rồi dùng lại `family-graph.ts` +
+  `family-tree-adapter.ts`. Không viết engine thứ hai. `Marriage.status`: `ly_hon` →
+  `divorced`, `dang_ket_hon` / `goa` → `married`.
+- **Người đã liên kết** (`linked: true`): dấu 🔗 trên thẻ; form sửa ghi "🔗 từ {họ}" cạnh
+  field chung (tên, giới tính, đã mất, ngày sinh, ngày mất âm); lưu xong đọc `clanWrites`
+  và báo **từng họ**: đã cập nhật / đã gửi đề xuất / xung đột (409, hiện giá trị mới nhất).
+- **Quyền lấy từ server**, không tự tính: `my_editable_ids` (viền "gia đình bạn"),
+  `can_edit` (nút "Sửa" hay "Đề xuất sửa"). Luật phạm vi (anh chị em chưa được nhận, trưởng
+  chi…) chỉ sống ở server.
+- **Không tự sửa cấu trúc** theo họ: màn chi tiết hiện khác biệt (`/links/diff`), user tự
+  quyết. Tách liên kết chép giá trị hiện tại về cây riêng.
+- Ghép gợi ý chỉ là gợi ý: mặc định chọn sẵn cặp "Chắc", cặp "Có thể" để user tick.
+
+## Mô hình quyền (Phase 1, 6)
+
+**Phạm vi gia đình** (`family_scope`): người P có quyền sửa người trong tập {P} ∪ vợ/chồng(P) ∪ cha,mẹ(P) ∪ hậu duệ(P) ∪ vợ/chồng hậu duệ **chỉ khi** những người đó chưa được xác minh (node chưa có `ClanMember.person_verified`). Anh chị em ruột (chung ≥1 cha/mẹ) vào phạm vi **chỉ** khi chưa có binding xác minh của họ ở họ.
+
+**Phạm vi chi** (Phase 6): editor có `scope_root_person_id` → cộng hậu duệ(root) ∪ {root} ∪ vợ/chồng hậu duệ. Hợp với phạm vi gia đình nếu có binding xác minh. Owner/manager: toàn họ (scope_root = null).
+
+**Phạm vi mời** (downward only): role viewer → mời chỉ người trong phạm vi ghi của mình (gia đình hoặc chi); role editor → toàn họ; role manager → toàn họ; owner → toàn họ. Ngoài phạm vi → yêu cầu duyệt.
+
+Kiểm quyền **ở bước tạo CR hoặc thao tác**. `permissions_scope.can_write_persons(member, clan_id, person_ids)` → xoá ids ngoài phạm vi, phần còn lại phép ghi. Nếu trống → 403. Thay vì từ chối lô bulk, các loại yêu cầu duyệt từng người ngoài phạm vi tạo từng CR.
+
+## Đề xuất thay đổi (Phase 2)
+
+Model `ChangeRequest`: `clan`, `proposer`, `target_person`, `target_marriage`, `action` (create/update/delete_person/create/update/delete_marriage), `payload_json` (serializer ghi validate), `status` (pending/approved/rejected/expired/withdrawn/stale), `base_version`, `reviewer`, `review_note`.
+
+**Vòng đời:**
+- Tạo: status = pending, hoặc active ngay (duyệt đã tạo ngoài phạm vi, role không đủ)
+- Ngày 7: push nhắc người duyệt (1 lần)
+- Ngày 30: hết hạn → status = expired, push người gửi ("gửi lại được")
+- Duyệt: target bị đổi sau `base_version` → 409 stale, `override_stale=true` → bỏ qua
+  - Áp qua `services.person_write` / `services.marriage_write` (cùng đường ghi thực)
+  - Tạo `PersonRevision` với `change_request_id`
+  - Tăng `Person.version` (bước an toàn lượt lượt)
+  - Push người gửi kết quả
+- Từ chối: status = rejected, push người gửi lý do
+- Withdraw: proposer khi pending → status = withdrawn
+
+**Management command** `expire_change_requests` (chạy hằng ngày, cùng cron giỗ):
+- Ngày 7 (pending): push owner + manager
+- Ngày 30 (pending): status → expired, push proposer
+- Idempotent
+
+Giới hạn: 20 pending / proposer / họ; throttle POST 20/day.
+
+## Liên kết cá nhân ↔ dòng họ (Phase 4)
+
+Model `FamilyPersonLink(family, family_person, clan, clan_person)`: **không đồng bộ**, là tham chiếu duy nhất chiều.
+
+**Field chung (overlay):** name, gender, deceased (mới: `Person.da_mat`), solarBirthDate, solarDeathDate, lunarDeathDay/Month/Year/Leap. Được đọc thẳng từ họ lúc `GET /v1/family`, được đó lưu giá trị hiện tại vào `FamilyPerson` khi tách.
+
+**Field riêng (giữ ở cá nhân):** relationship, note, gioEventId, birthTime, deathTime.
+
+**Ghép gợi ý** (`services/family_clan_matching.py`):
+- Neo: selfId người ↔ binding họ (nếu có)
+- Lan theo cấu trúc: cha↔cha, mẹ↔mẹ, vợ/chồng, con trùng tên chuẩn hoá
+- Còn lại: tên bỏ dấu + **năm sinh phải trùng** (dùng `vn_lunar` chuyển đổi)
+- Không bao giờ tự link
+
+**Tách** (`services/family_link_detach.py`): snapshot field chung vào `FamilyPerson` (bảo toàn giá trị lúc link), xoá `FamilyPersonLink`. Tự động khi: rời họ, xoá khỏi họ, họ bị soft-delete, hoặc clan_person bị soft-delete.
+
+**Query**: `GET /v1/family` thêm +1 query (links JOIN field chung của clan person). Overlay lúc serialization, không thêm bước.
+
+## Import từ máy (Phase 3)
+
+`PUT /v1/family/import` (idempotent qua `importKey`):
+- **Chỉ khi server rỗng** (0 người). Có dữ liệu + importKey khác → 409
+- **Cá nhân luôn vào**, cạnh bị lỗi → bỏ + báo `skippedEdges`
+- Field normalize: tên rỗng → "Chưa đặt tên"; > 60 ký → cắt; ngày sai → null
+- Cạnh: bỏ nếu dangling, self, chu trình, sai giới tính ô, spouse unidirectional
+- Thứ tự xét cạnh cố định (theo createdAt → id)
+- Legacy id → `FamilyPerson.legacy_id` để retry idempotent
+- Response: `idMap`, `selfId`, `persons`, `skippedEdges`, `warnings`
+- Throttle: 5/hour
+
+## Optimistic lock (Phase 5)
+
+`Person.version` (clan): tăng ở **mỗi** PATCH, restore, approve CR, photo confirm/delete. Tăng bằng `F('version')+1` trong cùng `update()`.
+
+`PATCH /clans/{id}/persons/{pid}` + body `version?`: nếu gửi và lệch → 409 `VERSION_CONFLICT` + trả `current`. Không gửi → như cũ (tương thích ngược).
+
+`ChangeRequest.base_version` (thay thế `base_updated_at`): lưu version lúc tạo CR, lúc duyệt check xem target có đổi (so `base_version` vs hiện tại).
+
+`PATCH /v1/family/persons/{id}` (linked person) + `clanVersions{clanId: n}?`: gửi version từ client cho **mỗi** họ đã link
+- Nếu version match → áp thẳng qua `person_write` (ghi field chung)
+- Nếu lệch → 409 conflict, trả `current` version, **không** tạo CR
+- Nếu không quyền → tạo CR với `base_version` hiện tại
+- Response: `clanWrites: [{clanId, result: 'applied'|'proposed'|'conflict', current?}]`

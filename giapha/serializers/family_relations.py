@@ -51,6 +51,12 @@ class AddRelativeBodySerializer(serializers.Serializer):
     person = PersonDraftSerializer()
     # Only meaningful for kind=child (which other parent to fill in).
     otherParentId = _uuid('other_parent_id', required=False, allow_null=True, default=None)
+    # Phase 5: contribute the new person to these clans right after creating
+    # it (`views.family_contribute_relative`).
+    contributeTo = serializers.ListField(
+        child=serializers.IntegerField(min_value=1), source='contribute_to',
+        required=False, default=list, max_length=10,
+    )
 
 
 class SelfBodySerializer(serializers.Serializer):

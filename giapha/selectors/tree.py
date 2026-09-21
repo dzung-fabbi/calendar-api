@@ -24,7 +24,7 @@ _ROW_FIELDS = (
     'id', 'ho_ten', 'ten_huy', 'gioi_tinh', 'generation', 'branch',
     'is_truong', 'birth_order', 'birth_solar', 'death_solar',
     'death_lunar_day', 'death_lunar_month', 'death_lunar_leap',
-    'father_id', 'mother_id', 'parent_kind', 'photo_key',
+    'father_id', 'mother_id', 'parent_kind', 'photo_key', 'da_mat',
 )
 
 RECOMPUTE_BATCH_SIZE = 500

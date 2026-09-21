@@ -15,6 +15,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from giapha.selectors.family import family_for, person_rows, spouse_rows
+from giapha.selectors.family_link import active_link_rows
 from giapha.serializers.family_output import id_str, persons_payload
 from giapha.services.family_issue import FamilyRuleError, not_found
 
@@ -61,9 +62,17 @@ class FamilyAPIView(APIView):
             )
         return serializer.validated_data
 
+    def link_rows(self):
+        """Clan links with the clan person's shared columns -- one query,
+        cached per request (plan 260919 phase 4)."""
+        if getattr(self, '_link_rows', None) is None:
+            self._link_rows = active_link_rows(self.family)
+        return self._link_rows
+
     def persons(self):
-        """Fresh `persons[]` after any write -- two queries, whole family."""
-        return persons_payload(person_rows(self.family.id), spouse_rows(self.family.id))
+        """Fresh `persons[]` after any write -- three queries, whole family:
+        persons, spouses, and clan links (shared fields overlaid)."""
+        return persons_payload(person_rows(self.family.id), spouse_rows(self.family.id), self.link_rows())
 
     @staticmethod
     def find(persons, person_id):

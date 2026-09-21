@@ -6,7 +6,9 @@
     "birth_order": "null",
     "birth_solar": "null",
     "branch": "str",
+    "can_edit": "str",
     "created_at": "str",
+    "da_mat": "bool",
     "death_lunar_day": "null",
     "death_lunar_leap": "bool",
     "death_lunar_month": "null",
@@ -33,6 +35,7 @@
     "ten_tu": "str",
     "thuy_hieu": "str",
     "tieu_su": "str",
-    "updated_at": "str"
+    "updated_at": "str",
+    "version": "int"
   }
 }

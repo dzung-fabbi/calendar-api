@@ -1,23 +1,9 @@
-"""Serializers for Clan, ClanMember and ClanInvite."""
+"""Serializers for Clan and ClanMember. Invite/join shapes: `serializers/clan_invite.py`."""
 
-import datetime
-
-from django.utils import timezone
 from rest_framework import serializers
 
-from giapha.models import CLAN_ROLE, INVITE_ROLE, Clan, ClanInvite, ClanMember
+from giapha.models import CLAN_ROLE, Clan, ClanMember
 from giapha.selectors.clan import clan_role_for
-
-INVITE_DEFAULT_TTL_DAYS = 30
-
-
-def _default_expires_at():
-    """Called fresh per request (DRF calls callable `default`s at
-    validation time) -- a module-level constant would freeze the expiry to
-    import time. Decision: invites never default to `None` (never-expiring).
-    """
-    return timezone.now() + datetime.timedelta(days=INVITE_DEFAULT_TTL_DAYS)
-
 
 class ClanSerializer(serializers.ModelSerializer):
     """Used for create, read and partial update.
@@ -96,7 +82,12 @@ class ClanMemberSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ClanMember
-        fields = ('user_id', 'username', 'display_name', 'email', 'role', 'joined_at')
+        # `person_id` + `person_verified`: approvers find pending self-claims
+        # here (`person_id` set, `person_verified` false).
+        fields = (
+            'user_id', 'username', 'display_name', 'email', 'role', 'person_id', 'person_verified',
+            'scope_root_person_id', 'joined_at',
+        )
         read_only_fields = fields
 
     def get_display_name(self, instance):
@@ -128,35 +119,17 @@ class ClanMemberSerializer(serializers.ModelSerializer):
 
 
 class ClanMemberRoleUpdateSerializer(serializers.Serializer):
-    """Input for `PATCH /clans/{clan_id}/members/{user_id}`."""
-
-    role = serializers.ChoiceField(choices=CLAN_ROLE)
-
-    def create(self, validated_data):
-        raise NotImplementedError
-
-    def update(self, instance, validated_data):
-        raise NotImplementedError
-
-
-class ClanInviteSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ClanInvite
-        fields = ('id', 'code', 'role', 'expires_at', 'max_uses', 'used_count', 'created_at')
-        read_only_fields = fields
-
-
-class ClanInviteCreateSerializer(serializers.Serializer):
-    """Input for `POST /clans/{clan_id}/invites`.
-
-    `role` is capped to `INVITE_ROLE` (editor/viewer) -- ownership can never
-    be granted through an invite code. `expires_at` always resolves to a real
-    datetime (30 days out by default), never `None`/never-expiring.
+    """Input for `PATCH /clans/{clan_id}/members/{user_id}`. `role` and/or
+    `scope_root_person_id` (phase 6: branch root for an editor; null clears).
     """
 
-    role = serializers.ChoiceField(choices=INVITE_ROLE, default='viewer')
-    expires_at = serializers.DateTimeField(required=False, default=_default_expires_at)
-    max_uses = serializers.IntegerField(required=False, min_value=0, default=0)
+    role = serializers.ChoiceField(choices=CLAN_ROLE, required=False)
+    scope_root_person_id = serializers.IntegerField(required=False, allow_null=True)
+
+    def validate(self, attrs):
+        if not attrs:
+            raise serializers.ValidationError('Cần role hoặc scope_root_person_id.')
+        return attrs
 
     def create(self, validated_data):
         raise NotImplementedError
@@ -164,14 +137,3 @@ class ClanInviteCreateSerializer(serializers.Serializer):
     def update(self, instance, validated_data):
         raise NotImplementedError
 
-
-class JoinClanSerializer(serializers.Serializer):
-    """Input for `POST /join`."""
-
-    code = serializers.CharField(max_length=12, allow_blank=False)
-
-    def create(self, validated_data):
-        raise NotImplementedError
-
-    def update(self, instance, validated_data):
-        raise NotImplementedError

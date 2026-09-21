@@ -199,6 +199,31 @@ Do not schedule two overlapping runs: the per-day de-duplication is read-then-wr
 so two processes starting together can both push once. One cron line is safe; if a
 second scheduler is ever added, prefix the command with `flock -n /tmp/remind-appt.lock`.
 
+## Cron: expire change requests (`expire_change_requests`)
+
+Expiry process for gia phả change requests (phase 2, 2026-09-19). Runs daily at same
+schedule as giỗ (07:00 VN = 0:00 UTC for UTC host):
+
+```cron
+# Hết hạn đề xuất -- 07:00 Việt Nam (UTC+7), mỗi ngày. Host UTC -> `0 0`.
+0 0 * * * cd /srv/calendar-api && /usr/bin/docker compose -f docker-compose.prod.yml run --rm -T web python manage.py expire_change_requests >> /var/log/calendar-api-cr-expire.log 2>&1
+```
+
+The command is idempotent:
+- Day 7 (pending): push owner + manager to review (once per CR)
+- Day 30 (pending): mark `status=expired`, push proposer to resubmit
+- Skips: already expired, approved, rejected, or withdrawn
+
+Requires `python manage.py migrate giapha` first (migrations `0011` + `0014` create `ChangeRequest` model and add `Person.version`).
+
+## Throttle scopes (new phases)
+
+Added in phase 1–3 (2026-09-19):
+- `giapha-invite-create`: 20 invites / day / user (approvers exempt)
+- `giapha-family-import`: 5 imports / hour / user
+
+Configure in `settings.py` `REST_FRAMEWORK['DEFAULT_THROTTLES']` if not using defaults.
+
 Semantics differ from giỗ: the reminder is **daily**. An appointment on D with
 `before_days=3` pushes on each of D-3, D-2, D-1 and D. `AppointmentReminderLog` holds
 one row per (appointment, day): `sent` blocks a second push that day, `failed` does not,
@@ -216,7 +241,9 @@ account. Set exactly one of these in `.env` (see `.env.example`):
 | `FIREBASE_CREDENTIALS_PATH` | path to the service account JSON inside the container |
 | `FIREBASE_CREDENTIALS_JSON` | the raw JSON contents (wins if both are set) |
 
-Never commit the service account file. With neither variable set the command
+**⚠️ Never commit the service account file.** `.gitignore` blocks patterns: `*firebase*.json`, `*adminsdk*.json`, `*service-account*.json`, `*serviceAccount*.json`. Ensure your credential file matches one of these patterns.
+
+With neither variable set the command
 prints `Chưa cấu hình Firebase (FIREBASE_CREDENTIALS_PATH/JSON); không gửi được
 gì.`, exits **0**, and writes no notification log rows — reminders are simply not
 delivered, and cron stays quiet. A malformed service account behaves the same way

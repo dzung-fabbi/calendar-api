@@ -4,7 +4,10 @@
       "display_name": "str",
       "email": "str",
       "joined_at": "str",
+      "person_id": "null",
+      "person_verified": "bool",
       "role": "str",
+      "scope_root_person_id": "null",
       "user_id": "int",
       "username": "str"
     }

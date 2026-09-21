@@ -10,12 +10,14 @@ from giapha.models import PersonRevision
 from giapha.services.revision import snapshot
 
 
-def record(person, actor, action):
+def record(person, actor, action, change_request=None):
     """Snapshot `person`'s CURRENT (pre-change) state and store it. Call this
-    before mutating/saving `person`, not after.
+    before mutating/saving `person`, not after. `change_request`: the
+    approved proposal this write applies, if any (audit link).
     """
     return PersonRevision.objects.create(
         person=person, actor=actor, action=action, payload_json=snapshot(person),
+        change_request=change_request,
     )
 
 

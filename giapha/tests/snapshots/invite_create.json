@@ -1,11 +1,17 @@
 {
   "data": {
+    "approved_by_id": "null",
     "code": "str",
     "created_at": "str",
+    "created_by_id": "int",
     "expires_at": "str",
     "id": "int",
     "max_uses": "int",
+    "person_id": "null",
+    "request_note": "str",
+    "review_note": "str",
     "role": "str",
+    "status": "str",
     "used_count": "int"
   }
 }

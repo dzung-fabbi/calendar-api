@@ -53,3 +53,4 @@ class TreeSerializer(serializers.Serializer):
     nodes = TreeNodeSerializer(many=True)
     edges = TreeEdgeSerializer(many=True)
     truncated = serializers.BooleanField()
+    my_editable_ids = serializers.ListField(child=serializers.IntegerField(), allow_null=True)

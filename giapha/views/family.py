@@ -13,10 +13,18 @@ from giapha.selectors.family import get_person_or_none, load_graph
 from giapha.selectors.family_write import apply_draft, delete_person, set_gio_event, set_self
 from giapha.serializers.family_draft import PersonDraftSerializer
 from giapha.serializers.family_relations import GioEventBodySerializer, SelfBodySerializer
+from giapha.services.family_clan_field_map import clan_to_family
 from giapha.services.family_draft import finalize_draft
 from giapha.services.family_issue import FamilyRuleError, not_found
+from giapha.serializers.family_output import links_payload
 from giapha.views.family_base import FamilyAPIView, id_str
 from giapha.views.family_link_flow import auto_link_by_label, create_person
+from giapha.views.family_linked_edit import (
+    ClanVersionsSerializer,
+    active_links_of,
+    split_draft,
+    write_shared_to_clans,
+)
 
 # What `finalize_draft` needs from the current row to (re)derive the solar
 # death date on a partial update.
@@ -27,7 +35,11 @@ class FamilyRootAPIView(FamilyAPIView):
     """`GET /v1/family` -> `{selfId, persons[]}` -- the whole tree + meta."""
 
     def get(self, request):
-        return Response({'selfId': id_str(self.family.self_person_id), 'persons': self.persons()})
+        return Response({
+            'selfId': id_str(self.family.self_person_id),
+            'persons': self.persons(),
+            'links': links_payload(self.link_rows()),
+        })
 
 
 class FamilyPersonCreateAPIView(FamilyAPIView):
@@ -57,14 +69,31 @@ class FamilyPersonDetailAPIView(FamilyAPIView):
 
     def patch(self, request, person_id):
         """Draft fields only. `fatherId`/`motherId`/`spouses` in the body are
-        ignored by the serializer -- edges change through `relations/*`."""
+        ignored by the serializer -- edges change through `relations/*`.
+
+        A person linked to clans saves only PRIVATE fields here; shared ones
+        go to each clan (or become proposals) -- `views/family_linked_edit.py`.
+        """
         person = self._person(person_id)
         incoming = self.validate(PersonDraftSerializer, request.data, partial=True)
+        links = active_links_of(self.family, person.id)
         current = {field: getattr(person, field) for field in _DERIVE_FIELDS}
+        if links:
+            clan_values = clan_to_family(links[0].clan_person)
+            current.update({field: clan_values[field] for field in _DERIVE_FIELDS if field in clan_values})
         draft = finalize_draft(current, incoming)
-        with transaction.atomic():
-            apply_draft(person, draft)
-        return self.mutation_response(person.id)
+        if not links:
+            with transaction.atomic():
+                apply_draft(person, draft)
+            return self.mutation_response(person.id)
+
+        clan_versions = self.validate(ClanVersionsSerializer, request.data)['clanVersions']
+        shared, private = split_draft(draft)
+        if private:
+            with transaction.atomic():
+                apply_draft(person, private)
+        clan_writes = write_shared_to_clans(request.user, links, shared, clan_versions)
+        return self.mutation_response(person.id, clanWrites=clan_writes)
 
     def delete(self, request, person_id):
         """Spec §8.4: hard delete, detach, no cascade. The client-side giỗ

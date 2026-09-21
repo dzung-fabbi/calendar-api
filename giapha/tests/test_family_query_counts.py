@@ -7,12 +7,14 @@ with exactly two queries (`selectors.family.load_graph`), so the count must
 be identical on both fixtures.
 
 Recorded ceilings (`snapshots/query_budgets.json`), counted inside a
-`TestCase` so every `transaction.atomic()` adds a SAVEPOINT/RELEASE pair:
-  family_root        3  (Family get_or_create SELECT + persons + spouses)
-  family_person      3  (same -- detail is served from the same two queries)
-  family_set_parent  8  (family + savepoint pair + load 2 + UPDATE + reload 2)
-  family_link_spouse 14 (family + savepoint pairs + load 2 + upsert SELECT/INSERT
-                         + touch updated_at + reload 2)
+`TestCase` so every `transaction.atomic()` adds a SAVEPOINT/RELEASE pair.
+Every response carries `persons[]` with clan-link overlay (plan 260919
+phase 4), which costs ONE extra query (`selectors.family_link.active_link_rows`):
+  family_root        4  (Family get_or_create SELECT + persons + spouses + links)
+  family_person      4  (same -- detail is served from the same queries)
+  family_set_parent  9  (family + savepoint pair + load 2 + UPDATE + reload 2 + links)
+  family_link_spouse 15 (family + savepoint pairs + load 2 + upsert SELECT/INSERT
+                         + touch updated_at + reload 2 + links)
 """
 
 import uuid

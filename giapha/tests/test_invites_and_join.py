@@ -201,11 +201,13 @@ class InviteListAndRevokeTests(TestCase):
         codes = {row['code'] for row in response.json()['data']}
         self.assertIn('LISTME01', codes)
 
-    def test_editor_and_viewer_cannot_list_invites(self):
+    def test_editor_and_viewer_only_see_their_own_invites(self):
+        # Plan 260919 phase 1: non-approvers list only invites they created.
         for role in ('editor', 'viewer'):
             with self.subTest(role=role):
                 response = client_for(self.fixture[role]).get(invites_url(self.clan.id))
-                self.assertEqual(403, response.status_code)
+                self.assertEqual(200, response.status_code)
+                self.assertEqual([], response.json()['data'])
 
     def test_outsider_gets_404_on_invite_list(self):
         response = client_for(self.fixture['outsider']).get(invites_url(self.clan.id))

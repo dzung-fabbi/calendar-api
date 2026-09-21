@@ -1,0 +1,1 @@
+- [/auth/token client contract](project-auth-token-client-contract.md) — frozen URLs + JSON-body tolerance; shipped mobile clients can't change, DOT's views are form-only

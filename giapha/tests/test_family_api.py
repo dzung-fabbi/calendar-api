@@ -26,7 +26,7 @@ class FamilyReadTests(TestCase):
         self.assertFalse(Family.objects.filter(user=self.user).exists())
         response = self.client.get(url('family-root'))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), {'selfId': None, 'persons': []})
+        self.assertEqual(response.json(), {'selfId': None, 'persons': [], 'links': []})
         self.assertTrue(Family.objects.filter(user=self.user).exists())
 
     def test_unauthenticated_is_rejected(self):

@@ -30,7 +30,7 @@ _WRITE_FIELDS = (
     'father_id', 'mother_id', 'parent_kind',
     'branch', 'birth_order', 'is_truong',
     'birth_solar', 'birth_lunar_day', 'birth_lunar_month', 'birth_lunar_leap',
-    'death_solar', 'death_lunar_day', 'death_lunar_month', 'death_lunar_leap',
+    'death_solar', 'death_lunar_day', 'death_lunar_month', 'death_lunar_leap', 'da_mat',
     'que_quan', 'nghe_nghiep', 'tieu_su',
     'mo_phan_lat', 'mo_phan_lng', 'mo_phan_note',
 )
@@ -45,10 +45,10 @@ _READ_FIELDS = (
     'father_id', 'father_name', 'mother_id', 'mother_name', 'parent_kind',
     'generation', 'branch', 'birth_order', 'is_truong',
     'birth_solar', 'birth_lunar_day', 'birth_lunar_month', 'birth_lunar_leap',
-    'death_solar', 'death_lunar_day', 'death_lunar_month', 'death_lunar_leap',
+    'death_solar', 'death_lunar_day', 'death_lunar_month', 'death_lunar_leap', 'da_mat',
     'que_quan', 'nghe_nghiep', 'tieu_su', 'photo_url',
     'mo_phan_lat', 'mo_phan_lng', 'mo_phan_note',
-    'is_deleted', 'created_at', 'updated_at',
+    'version', 'is_deleted', 'created_at', 'updated_at',
 )
 
 

@@ -12,11 +12,17 @@ Outsiders (authenticated users who are not a member of the clan) always get
 from rest_framework.exceptions import NotFound
 from rest_framework.permissions import BasePermission
 
-from giapha.selectors.clan import clan_role_for
+from giapha.models.choices import APPROVER_ROLES, EDITOR_ROLES  # noqa: F401 (re-exported)
+from giapha.selectors.clan import clan_member_for
 
 NOT_FOUND_DETAIL = 'Không tìm thấy dòng họ.'
 
-EDITOR_ROLES = ('owner', 'editor')
+
+def cached_member(request, clan_id):
+    """The caller's `ClanMember` row for `clan_id` as cached by `_role_for`,
+    or None. Only meaningful after a permission class ran for that clan.
+    """
+    return getattr(request, '_giapha_member_cache', {}).get(clan_id)
 
 
 def _role_for(request, view):
@@ -32,7 +38,13 @@ def _role_for(request, view):
         cache = {}
         request._giapha_role_cache = cache
     if clan_id not in cache:
-        cache[clan_id] = clan_role_for(request.user, clan_id)
+        member = clan_member_for(request.user, clan_id)
+        cache[clan_id] = member.role if member else None
+        member_cache = getattr(request, '_giapha_member_cache', None)
+        if member_cache is None:
+            member_cache = {}
+            request._giapha_member_cache = member_cache
+        member_cache[clan_id] = member
     role = cache[clan_id]
     if role is None:
         raise NotFound(NOT_FOUND_DETAIL)
@@ -40,7 +52,7 @@ def _role_for(request, view):
 
 
 class IsClanMember(BasePermission):
-    """Any role (owner/editor/viewer) qualifies."""
+    """Any role qualifies."""
 
     message = 'Bạn không phải thành viên dòng họ này.'
 
@@ -52,7 +64,7 @@ class IsClanMember(BasePermission):
 
 
 class IsClanEditor(BasePermission):
-    """owner or editor."""
+    """owner, manager or editor."""
 
     message = 'Chỉ chủ sở hữu hoặc biên tập viên mới có quyền này.'
 
@@ -60,6 +72,17 @@ class IsClanEditor(BasePermission):
         if not (request.user and request.user.is_authenticated):
             return False
         return _role_for(request, view) in EDITOR_ROLES
+
+
+class IsClanApprover(BasePermission):
+    """owner or manager (Ban quản lý)."""
+
+    message = 'Chỉ trưởng họ hoặc Ban quản lý mới có quyền này.'
+
+    def has_permission(self, request, view):
+        if not (request.user and request.user.is_authenticated):
+            return False
+        return _role_for(request, view) in APPROVER_ROLES
 
 
 class IsClanOwner(BasePermission):

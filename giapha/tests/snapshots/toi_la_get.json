@@ -1,6 +1,7 @@
 {
   "data": {
     "ho_ten": "str",
-    "person_id": "int"
+    "person_id": "int",
+    "person_verified": "bool"
   }
 }

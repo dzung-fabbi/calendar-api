@@ -14,8 +14,10 @@ from rest_framework.views import APIView
 
 from giapha.exceptions import BadRequestException
 from giapha.permissions import IsClanEditor
+from giapha.permissions_scope import require_write
 from giapha.selectors.person import birth_solar_by_id, clan_edges, get_person_any
 from giapha.serializers.person import PersonReadSerializer, PersonRevisionSerializer
+from giapha.selectors.person_version import lock_and_bump
 from giapha.selectors.revision import record, revision_for_person, revisions_of
 from giapha.services.person_rules import PersonValidationError, ids_from_edges, validate_person_write
 from giapha.services.revision import restore
@@ -83,10 +85,15 @@ class PersonRestoreAPIView(APIView):
         if revision is None:
             raise NotFound(REVISION_NOT_FOUND)
 
+        # Branch editors are editor-role but scoped (review H1): restore
+        # rewrites every field, parents included, so both ends must be theirs.
+        require_write(request, clan_id, [person.id])
         edges = clan_edges(clan_id)
         with transaction.atomic():
+            lock_and_bump(person)
             record(person, actor=request.user, action='update')
             restore(person, revision.payload_json)
+            require_write(request, clan_id, [person.id, person.father_id, person.mother_id])
 
             merged = {field: getattr(person, field) for field in _RULE_FIELDS}
             try:

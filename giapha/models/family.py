@@ -34,6 +34,9 @@ class Family(models.Model):
         'giapha.FamilyPerson', on_delete=models.SET_NULL, null=True, blank=True,
         related_name='+', verbose_name='Người là "tôi"',
     )
+    # `PUT /v1/family/import` idempotency key (one per device, app-generated
+    # uuid). A retry with the same key replays the stored id map.
+    import_key = models.CharField(max_length=36, null=True, blank=True, verbose_name='Khoá nhập từ máy')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Ngày tạo')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Ngày cập nhật')
 
@@ -94,6 +97,9 @@ class FamilyPerson(models.Model):
     note = models.CharField(max_length=200, null=True, blank=True, verbose_name='Ghi chú')
     # Id of the client-side giỗ reminder event. Opaque to the server.
     gio_event_id = models.CharField(max_length=64, null=True, blank=True, verbose_name='Id sự kiện giỗ')
+    # The on-device id (`fam_...`) this row was imported from -- rebuilds the
+    # `idMap` on an import retry and helps trace a user's report.
+    legacy_id = models.CharField(max_length=64, null=True, blank=True, db_index=True, verbose_name='Id cũ trên máy')
 
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Ngày tạo')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Ngày cập nhật')

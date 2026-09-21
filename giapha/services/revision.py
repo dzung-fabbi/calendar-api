@@ -23,7 +23,9 @@ import json
 # delete endpoints in `views/photo.py`, phase 8) from editing genealogical
 # content, so restoring content must never move, resurrect, or steal a
 # photo as a side effect.
-_EXCLUDED_FIELDS = frozenset({'id', 'created_at', 'updated_at', 'is_deleted', 'clan_id', 'photo_key'})
+# `version` is bookkeeping too: restoring must bump it, never rewind it
+# (a rewound version would let a stale client's PATCH pass the lock).
+_EXCLUDED_FIELDS = frozenset({'id', 'created_at', 'updated_at', 'is_deleted', 'clan_id', 'photo_key', 'version'})
 
 
 def _to_json_value(value):

@@ -7,6 +7,7 @@ add latency. This is the ONE place the wire shape is declared; the tests
 assert the key set.
 """
 
+from giapha.services.family_clan_field_map import CLAN_SOURCE_FIELDS, clan_to_family
 from giapha.services.family_dates import epoch_ms, format_date
 
 PERSON_KEYS = (
@@ -16,7 +17,7 @@ PERSON_KEYS = (
     'solarDeathDate', 'deathTime',
     'lunarDeathDay', 'lunarDeathMonth', 'lunarDeathYear', 'lunarLeap',
     'relationship', 'note', 'gioEventId',
-    'createdAt', 'updatedAt',
+    'createdAt', 'updatedAt', 'linked',
 )
 
 
@@ -37,9 +38,10 @@ def spouses_by_person(spouse_rows):
     return out
 
 
-def person_to_dict(row, spouses):
+def person_to_dict(row, spouses, linked=False):
     """`row`: one dict from `person_rows`. `spouses`: that person's list from
-    `spouses_by_person` (or `[]`)."""
+    `spouses_by_person` (or `[]`). `linked`: shared fields in `row` were
+    overlaid from a clan person (`overlay_links`)."""
     return {
         'id': id_str(row['id']),
         'name': row['name'],
@@ -64,10 +66,38 @@ def person_to_dict(row, spouses):
         'gioEventId': row['gio_event_id'] or None,
         'createdAt': epoch_ms(row['created_at']),
         'updatedAt': epoch_ms(row['updated_at']),
+        'linked': linked,
     }
 
 
-def persons_payload(person_rows, spouse_rows):
+def overlay_links(person_rows, link_rows):
+    """Replace the shared fields of every linked person with the clan's
+    current values (spec §14.1: read through, never copied). A person linked
+    into several clans reads from the OLDEST link. Returns `(rows, linked_ids)`.
+    """
+    source = {}
+    for link in link_rows:
+        source.setdefault(link['family_person_id'], link)
+    rows = []
+    for row in person_rows:
+        link = source.get(row['id'])
+        if link is not None:
+            clan_values = {field: link['clan_person__' + field] for field in CLAN_SOURCE_FIELDS}
+            row = dict(row, **clan_to_family(clan_values))
+        rows.append(row)
+    return rows, set(source)
+
+
+def links_payload(link_rows):
+    return [
+        {'id': link['id'], 'personId': id_str(link['family_person_id']), 'clanId': link['clan_id'],
+         'clanPersonId': link['clan_person_id'], 'clanName': link['clan__ten_ho']}
+        for link in link_rows
+    ]
+
+
+def persons_payload(person_rows, spouse_rows, link_rows=()):
     """The `persons[]` array every read and every mutation response carries."""
+    rows, linked_ids = overlay_links(person_rows, link_rows)
     links = spouses_by_person(spouse_rows)
-    return [person_to_dict(row, links.get(row['id'], [])) for row in person_rows]
+    return [person_to_dict(row, links.get(row['id'], []), row['id'] in linked_ids) for row in rows]

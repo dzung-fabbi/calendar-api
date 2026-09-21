@@ -131,7 +131,9 @@ def node_from_row(row):
     death_solar = row['death_solar']
     death_lunar_day = row['death_lunar_day']
     death_lunar_month = row['death_lunar_month']
-    has_death_info = death_solar is not None or death_lunar_day is not None or death_lunar_month is not None
+    has_death_info = (
+        row.get('da_mat') or death_solar is not None or death_lunar_day is not None or death_lunar_month is not None
+    )
 
     return {
         'id': row['id'],

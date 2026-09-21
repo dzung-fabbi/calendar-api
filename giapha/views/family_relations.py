@@ -18,6 +18,7 @@ from giapha.serializers.family_relations import (
 )
 from giapha.services.family_draft import finalize_draft
 from giapha.views.family_base import FamilyAPIView
+from giapha.views.family_contribute_relative import contribute_new_relative
 # Absolute module import, not `from giapha.views import ...`: this module is
 # itself imported while the `giapha.views` package is still initialising.
 from giapha.views import family_link_flow as flow  # noqa: E402  (see above)
@@ -39,6 +40,17 @@ class _RelationMutationAPIView(FamilyAPIView):
 
 class FamilyAddRelativeAPIView(_RelationMutationAPIView):
     body_serializer = AddRelativeBodySerializer
+
+    def post(self, request):
+        data = self.validate(self.body_serializer, request.data)
+        with transaction.atomic():
+            _, _, graph = load_graph(self.family.id)
+            focus_id, warning = self.apply(graph, data)
+        if not data['contribute_to']:
+            return self.mutation_response(focus_id, warning)
+        contributions = [contribute_new_relative(request.user, self.family, focus_id, clan_id)
+                         for clan_id in dict.fromkeys(data['contribute_to'])]
+        return self.mutation_response(focus_id, warning, contributions=contributions)
 
     def apply(self, graph, data):
         draft = finalize_draft({}, data['person'])
