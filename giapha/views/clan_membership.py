@@ -1,4 +1,4 @@
-"""Clan member roster and role/removal management.
+"""Clan member roster, role/removal management, and leaving a clan.
 
 Invites live in `views/clan_invite.py` + `views/invite_review.py`, joining in
 `views/clan_join.py`, binding verification in `views/member_verify.py`.
@@ -13,7 +13,8 @@ from rest_framework.views import APIView
 
 from giapha.exceptions import BadRequestException
 from giapha.models import ClanInvite
-from giapha.permissions import IsClanMember, IsClanOwner
+from giapha.permissions import IsClanMember, IsClanOwner, cached_member
+from giapha.selectors.change_request import withdraw_pending_for
 from giapha.selectors.clan import member_by_user_id, members_of, owner_count
 from giapha.selectors.family_link_detach import detach_for_member
 from giapha.selectors.person import get_person_or_none
@@ -23,6 +24,22 @@ MEMBER_NOT_FOUND = 'Không tìm thấy thành viên.'
 LAST_OWNER_DETAIL = 'Dòng họ phải có ít nhất một chủ sở hữu.'
 SCOPE_EDITOR_ONLY_DETAIL = 'Chỉ biên tập viên mới được giới hạn theo chi; trưởng họ và Ban quản lý luôn quản toàn họ.'
 SCOPE_ROOT_NOT_FOUND = 'Không tìm thấy người làm gốc chi trong dòng họ này.'
+OWNER_CANNOT_LEAVE = (
+    'Chủ sở hữu không thể tự rời dòng họ. '
+    'Hãy chuyển quyền chủ sở hữu cho thành viên khác trước khi rời.'
+)
+
+
+def _remove_member(member):
+    """Shared by "owner removes a member" and "member leaves". Caller wraps in
+    `transaction.atomic()`."""
+    # A reviewer must not apply edits from someone no longer in the clan.
+    withdraw_pending_for(member.clan_id, member.user_id)
+    # Their personal-tree links into this clan detach (snapshot first).
+    detach_for_member(member.clan_id, member.user_id)
+    # Codes they minted must not let them (or an alt) back in (review H3).
+    ClanInvite.objects.filter(clan_id=member.clan_id, created_by_id=member.user_id).delete()
+    member.delete()
 
 
 class ClanMembersAPIView(APIView):
@@ -79,9 +96,27 @@ class ClanMemberDetailAPIView(APIView):
             raise BadRequestException(LAST_OWNER_DETAIL)
 
         with transaction.atomic():
-            # Their personal-tree links into this clan detach (snapshot first).
-            detach_for_member(clan_id, member.user_id)
-            # Codes they minted must not let them (or an alt) back in (review H3).
-            ClanInvite.objects.filter(clan_id=clan_id, created_by_id=member.user_id).delete()
-            member.delete()
+            _remove_member(member)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ClanMemberLeaveAPIView(APIView):
+    """`DELETE /clans/{id}/members/me` -- the caller leaves the clan.
+
+    Any role except `owner`, even when co-owners exist: leaving as owner is
+    always a deliberate two-step (demote yourself via `PATCH members/{id}`,
+    or hand ownership over, then leave), so one tap never drops an owner.
+    Their personal links detach and their pending proposals are withdrawn --
+    a reviewer must not apply edits from someone no longer in the clan.
+    """
+
+    permission_classes = [IsAuthenticated, IsClanMember]
+
+    def delete(self, request, clan_id):
+        member = cached_member(request, clan_id)
+        if member.role == 'owner':
+            raise BadRequestException(OWNER_CANNOT_LEAVE)
+
+        with transaction.atomic():
+            _remove_member(member)
         return Response(status=status.HTTP_204_NO_CONTENT)

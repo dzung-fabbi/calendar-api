@@ -21,7 +21,7 @@ class NormalizeFieldTests(SimpleTestCase):
         fields, warnings = normalize_person({
             'id': 'fam_1', 'name': '  ', 'gender': 'x', 'solarBirthDate': '2000-01-01',
             'birthTime': '25:00', 'lunarDeathDay': 31, 'lunarDeathMonth': 13,
-            'relationship': 'r' * 30, 'note': 'n' * 250, 'gioEventId': 'gio_old_1',
+            'relationship': 'r' * 30, 'note': 'n' * 510, 'gioEventId': 'gio_old_1',
         })
         self.assertEqual(UNNAMED, fields['name'])
         self.assertEqual('unknown', fields['gender'])
@@ -30,11 +30,28 @@ class NormalizeFieldTests(SimpleTestCase):
         self.assertIsNone(fields['lunar_death_day'])
         self.assertIsNone(fields['lunar_death_month'])
         self.assertEqual(24, len(fields['relationship']))
-        self.assertEqual(200, len(fields['note']))
+        self.assertEqual(500, len(fields['note']))
         self.assertEqual('gio_old_1', fields['gio_event_id'])
         warned = {w['field'] for w in warnings}
         self.assertTrue({'name', 'gender', 'solarBirthDate', 'birthTime', 'lunarDeathDay',
                          'lunarDeathMonth', 'relationship', 'note'} <= warned)
+
+    def test_contact_fields_are_trimmed_cut_and_warned(self):
+        fields, warnings = normalize_person({
+            'id': 'fam_2', 'name': 'A', 'phone': ' 0' * 15, 'education': 'e' * 41,
+            'occupation': '  Kỹ sư  ', 'note': 'n' * 500,
+        })
+        self.assertEqual(20, len(fields['phone']))
+        self.assertEqual(40, len(fields['education']))
+        self.assertEqual('Kỹ sư', fields['occupation'])
+        self.assertEqual(500, len(fields['note']))
+        self.assertEqual({'phone', 'education'}, {w['field'] for w in warnings})
+        self.assertIn('20', next(w['message'] for w in warnings if w['field'] == 'phone'))
+
+    def test_blank_or_non_string_contact_fields_become_null(self):
+        fields, warnings = normalize_person({'id': 'x', 'name': 'A', 'phone': '   ', 'education': 12, 'occupation': ''})
+        self.assertEqual((None, None, None), (fields['phone'], fields['education'], fields['occupation']))
+        self.assertEqual([], warnings)
 
     def test_long_name_is_cut(self):
         fields, warnings = normalize_person({'id': 'x', 'name': 'a' * 70})

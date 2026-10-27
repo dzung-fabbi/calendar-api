@@ -63,8 +63,10 @@ class FamilySetParentAPIView(_RelationMutationAPIView):
     body_serializer = SetParentBodySerializer
 
     def apply(self, graph, data):
-        flow.set_parent(graph, data['child_id'], data['slot'], data['parent_id'], data['rel'])
-        return data['child_id'], None
+        warning = flow.set_parent(
+            self.family, graph, data['child_id'], data['slot'], data['parent_id'], data['rel'],
+        )
+        return data['child_id'], warning
 
 
 class FamilyLinkSpouseAPIView(_RelationMutationAPIView):
@@ -87,5 +89,7 @@ class FamilyLinkChildAPIView(_RelationMutationAPIView):
     body_serializer = LinkChildBodySerializer
 
     def apply(self, graph, data):
-        warning = flow.link_child(graph, data['parent_id'], data['child_id'], data.get('other_parent_id'))
+        warning = flow.link_child(
+            self.family, graph, data['parent_id'], data['child_id'], data.get('other_parent_id'),
+        )
         return data['child_id'], warning

@@ -5,7 +5,7 @@ from giapha.views.change_request_review import ChangeRequestApproveAPIView, Chan
 from giapha.views.clan import ClanDetailAPIView, ClanListCreateAPIView, ClanPublicLinkAPIView
 from giapha.views.clan_invite import ClanInviteDetailAPIView, ClanInviteListCreateAPIView
 from giapha.views.clan_join import JoinClanAPIView
-from giapha.views.clan_membership import ClanMemberDetailAPIView, ClanMembersAPIView
+from giapha.views.clan_membership import ClanMemberDetailAPIView, ClanMemberLeaveAPIView, ClanMembersAPIView
 from giapha.views.invite_review import ClanInviteApproveAPIView, ClanInviteRejectAPIView
 from giapha.views.device import DeviceTokenAPIView
 from giapha.views.family import (
@@ -66,6 +66,7 @@ __all__ = [
     'ClanListCreateAPIView',
     'ClanMemberBindingAPIView',
     'ClanMemberDetailAPIView',
+    'ClanMemberLeaveAPIView',
     'ClanMemberVerifyAPIView',
     'ClanMembersAPIView',
     'ClanPhotoUrlsAPIView',

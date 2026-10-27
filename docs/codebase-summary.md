@@ -283,7 +283,8 @@ name+year, no auto-link). `services/family_clan_bootstrap.py` creates clan from 
 **Optimistic lock (phase 5):** `Person.version` increments on PATCH/restore/approve-CR/photo.
 `PATCH /clans/{pid}` + `version?`: 409 if mismatch. `ChangeRequest.base_version` detects stale
 (after-created edits). `PATCH /v1/family/persons` (linked) sends `clanVersions{clanId:n}` per clan;
-response includes `clanWrites: [{clanId, result, current?}]` for each link.
+response (HTTP 200) includes `clanWrites: [{clanId, result: applied|proposed|conflict|rejected, ...}]`
+for each link; `current` on a conflict is the full clan person.
 
 **Branch editor (phase 6):** `ClanMember.scope_root_person_id` (editor only, PROTECT foreign key).
 `family_scope.branch_scope_ids()` computes descendants. CR list/approve/notify scoped.
@@ -293,6 +294,10 @@ Verify binding includes branch editor.
 `ClanInvite.status`, roles. `0011` adds `ChangeRequest`. `0012` adds `Family.import_key`, 
 `FamilyPerson.legacy_id`. `0013` adds `FamilyPersonLink`, `Person.da_mat`. `0014` adds 
 `Person.version`, `ChangeRequest.base_version`. `0015` adds `ClanMember.scope_root_person_id`.
+`0016` adds private `FamilyPerson.phone`/`education`/`occupation` (20/40/40) and raises `note` to 500.
+
+**Leave clan:** `DELETE /clans/{id}/members/me` (`ClanMemberLeaveAPIView`): non-owners only; detaches
+links (`detach_for_member`), withdraws pending CRs (`selectors.change_request.withdraw_pending_for`).
 
 **New endpoints** (~15 total): member verify/reject, invite approve/reject/detail, change request
 list/detail/approve/reject, family import/clan-bootstrap, link confirm/import/suggest/contribute/diff/detail.

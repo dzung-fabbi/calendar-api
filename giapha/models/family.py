@@ -94,7 +94,12 @@ class FamilyPerson(models.Model):
 
     # Free-text label relative to "tôi" -- a note, not a graph edge (spec §3.1).
     relationship = models.CharField(max_length=24, null=True, blank=True, verbose_name='Quan hệ với tôi')
-    note = models.CharField(max_length=200, null=True, blank=True, verbose_name='Ghi chú')
+    note = models.CharField(max_length=500, null=True, blank=True, verbose_name='Ghi chú')
+    # Private contact/profile details: never shared with a linked clan person
+    # (absent from `SHARED_FAMILY_FIELDS`), so a linked PATCH keeps them here.
+    phone = models.CharField(max_length=20, null=True, blank=True, verbose_name='Số điện thoại')
+    education = models.CharField(max_length=40, null=True, blank=True, verbose_name='Học vấn')
+    occupation = models.CharField(max_length=40, null=True, blank=True, verbose_name='Nghề nghiệp')
     # Id of the client-side giỗ reminder event. Opaque to the server.
     gio_event_id = models.CharField(max_length=64, null=True, blank=True, verbose_name='Id sự kiện giỗ')
     # The on-device id (`fam_...`) this row was imported from -- rebuilds the

@@ -16,7 +16,10 @@ from giapha.services.family_draft import finalize_draft
 
 UNNAMED = 'Chưa đặt tên'
 GENDERS = ('male', 'female', 'unknown')
-_TEXT_LIMITS = (('relationship', 'relationship', 24), ('note', 'note', 200), ('gioEventId', 'gio_event_id', 64))
+_TEXT_LIMITS = (
+    ('relationship', 'relationship', 24), ('note', 'note', 500), ('phone', 'phone', 20),
+    ('education', 'education', 40), ('occupation', 'occupation', 40), ('gioEventId', 'gio_event_id', 64),
+)
 
 
 class _Collector:

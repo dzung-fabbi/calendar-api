@@ -93,6 +93,9 @@ class JoinClanAPIView(APIView):
                     message = BINDING_LOST_DETAIL
 
         body = {
+            # The member payload has no clan id; without it a client that is
+            # already a member cannot tell which clan the code opened.
+            'clan_id': invite.clan_id,
             'data': ClanMemberSerializer(member, context={'request': request}).data,
             'binding': binding_payload(member),
         }

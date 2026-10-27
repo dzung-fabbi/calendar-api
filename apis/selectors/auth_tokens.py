@@ -20,7 +20,12 @@ from apis.models import RefreshToken
 
 
 def revoke_all_tokens(user):
-    """Delete every refresh token belonging to `user`. Returns the count."""
+    """Delete every refresh token belonging to `user`. Returns the count.
+
+    Push device registrations go too: an evicted session's handset would
+    otherwise keep receiving this account's clan / giỗ notifications. Through
+    the reverse relation so `apis` does not import `giapha`."""
+    user.device_tokens.all().delete()
     return RefreshToken.objects.filter(user=user).delete()[0]
 
 

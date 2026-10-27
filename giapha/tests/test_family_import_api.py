@@ -18,6 +18,7 @@ def snapshot(size, with_cycle=False):
     for index in range(size // 2):
         man = {'id': 'fam_m{}'.format(index), 'name': 'Ông {}'.format(index), 'gender': 'male',
                'createdAt': 1690000000000 + index * 10, 'gioEventId': 'gio_{}'.format(index),
+               'phone': '0901 000 00{}'.format(index % 10), 'education': 'Đại học', 'occupation': 'Giáo viên',
                'spouses': [{'id': 'fam_w{}'.format(index), 'type': 'married'}]}
         if index:
             man['fatherId'] = 'fam_m{}'.format(index - 1)
@@ -53,6 +54,8 @@ class FamilyImportApiTests(TestCase):
         self.assertEqual(body['idMap']['fam_m2'], child['fatherId'])
         self.assertEqual(body['idMap']['fam_w2'], child['motherId'])
         self.assertEqual('gio_3', child['gioEventId'])
+        self.assertEqual(('0901 000 003', 'Đại học', 'Giáo viên'),
+                         (child['phone'], child['education'], child['occupation']))
         self.assertEqual(1690000000030, child['createdAt'])
         self.assertEqual(10, FamilySpouse.objects.filter(family__user=self.user).count())
 

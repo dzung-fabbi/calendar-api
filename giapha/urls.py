@@ -17,6 +17,7 @@ from giapha.views import (
     ClanListCreateAPIView,
     ClanMemberBindingAPIView,
     ClanMemberDetailAPIView,
+    ClanMemberLeaveAPIView,
     ClanMemberVerifyAPIView,
     ClanMembersAPIView,
     ClanPhotoUrlsAPIView,
@@ -84,6 +85,8 @@ urlpatterns = [
     path('clans', ClanListCreateAPIView.as_view(), name='clan-list-create'),
     path('clans/<int:clan_id>', ClanDetailAPIView.as_view(), name='clan-detail'),
     path('clans/<int:clan_id>/members', ClanMembersAPIView.as_view(), name='clan-members'),
+    # Literal `me` before `<int:user_id>`; the int converter never matches it anyway.
+    path('clans/<int:clan_id>/members/me', ClanMemberLeaveAPIView.as_view(), name='clan-member-leave'),
     path(
         'clans/<int:clan_id>/members/<int:user_id>',
         ClanMemberDetailAPIView.as_view(),

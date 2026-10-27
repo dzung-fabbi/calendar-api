@@ -1,5 +1,6 @@
 """Editing a linked person from the personal tree (plan 260919 phase 5)."""
 
+import json
 from unittest import mock
 
 from django.test import TestCase
@@ -57,6 +58,41 @@ class LinkedEditTests(TestCase):
         body = self.patch(self.f_ong, {'relationship': 'Ông nội'}).json()
         self.assertEqual([], body['clanWrites'])
         self.assertFalse(ChangeRequest.objects.exists())
+
+    def test_resending_unchanged_shared_values_writes_no_clan(self):
+        # The form echoes lunarLeap/deceased/name even when the user only edits a private field.
+        before = Person.objects.get(id=self.fx['ong'].id)
+        body = self.patch(self.f_ong, {'name': before.ho_ten, 'lunarLeap': False, 'note': 'x'}).json()
+        self.assertEqual([], body['clanWrites'])
+        self.assertFalse(ChangeRequest.objects.exists())
+        self.assertEqual(before.version, Person.objects.get(id=self.fx['ong'].id).version)
+
+    def test_contact_fields_stay_private_to_the_personal_tree(self):
+        before = Person.objects.get(id=self.fx['ong'].id)
+        body = self.patch(self.f_ong, {'phone': '0901234567', 'education': 'Đại học',
+                                       'occupation': 'Nông dân', 'note': 'n' * 500}).json()
+        self.assertEqual([], body['clanWrites'])
+        self.assertFalse(ChangeRequest.objects.exists())
+        saved = FamilyPerson.objects.get(id=self.f_ong.id)
+        self.assertEqual(('0901234567', 'Đại học', 'Nông dân'), (saved.phone, saved.education, saved.occupation))
+        after = Person.objects.get(id=self.fx['ong'].id)
+        self.assertEqual((before.version, before.nghe_nghiep), (after.version, after.nghe_nghiep))
+        person = next(p for p in body['persons'] if p['id'] == str(self.f_ong.id))
+        self.assertTrue(person['linked'])
+        self.assertEqual('Nông dân', person['occupation'])
+
+    @mock.patch('giapha.views.change_request.push_to_users')
+    def test_contact_fields_never_ride_along_a_clan_write(self, _push):
+        body = self.patch(self.f_con, {'name': 'Con Hai', 'phone': '0909', 'occupation': 'Thợ mộc'}).json()
+        self.assertEqual('applied', body['clanWrites'][0]['result'])
+        clan_person = Person.objects.get(id=self.fx['con'].id)
+        self.assertEqual('Con Hai', clan_person.ho_ten)
+        self.assertNotEqual('Thợ mộc', clan_person.nghe_nghiep)
+        self.assertEqual('0909', FamilyPerson.objects.get(id=self.f_con.id).phone)
+
+        proposal = self.patch(self.f_ong, {'name': 'Cụ', 'phone': '0808', 'education': 'Hán học'}).json()
+        cr = ChangeRequest.objects.get(id=proposal['clanWrites'][0]['changeRequestId'])
+        self.assertEqual({'ho_ten': 'Cụ'}, json.loads(cr.payload_json))
 
     def test_set_parent_in_personal_tree_does_not_touch_clan(self):
         before = Person.objects.get(id=self.fx['con'].id)

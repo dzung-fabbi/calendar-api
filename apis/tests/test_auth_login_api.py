@@ -171,6 +171,12 @@ class AuthLoginAPITests(TestCase):
         self.assertEqual(401, self._refresh(raw).status_code)
         self.assertEqual(0, RefreshToken.objects.filter(user=self.user).count())
 
+    def test_password_change_drops_push_device_registrations(self):
+        from giapha.models import DeviceToken
+        DeviceToken.objects.create(user=self.user, token='tok-old-session', platform='ios')
+        set_password_and_revoke_tokens(User.objects.get(pk=self.user.pk), 'MatKhauMoi!2026')
+        self.assertFalse(DeviceToken.objects.filter(user=self.user).exists())
+
     # -- logout -----------------------------------------------------------
 
     def test_logout_deletes_the_refresh_token(self):

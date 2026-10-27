@@ -38,23 +38,27 @@ class ClanSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        if not self._caller_is_owner(instance):
+        role = self._caller_role(instance)
+        if role != 'owner':
             data.pop('public_slug', None)
+        # The caller's own role: without it a client listing N clans needs N
+        # `GET /members` calls just to label its cards.
+        data['role'] = role
         return data
 
-    def _caller_is_owner(self, instance):
+    def _caller_role(self, instance):
         roles = self.context.get('roles')
         if roles is not None:
-            return roles.get(instance.id) == 'owner'
+            return roles.get(instance.id)
 
         request = self.context.get('request')
         if request is None:
-            return False
+            return None
         cache = getattr(request, '_giapha_role_cache', {})
         role = cache.get(instance.id)
         if role is None:
             role = clan_role_for(request.user, instance.id)
-        return role == 'owner'
+        return role
 
 
 class ClanMemberSerializer(serializers.ModelSerializer):

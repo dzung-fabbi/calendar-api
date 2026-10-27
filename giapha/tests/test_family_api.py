@@ -124,6 +124,33 @@ class PersonCreateTests(TestCase):
             self.assertEqual(response.status_code, 400, payload)
             self.assertEqual(response.json()['error']['code'], 'VALIDATION')
 
+    def test_contact_fields_round_trip_and_note_takes_500(self):
+        response = self.client.post(url('family-person-create'), {
+            'name': 'Chú', 'phone': ' +84 901-234-567 ', 'education': 'Thạc sĩ', 'occupation': 'Bác sĩ',
+            'note': 'n' * 500,
+        }, format='json')
+        self.assertEqual(response.status_code, 201, response.content)
+        person = response.json()['person']
+        self.assertEqual(
+            ('+84 901-234-567', 'Thạc sĩ', 'Bác sĩ'), (person['phone'], person['education'], person['occupation']),
+        )
+        self.assertEqual(len(person['note']), 500)
+        reread = person_by_id(self.client.get(url('family-root')).json()['persons'], person['id'])
+        self.assertEqual(reread['phone'], '+84 901-234-567')
+
+    def test_contact_fields_default_to_null(self):
+        person = self.client.post(url('family-person-create'), {'name': 'A'}, format='json').json()['person']
+        self.assertEqual((None, None, None), (person['phone'], person['education'], person['occupation']))
+
+    def test_over_long_text_fields_are_rejected(self):
+        for field, limit in (('phone', 20), ('education', 40), ('occupation', 40), ('note', 500)):
+            response = self.client.post(
+                url('family-person-create'), {'name': 'X', field: 'x' * (limit + 1)}, format='json',
+            )
+            self.assertEqual(response.status_code, 400, field)
+            self.assertEqual(response.json()['error']['code'], 'VALIDATION')
+            self.assertIn(field, response.json()['error']['fields'])
+
     def test_deceased_does_not_require_a_death_date(self):
         response = self.client.post(url('family-person-create'), {'name': 'Cụ', 'deceased': True}, format='json')
         self.assertEqual(response.status_code, 201)
@@ -226,6 +253,24 @@ class PersonPatchDeleteTests(TestCase):
         self.assertEqual(person['solarDeathDate'], '10-02-2024')
         person = self.client.patch(detail, {'lunarDeathYear': None}, format='json').json()['person']
         self.assertIsNone(person['solarDeathDate'])
+
+    def test_client_solar_death_date_is_ignored_while_lunar_date_is_complete(self):
+        detail = url('family-person-detail', person_id=self.grandpa.id)
+        self.client.patch(detail, {'deceased': True, 'lunarDeathDay': 1, 'lunarDeathMonth': 1,
+                                   'lunarDeathYear': 2024}, format='json')
+        person = self.client.patch(detail, {'solarDeathDate': '01-01-2000'}, format='json').json()['person']
+        self.assertEqual(person['solarDeathDate'], '10-02-2024')
+
+    def test_patch_sets_and_clears_contact_fields(self):
+        detail = url('family-person-detail', person_id=self.me.id)
+        body = {'phone': '0901234567', 'occupation': 'Kỹ sư'}
+        person = self.client.patch(detail, body, format='json').json()['person']
+        self.assertEqual(('0901234567', None, 'Kỹ sư'), (person['phone'], person['education'], person['occupation']))
+        person = self.client.patch(detail, {'phone': '', 'occupation': None, 'education': 'Đại học'},
+                                   format='json').json()['person']
+        self.assertEqual((None, 'Đại học', None), (person['phone'], person['education'], person['occupation']))
+        self.me.refresh_from_db()
+        self.assertEqual((None, 'Đại học', None), (self.me.phone, self.me.education, self.me.occupation))
 
     def test_delete_detaches_without_cascading(self):
         self.family.self_person = self.dad

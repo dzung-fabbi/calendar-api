@@ -75,6 +75,7 @@ class JoinClanTests(TestCase):
 
         self.assertEqual(200, first.status_code)
         self.assertEqual(200, second.status_code)
+        self.assertEqual(self.clan.id, first.json()['clan_id'])
         self.assertEqual(1, ClanMember.objects.filter(clan=self.clan, user=new_user).count())
         invite.refresh_from_db()
         self.assertEqual(1, invite.used_count, 'rejoining must not consume a second use')
@@ -87,6 +88,7 @@ class JoinClanTests(TestCase):
         )
         response = self.join(self.fixture['viewer'], invite.code)
         self.assertEqual(200, response.status_code)
+        self.assertEqual(self.clan.id, response.json()['clan_id'])
 
     def test_missing_code_is_a_400(self):
         response = client_for(self.fixture['outsider']).post(reverse('clan-join'), {}, format='json')

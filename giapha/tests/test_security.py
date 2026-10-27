@@ -38,8 +38,12 @@ DUMMY_ID = 999999
 #   (batched presigned GET) -- see that view's docstring.
 # - `change-request-list-create`: proposing a change IS the viewer's way to
 #   edit outside their scope (plan 260919 phase 2) -- see test_change_request_api.
+# - `clan-member-leave` (`DELETE members/me`): a member removes THEMSELVES --
+#   see test_clan_leave. (Running it here would also evict the viewer and turn
+#   every later case of the matrix into a 404.)
 ANY_MEMBER_WRITE_NAMES = frozenset({
     'clan-toi-la', 'clan-gio-follow-detail', 'clan-photo-urls', 'change-request-list-create',
+    'clan-member-leave',
 })
 # Row-scoped writes (plan 260919 phase 1): the role gate is `IsClanMember`
 # and the real check is per person (`permissions_scope.require_write`) or per

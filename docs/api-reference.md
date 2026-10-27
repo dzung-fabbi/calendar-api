@@ -6,7 +6,7 @@ Tài liệu bao gồm ba nhóm, theo thứ tự trong file:
 |---|---|---|
 | Đăng nhập / đăng xuất (JWT) | `/api/auth/` | app `apis/` |
 | Tài khoản, tải tệp, lịch vạn niên, đặt lịch | `/api/` | app `apis/` |
-| Gia phả cộng tộc (26 endpoint) | `/api/gia-pha/` | app `giapha/` |
+| Gia phả cộng tộc (27 endpoint) | `/api/gia-pha/` | app `giapha/` |
 | Gia phả cá nhân (13 endpoint) | `/api/gia-pha/v1/family/` | app `giapha/` |
 
 Đường dẫn gốc mặc định của phần gia phả: `/api/gia-pha/`. Endpoint của `apis/` luôn ghi đủ tiền tố `/api/`.
@@ -403,7 +403,7 @@ Cache-Control: no-store
 | `/clans/{clan_id}` | PATCH | `IsClanOwner` | Update từng phần. Writable: `ten_ho`, `thuy_to`, `mo_ta`, `hide_living_details`. `visibility` bỏ qua. Response: `{data: clan}` |
 | `/clans/{clan_id}` | DELETE | `IsClanOwner` | Soft-delete. Response: 204 |
 
-**Schema họ:** `id`, `ten_ho`, `thuy_to`, `mo_ta`, `hide_living_details` (bool), `visibility` (read-only: `private` hay `public_link`), `public_slug` (read-only, owner-only trong response), `created_at`, `updated_at`
+**Schema họ:** `id`, `ten_ho`, `thuy_to`, `mo_ta`, `hide_living_details` (bool), `visibility` (read-only: `private` hay `public_link`), `public_slug` (read-only, owner-only trong response), `role` (vai trò của người gọi: `owner`|`manager`|`editor`|`viewer`), `created_at`, `updated_at`
 
 ### Chia Sẻ Công Khai: Toggle
 
@@ -418,16 +418,16 @@ Cache-Control: no-store
 |----------|--------|-------|--------|
 | `/clans/{clan_id}/members` | GET | `IsClanMember` | Danh sách thành viên. Phạm vi + `person_id`, `person_verified`. Response: `{data: [member, ...]}` |
 | `/clans/{clan_id}/members/{user_id}` | PATCH | `IsClanOwner` | Thay role, scope. Request: `{role, scope_root_person_id?}`. Role: `owner`/`manager`/`editor`/`viewer`. Không demote owner cuối cùng. Response: `{data: member}` |
-| `/clans/{clan_id}/members/{user_id}` | DELETE | `IsClanOwner` | Xóa. Response: 204 |
+| `/clans/{clan_id}/members/{user_id}` | DELETE | `IsClanOwner` | Xóa thành viên. Liên kết cá nhân của họ vào họ này tự tách (chép snapshot trước), mọi đề xuất `pending` của họ chuyển `withdrawn`, mã mời họ đã tạo bị xoá. Không xoá được owner cuối cùng (400). Response: 204 |
+| `/clans/{clan_id}/members/me` | DELETE | `IsClanMember` (mọi vai trò **trừ** `owner`) | **Tự rời họ.** Owner → 400 `{"detail": "Chủ sở hữu không thể tự rời dòng họ. Hãy chuyển quyền chủ sở hữu cho thành viên khác trước khi rời."}` (kể cả khi họ có nhiều owner — hạ vai trò của chính mình trước). Khi rời: liên kết cá nhân ↔ họ này tự tách (snapshot field chung về cây cá nhân), mọi đề xuất `pending` của người đó trong họ chuyển `withdrawn`, mã mời họ đã tạo bị xoá. Người ngoài → 404, chưa đăng nhập → 401. Response: 204 |
 | `/clans/{clan_id}/members/{user_id}/verify` | POST | `IsClanApprover` | Xác minh binding. Response: `{data: member}` |
 | `/clans/{clan_id}/members/{user_id}/verify` | DELETE | `IsClanApprover` | Từ chối binding. Response: `{data: member}` |
 | `/clans/{clan_id}/invites` | GET | `IsClanMember` | Approver: tất cả + `?status=` filter. Member: chỉ của mình. Response: `{data: [invite, ...]}` |
 | `/clans/{clan_id}/invites` | POST | `IsClanMember` (verified hoặc role ≥ editor) | Tạo mời. Request: `{role?, person_id?, request_note?}`. Active nếu approver hoặc trong phạm vi ghi. Response: `{data: invite}` (201). Throttle: 20/day. |
-| `/clans/{clan_id}/invites/{invite_id}` | GET | `IsClanMember` | Detail mời (+ hiện giá trị nếu người gửi). Response: `{data: invite, current?}` |
 | `/clans/{clan_id}/invites/{invite_id}` | DELETE | creator hoặc `IsClanOwner` | Revoke. Response: 204 |
 | `/clans/{clan_id}/invites/{invite_id}/approve` | POST | `IsClanApprover` | Duyệt. Request: `{note?}`. Sinh `code`, đặt `status=active`. Response: `{data: invite}` |
 | `/clans/{clan_id}/invites/{invite_id}/reject` | POST | `IsClanApprover` | Từ chối. Request: `{note}`. Response: `{data: invite}` |
-| `/join` | POST | `IsAuthenticated` | Dùng code. Request: `{code}`. Bind + verify nếu invite có `person_id`. Response: `{data: member, binding}` (200). Throttle: 10/h. |
+| `/join` | POST | `IsAuthenticated` | Dùng code. Request: `{code}`. Bind + verify nếu invite có `person_id`. Response: `{clan_id, data: member, binding, message?}` (200; `clan_id` có cả khi đã là thành viên). Throttle: 10/h. |
 
 **Member schema:** `user_id`, `display_name`, `role` (`owner`/`manager`/`editor`/`viewer`), `person_id` (FK, null), `person_verified` (bool), `scope_root_person_id` (role=editor chỉ, null=toàn họ), `joined_at`; `username`, `email` chỉ khi caller là owner.
 
@@ -475,18 +475,18 @@ Bộ lọc này áp dụng cả khi ĐỌC payload, không chỉ khi ghi — nê
 
 ### Đề Xuất Thay Đổi (Change Request)
 
-Khi thành viên sửa ngoài phạm vi gia đình, gửi đề xuất cho editor duyệt. Editor duyệt sẽ áp ngay, từ chối sẽ xoá đề xuất.
+Khi thành viên sửa ngoài phạm vi gia đình, gửi đề xuất. **Người duyệt** = `owner`/`manager`/`editor` **có quyền ghi mọi người mà đề xuất đụng tới** (`can_review`: trưởng chi chỉ duyệt trong chi của mình). Duyệt → áp ngay qua đường ghi thường; từ chối → `status=rejected` (đề xuất vẫn còn, không bị xoá).
 
 | Endpoint | Method | Quyền | Ghi Chú |
 |----------|--------|-------|--------|
-| `/clans/{clan_id}/change-requests` | GET | `IsClanMember` | `?status=` filter. Editor: tất cả; member: chỉ của mình. Response: `{data: [...]}` |
-| `/clans/{clan_id}/change-requests` | POST | `IsClanMember` | Tạo CR. Request: `{action, target_person_id?, target_marriage_id?, payload_json, proposer_note?}`. Validate payload lúc tạo. Response: `{data: cr}` (201) |
-| `/clans/{clan_id}/change-requests/{cr_id}` | GET | `IsClanMember` | Detail + `current` (giá trị hiện tại). Response: `{data: cr}` |
-| `/clans/{clan_id}/change-requests/{cr_id}/approve` | POST | `IsClanApprover` | Duyệt. Request: `{note?, override_stale?}`. Stale (sau `base_version`) → 409 trừ `override_stale=true`. Response: `{data: cr}` |
-| `/clans/{clan_id}/change-requests/{cr_id}/reject` | POST | `IsClanApprover` | Từ chối. Request: `{note}`. Response: `{data: cr}` |
+| `/clans/{clan_id}/change-requests` | GET | `IsClanMember` | `?status=` (mặc định `pending`), `?mine=1`. Người duyệt: mọi đề xuất mình duyệt được; member khác: chỉ của mình. Tối đa 200. Response: `{data: [...]}` |
+| `/clans/{clan_id}/change-requests` | POST | `IsClanMember` | Tạo CR. Request: `{action, target_person_id?, target_marriage_id?, payload: {...}, note?}` (`note` ≤ 500 → lưu thành `proposer_note`). Validate `payload` bằng serializer ghi thật lúc tạo. Tối đa 20 đề xuất `pending`/người/họ. Response: `{data: cr}` (201) |
+| `/clans/{clan_id}/change-requests/{cr_id}` | GET | proposer hoặc người duyệt | Detail + `current` (giá trị hiện tại của đối tượng). Người khác → 404. Response: `{data: cr}` |
+| `/clans/{clan_id}/change-requests/{cr_id}/approve` | POST | `IsClanEditor` + trong phạm vi duyệt | Duyệt. Request: `{note?, override_stale?}`. Stale (sau `base_version`) → 409 trừ `override_stale=true`. Ngoài phạm vi → 403. Response: `{data: cr}` |
+| `/clans/{clan_id}/change-requests/{cr_id}/reject` | POST | `IsClanEditor` + trong phạm vi duyệt | Từ chối. Request: `{note}` (bắt buộc). Response: `{data: cr}` |
 | `/clans/{clan_id}/change-requests/{cr_id}` | DELETE | proposer khi `pending` | Withdraw. Response: 204 |
 
-**CR schema:** `id`, `action` (`create_person`\|`update_person`\|`delete_person`\|`create_marriage`\|`update_marriage`\|`delete_marriage`), `status` (`pending`\|`approved`\|`rejected`\|`expired`\|`withdrawn`\|`stale`), `proposer_id`, `payload_json`, `base_version`, `current?` (read-only), `reviewer_id`, `review_note`, `created_at`, `reviewed_at`
+**CR schema:** `id`, `action` (`create_person`\|`update_person`\|`delete_person`\|`create_marriage`\|`update_marriage`\|`delete_marriage`), `status` (`pending`\|`approved`\|`rejected`\|`expired`\|`withdrawn`\|`stale`), `proposer_id`, `target_person_id`, `target_marriage_id`, `payload` (object), `proposer_note`, `base_updated_at`, `base_version`, `reviewer_id`, `review_note`, `created_at`, `reviewed_at`; `current` chỉ có ở GET detail. `withdrawn` = người gửi tự rút, hoặc người gửi đã rời họ / bị xoá khỏi họ (`DELETE /members/me`, `DELETE /members/{user_id}`).
 
 ### Cây (Tree)
 
@@ -589,26 +589,27 @@ Chỉ nhận `GET`/`HEAD` (kể cả `OPTIONS` → 405) và chỉ render JSON (`
 | Method | Path | Chức năng | Body |
 |--------|------|----------|------|
 | `GET` | `/v1/family` | Toàn bộ cây + `selfId` + `links[]` (để overlay dữ liệu họ) | — |
-| `PUT` | `/v1/family/import` | Nhập snapshot từ máy (idempotent). 409 nếu server không rỗng. | `{importKey, selfId?, persons[]}` (max 500 người). Throttle: 5/h. |
+| `PUT` | `/v1/family/import` | Nhập snapshot từ máy (idempotent). 409 nếu server không rỗng. | `{importKey, selfId?, persons[]}` (tối đa `FAMILY_MAX_PERSONS` = 1000 người). Throttle: 5/h. |
 | `POST` | `/v1/family/clans` | Tạo họ từ nhánh cây này. Chép root + hậu duệ + vợ/chồng hậu duệ. Atomic. | `{rootPersonId, tenHo, thuyTo?}` |
 | `GET` | `/v1/family/persons/{id}` | Chi tiết + hiện field họ nếu đã link | — |
-| `POST` | `/v1/family/persons` | Tạo người; tự nối theo `relationship` | `PersonDraft` (+ `clanVersions{clanId: n}?` = nếu đã link, gửi version để detect conflict) |
+| `POST` | `/v1/family/persons` | Tạo người; tự nối theo `relationship`. Response thêm `linked` (bool) + `hint` (chuỗi hoặc `null`). | `PersonDraft` (`clanVersions` nếu gửi sẽ bị bỏ qua — người mới chưa liên kết họ nào) |
 | `PATCH` | `/v1/family/persons/{id}` | Sửa. Nếu link: field riêng lưu ở cá nhân, field chung gửi họ với version check → có thể conflict ở từng họ. | `PersonDraft` (+ `clanVersions?`) |
 | `DELETE` | `/v1/family/persons/{id}` | Xoá người, gỡ cạnh | — |
 | `PUT` | `/v1/family/self` | Đặt/gỡ "Đây là tôi" | `{personId: uuid \| null}` |
 | `PUT` | `/v1/family/persons/{id}/gio-event` | Gắn/gỡ sự kiện giỗ | `{eventId: uuid \| null}` |
-| `GET` | `/v1/family/links` | Danh sách liên kết. Cặp `(familyPersonId, clanPersonId)` đã confirm. | — |
 | `GET` | `/v1/family/links/suggestions?clanId=` | Gợi ý ghép cặp (không tự link). `confidence` + `reason`. | — |
 | `POST` | `/v1/family/links` | Xác nhận ghép cặp. Request: `{clanId, pairs: [{personId, clanPersonId}]}` (max 200). | — |
 | `DELETE` | `/v1/family/links/{id}` | Tách link. Snapshot field chung vào cá nhân trước. | — |
 | `POST` | `/v1/family/links/import` | Tạo FamilyPerson + link từ danh sách clanPersonId. Nối cạnh giữa các người đã link. | `{clanId, clanPersonIds[]}` |
 | `POST` | `/v1/family/links/contribute` | Tạo thẳng (nếu trong phạm vi ghi họ) hoặc ChangeRequest. | `{personId, clanId, fatherClanPersonId?, motherClanPersonId?}` |
 | `GET` | `/v1/family/links/diff?clanId=` | Cặp đã link mà cha/mẹ/vợ chồng lệch (xem từng bên). | — |
-| `POST` | `/v1/family/relations/add-relative` | Tạo + nối cạnh. `contributeTo: [clanId]?` = tạo qua luồng contribute. | `{anchorId, kind, person, otherParentId?, contributeTo?}` |
+| `POST` | `/v1/family/relations/add-relative` | Tạo + nối cạnh. `contributeTo: [clanId]?` = đóng góp người mới vào từng họ (luồng contribute); khi có, response thêm `contributions[]`. | `{anchorId, kind, person, otherParentId?, contributeTo?}` |
 | `POST` | `/v1/family/relations/set-parent` | Đặt/xoá cha/mẹ. Không lan sang họ (chỉ cá nhân). | `{childId, slot, parentId, rel?}` |
 | `POST` | `/v1/family/relations/link-spouse` | Nối vợ/chồng (2 chiều). | `{aId, bId, type?}` |
 | `POST` | `/v1/family/relations/unlink-spouse` | Gỡ vợ/chồng. | `{aId, bId}` |
 | `POST` | `/v1/family/relations/link-child` | Nối người đã có làm con. | `{parentId, childId, otherParentId?}` |
+
+Không có `GET /v1/family/links`: danh sách liên kết nằm trong `links[]` của `GET /v1/family` (và của response các endpoint `/v1/family/links*`).
 
 ### Person JSON
 
@@ -621,7 +622,6 @@ Tất cả response chứa mảng `persons[]` với structure sau (camelCase):
   "gender": "male" | "female" | "unknown",
   "deceased": false,
   "linked": false,
-  "version": 1,
   "fatherId": "uuid" | null,
   "motherId": "uuid" | null,
   "fatherRel": "blood" | "adopted" | null,
@@ -637,7 +637,10 @@ Tất cả response chứa mảng `persons[]` với structure sau (camelCase):
   "lunarDeathYear": 1900–2100 | null,
   "lunarLeap": false,
   "relationship": "Cha" | "Mẹ" | "Vợ" | ... | null,
-  "note": "ghi chú tự do" | null,
+  "note": "ghi chú tự do (≤ 500)" | null,
+  "phone": "+84 901 234 567" | null,
+  "education": "Đại học" | null,
+  "occupation": "Giáo viên" | null,
   "gioEventId": "event-id" | null,
   "createdAt": 1726074000000,
   "updatedAt": 1726074000000
@@ -653,6 +656,8 @@ Tất cả response chứa mảng `persons[]` với structure sau (camelCase):
 - `birthTime`, `deathTime`: định dạng `"HH:mm"` 24h.
 - `fatherRel` / `motherRel`: chỉ ghi `"adopted"` khi nuôi; mặc định `null` (= blood).
 - `spouses`: luôn mảng, có thể rỗng.
+- Field văn bản (trim; gửi `""` hoặc `null` = xoá): `relationship` ≤ 24, `note` ≤ 500, `phone` ≤ 20, `education` ≤ 40, `occupation` ≤ 40, `gioEventId` ≤ 64. Vượt giới hạn → 400 `VALIDATION` (riêng import: cắt bớt + `warnings`). `phone` là chuỗi tự do (không kiểm định dạng).
+- `phone`, `education`, `occupation`, `note` là field **riêng**: không bao giờ ghi sang họ, không vào đề xuất, không xuất hiện trong `clanWrites`; người đã liên kết vẫn đọc chúng từ cây cá nhân.
 - PATCH **không đổi** `fatherId`, `motherId`, `spouses` — dùng `/relations/*`.
 
 ### Response Thành Công (Đọc)
@@ -660,7 +665,8 @@ Tất cả response chứa mảng `persons[]` với structure sau (camelCase):
 ```json
 {
   "selfId": "uuid" | null,
-  "persons": [{ ...person }, ...]
+  "persons": [{ ...person }, ...],
+  "links": [{ "id": 1, "personId": "uuid", "clanId": 3, "clanPersonId": 42, "clanName": "Nguyễn tộc" }]
 }
 ```
 
@@ -673,17 +679,25 @@ Tất cả response chứa mảng `persons[]` với structure sau (camelCase):
   "ok": true,
   "person": { ...person },
   "persons": [{ ...person }, ...],
-  "clanWrites": [{ "clanId": 1, "result": "applied"|"proposed"|"conflict", "changeRequestId": 123, "current": 5 }],
   "warning": null
 }
 ```
 
+Field thêm tuỳ endpoint:
+
+| Endpoint | Field thêm |
+|---|---|
+| `POST /v1/family/persons` | `linked` (bool: đã tự nối theo `relationship`), `hint` (chuỗi giải thích vì sao chưa nối, hoặc `null`) |
+| `PATCH /v1/family/persons/{id}` (người đã liên kết) | `clanWrites[]` |
+| `POST /v1/family/relations/add-relative` có `contributeTo` | `contributions[]`: `{clanId, result: "applied", clanPersonId}` \| `{clanId, result: "proposed", changeRequestId}` \| `{clanId, result: "error", error: {code, personId, otherId, message}}` |
+
 - `person`: người vừa tạo/sửa/tham gia mutation.
 - `persons`: danh sách **sau** mutation (cây nhỏ, 2 query).
-- `clanWrites` (chỉ PATCH linked person): mảng, mỗi họ đã link cho biết kết quả ghi field chung:
-  - `"applied"`: ghi thẳng, version match.
-  - `"proposed"`: tạo ChangeRequest (ngoài phạm vi hoặc no permission).
-  - `"conflict"`: 409 version (client gửi `clanVersions` lệch). `current` = version hiện tại.
+- `clanWrites` (chỉ PATCH người đã liên kết; `[]` nếu không đổi field chung nào): một phần tử mỗi họ đã liên kết. HTTP **luôn 200** — field riêng đã lưu dù họ nào lỗi:
+  - `{clanId, result: "applied", version}`: ghi thẳng họ; `version` = `Person.version` mới.
+  - `{clanId, result: "proposed", changeRequestId}`: ngoài phạm vi ghi → tạo đề xuất `update_person`.
+  - `{clanId, result: "conflict", current}`: `clanVersions[clanId]` lệch. `current` = **toàn bộ** người trong họ (shape `GET /clans/{id}/persons/{pid}`, có `version` mới).
+  - `{clanId, result: "rejected", errors | message}`: dữ liệu không hợp lệ phía họ (`errors` = lỗi DRF từng field) hoặc vi phạm luật cây / quá 20 đề xuất chờ (`message`).
 - `warning`: `null` hoặc `{code, personId, otherId, message}`. Hai warning: `SPOUSE_IS_ANCESTOR` và `OTHER_PARENT_NOT_CANDIDATE`.
 
 ### Response Thành Công (Xoá)

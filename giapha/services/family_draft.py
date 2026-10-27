@@ -10,7 +10,9 @@ date, and the app tolerates that.
 from giapha.services.family_dates import derive_solar_death
 
 # Optional text fields where the app sends "" to mean "cleared".
-_TEXT_FIELDS = ('birth_time', 'death_time', 'relationship', 'note', 'gio_event_id')
+_TEXT_FIELDS = (
+    'birth_time', 'death_time', 'relationship', 'note', 'phone', 'education', 'occupation', 'gio_event_id',
+)
 _LUNAR_FIELDS = ('lunar_death_day', 'lunar_death_month', 'lunar_death_year', 'lunar_leap')
 
 
@@ -28,7 +30,13 @@ def finalize_draft(current, incoming):
     lunar = [merged.get(field) for field in _LUNAR_FIELDS]
     derived = derive_solar_death(*lunar)
     if derived is not None:
-        draft['solar_death_date'] = derived
+        # Only when it changes: on a linked person `solar_death_date` is a
+        # shared field, and re-sending the same value would write to the clan.
+        if derived != current.get('solar_death_date'):
+            draft['solar_death_date'] = derived
+        else:
+            # Never trust a client value while the lunar date is complete.
+            draft.pop('solar_death_date', None)
     elif any(field in draft for field in _LUNAR_FIELDS) and 'solar_death_date' not in draft:
         # Lunar fields changed to an incomplete/invalid set: a previously
         # derived solar date would now be stale, so drop it -- unless the

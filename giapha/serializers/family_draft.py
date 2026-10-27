@@ -68,5 +68,8 @@ class PersonDraftSerializer(serializers.Serializer):
     lunarLeap = serializers.BooleanField(source='lunar_leap', required=False, allow_null=True)
 
     relationship = _text(24)
-    note = _text(200)
+    note = _text(500)
+    phone = _text(20)
+    education = _text(40)
+    occupation = _text(40)
     gioEventId = _text(64, source='gio_event_id')

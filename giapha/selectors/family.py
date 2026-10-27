@@ -16,7 +16,7 @@ PERSON_ROW_FIELDS = (
     'solar_birth_date', 'birth_time', 'birth_order',
     'solar_death_date', 'death_time',
     'lunar_death_day', 'lunar_death_month', 'lunar_death_year', 'lunar_leap',
-    'relationship', 'note', 'gio_event_id',
+    'relationship', 'note', 'phone', 'education', 'occupation', 'gio_event_id',
     'created_at', 'updated_at',
 )
 

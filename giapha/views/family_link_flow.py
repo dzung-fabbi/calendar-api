@@ -22,15 +22,32 @@ from giapha.services.family_issue import FamilyRuleError, warning
 from giapha.services.family_labels import plan_link
 
 
-def set_parent(graph, child_id, slot, parent_id, rel='blood'):
+def set_parent(family, graph, child_id, slot, parent_id, rel='blood'):
     """Spec §4.2/§4.3. `parent_id=None` clears. An explicit set REPLACES the
     current occupant (that is how the edit form changes a parent); the
-    no-overwrite rule belongs to `link_child`/`add_relative`."""
+    no-overwrite rule belongs to `link_child`/`add_relative`. Returns the
+    warning of the implied marriage, if any."""
     rules.require_person(graph, child_id)
     if parent_id is not None:
         rules.check_set_parent(graph, child_id, slot, parent_id)
     writes.set_parent_slot(child_id, slot, parent_id, rel)
     graph.set_parent(child_id, slot, parent_id)
+    return marry_parents(family, graph, child_id) if parent_id is not None else None
+
+
+def marry_parents(family, graph, child_id):
+    """A child's father and mother are recorded as spouses once both slots
+    are filled -- the app does the same locally ("Đủ cha+mẹ → ghi vợ chồng").
+    Without the row, linking the father to a later wife counts as his FIRST
+    spouse and `first_spouse_fill_targets` silently writes her into the empty
+    mother slot of his other children. Changing a parent later never unlinks."""
+    father_id = graph.parent_in_slot(child_id, FATHER)
+    mother_id = graph.parent_in_slot(child_id, MOTHER)
+    if father_id is None or mother_id is None or father_id == mother_id:
+        return None
+    if mother_id in graph.spouses_of(father_id):
+        return None
+    return link_spouse(family, graph, father_id, mother_id)
 
 
 def link_spouse(family, graph, a_id, b_id, spouse_type='married'):
@@ -57,7 +74,7 @@ def unlink_spouse(graph, a_id, b_id):
     writes.delete_spouse(a_id, b_id)
 
 
-def link_child(graph, parent_id, child_id, other_parent_id=None):
+def link_child(family, graph, parent_id, child_id, other_parent_id=None):
     """Spec §4.6. The parent's gender picks the slot; an occupied slot is
     `PARENT_SLOT_TAKEN`, never overwritten; then the other slot is filled
     from the parent's partners when that is unambiguous. Returns a warning
@@ -69,7 +86,9 @@ def link_child(graph, parent_id, child_id, other_parent_id=None):
     rules.check_slot_free(graph, child_id, slot, parent_id)
     writes.set_parent_slot(child_id, slot, parent_id)
     graph.set_parent(child_id, slot, parent_id)
-    return fill_other_parent(graph, parent_id, child_id, other_parent_id)
+    issue = fill_other_parent(graph, parent_id, child_id, other_parent_id)
+    marriage_issue = marry_parents(family, graph, child_id)
+    return issue or marriage_issue
 
 
 def fill_other_parent(graph, parent_id, child_id, other_parent_id=None):
@@ -118,11 +137,11 @@ def add_relative(family, graph, anchor_id, kind, draft, other_parent_id=None):
 
     issue = None
     if kind in (FATHER, MOTHER):
-        set_parent(graph, anchor_id, kind, person.id)
+        issue = set_parent(family, graph, anchor_id, kind, person.id)
     elif kind == 'spouse':
         issue = link_spouse(family, graph, anchor_id, person.id)
     elif kind == 'child':
-        issue = link_child(graph, anchor_id, person.id, other_parent_id)
+        issue = link_child(family, graph, anchor_id, person.id, other_parent_id)
     elif kind == 'sibling':
         copy_parents(graph, anchor_id, person.id)
     return person.id, issue
@@ -140,11 +159,11 @@ def auto_link_by_label(family, graph, new_id, label):
     try:
         with transaction.atomic():
             if plan[0] == 'set_parent':
-                set_parent(graph, plan[1], plan[2], new_id)
+                set_parent(family, graph, plan[1], plan[2], new_id)
             elif plan[0] == 'spouse':
                 link_spouse(family, graph, self_id, new_id)
             elif plan[0] == 'child':
-                link_child(graph, self_id, new_id)
+                link_child(family, graph, self_id, new_id)
             elif plan[0] == 'sibling':
                 copy_parents(graph, self_id, new_id)
     except FamilyRuleError as exc:

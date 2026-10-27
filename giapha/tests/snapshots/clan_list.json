@@ -6,6 +6,7 @@
       "id": "int",
       "mo_ta": "str",
       "public_slug": "null",
+      "role": "str",
       "ten_ho": "str",
       "thuy_to": "str",
       "updated_at": "str",

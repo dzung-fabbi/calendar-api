@@ -1,5 +1,6 @@
 {
   "binding": "null",
+  "clan_id": "int",
   "data": {
     "display_name": "str",
     "joined_at": "str",

@@ -126,7 +126,10 @@ type Person = {
   lunarLeap?: boolean | null;     // tháng nhuận; giỗ vẫn cúng tháng thường
 
   relationship?: string | null;   // nhãn với "tôi", max 24, lưu CHỮ không phải enum id
-  note?: string | null;           // max 200
+  note?: string | null;           // max 500
+  phone?: string | null;          // max 20, chuỗi tự do ("+84…", số bàn có dấu cách / gạch)
+  education?: string | null;      // max 40 — học vấn
+  occupation?: string | null;     // max 40 — nghề nghiệp
   gioEventId?: string | null;     // id sự kiện nhắc giỗ: chuỗi mờ ≤ 64 ký tự, KHÔNG phải UUID (giữ cả id cũ `gio_*`)
 
   createdAt: number;              // epoch ms
@@ -146,6 +149,7 @@ type Person = {
 | `lunarDeathDay/Month` | chỉ có nghĩa khi `deceased === true`. Ngày 1–30, tháng 1–12. |
 | `relationship` | nhãn tiếng Việt, **không** phải id. Danh sách gợi ý dưới đây; user có thể tự nhập. |
 | `gioEventId` | optional. Xoá sự kiện **không** dọn field này — app luôn tra lại sự kiện còn tồn tại không. |
+| `note`, `phone`, `education`, `occupation` | optional, trim; `""`/`null` = xoá. Giới hạn 500 / 20 / 40 / 40 (khớp `NOTE/PHONE/EDUCATION/OCCUPATION_MAX_LENGTH` của app). Quá dài → 400 `VALIDATION`; import thì cắt + `warnings`. Field **riêng** (§14.2). |
 
 **Nhãn quan hệ gợi ý** (lưu `name`, không lưu `id`):
 
@@ -286,7 +290,7 @@ Input: `parentId`, `childId`, `otherParentId?`.
 
 Ứng viên ô còn lại = `getPartners(parent)` lọc giới tính hợp ô.
 
-`getPartners` = vợ/chồng tường minh **cộng** người có con chung mà chưa nối hôn (`coParents`). Cặp dựng bằng "Thêm Cha" rồi "Thêm Mẹ" **không** có cạnh vợ chồng — họ là đồng-phụ-huynh, không tự ghi `'married'` (có con chung ≠ đã cưới).
+`getPartners` = vợ/chồng tường minh **cộng** người có con chung mà chưa nối hôn (`coParents`). Khi một người có đủ cha **và** mẹ (qua `set-parent`, `link-child`, `add-relative` father/mother, hay nối theo nhãn), server **tự ghi** cạnh vợ chồng `'married'` giữa hai người đó nếu chưa có — giống app từ schema v3 ("Đủ cha+mẹ → ghi vợ chồng"). Đổi cha/mẹ sau đó không tự gỡ. Nếu không ghi, nối người cha với một người vợ sau sẽ bị tính là "vợ/chồng đầu tiên" và tự điền vào ô mẹ còn trống của các con khác (§4.4). `coParents` chỉ còn gặp ở dữ liệu cũ.
 
 ### 4.7 Thêm người thân từ một người (`addRelative`)
 
@@ -567,8 +571,7 @@ Bấm node → Thêm cha
 
 Thêm mẹ cho cùng người
   → add-relative kind=mother
-  → hai cha mẹ CHƯA có cạnh vợ chồng; partners = co-parents
-  → cây vẫn vẽ thành cặp (client thêm "ghost spouse" / co-parent lúc layout)
+  → server tự ghi cạnh vợ chồng 'married' giữa cha và mẹ (đủ cha+mẹ → vợ chồng)
 
 Thêm con khi đã có 2 vợ
   → add-relative kind=child + otherParentId bắt buộc chọn trên form
@@ -616,7 +619,7 @@ family_persons
   solar_birth_date, birth_time, birth_order,
   solar_death_date, death_time,
   lunar_death_day, lunar_death_month, lunar_death_year, lunar_leap,
-  relationship, note, gio_event_id,
+  relationship, note, phone, education, occupation, gio_event_id,
   created_at, updated_at
 
 family_spouses
@@ -658,9 +661,9 @@ PUT /v1/family/import
 | Idempotent | Cùng `importKey` gửi lại → 200, trả đúng `idMap` cũ (server lưu `Family.import_key`, `FamilyPerson.legacy_id`) |
 | Người luôn vào | Cạnh lỗi bị **bỏ** và báo trong `skippedEdges`: `DANGLING_*`, `SELF_PARENT`, `PARENT_CYCLE`, `GENDER_MISMATCH`, `SELF_SPOUSE`. `SPOUSE_IS_ANCESTOR` vẫn giữ |
 | Tất định | Xét cạnh theo `createdAt` → `id` |
-| Field xấu | Tên trống → "Chưa đặt tên"; quá dài → cắt; ngày/giờ sai → null; kèm `warnings` |
+| Field xấu | Tên trống → "Chưa đặt tên"; quá dài → cắt (`name` 60, `relationship` 24, `note` 500, `phone` 20, `education`/`occupation` 40, `gioEventId` 64); ngày/giờ sai → null; kèm `warnings` |
 | Giữ nguyên | `gioEventId`, `createdAt`, `updatedAt` từ client |
-| Giới hạn | `FAMILY_MAX_PERSONS`; throttle 5 lần/giờ/user |
+| Giới hạn | `FAMILY_MAX_PERSONS` = 1000 người (vượt → 400); throttle 5 lần/giờ/user |
 
 App: dùng `idMap` đổi id local (`fatherId`/`motherId`/`spouses`/`selfId`), giữ MMKV làm dự phòng tới khi đổi xong, rồi chuyển hẳn sang API.
 
@@ -694,7 +697,8 @@ Nhiều thiết bị: sau import, server là nguồn sự thật. Gia phả cá 
 - [ ] Người đã liên kết: `GET /v1/family` trả tên/ngày từ dòng họ; sửa ở họ → thấy ngay, không job đồng bộ (§14)
 - [ ] Sửa field chung của người đã liên kết ngoài phạm vi → `clanWrites[].result = "proposed"`, field riêng vẫn lưu (§14.5)
 - [ ] Gợi ý ghép không bao giờ tự tạo liên kết; ghép chỉ theo tên thì phải trùng năm sinh (§14.3)
-- [ ] Rời họ → liên kết tự tách, cây cá nhân giữ giá trị cuối (§14.4)
+- [ ] Rời họ → liên kết tự tách, cây cá nhân giữ giá trị cuối, đề xuất chờ → `withdrawn`; owner rời → 400 (§14.4)
+- [ ] `phone`/`education`/`occupation`/`note` của người đã liên kết chỉ lưu ở cá nhân, không vào `clanWrites` (§14.5)
 
 ---
 
@@ -723,7 +727,7 @@ Người đã liên kết **đọc field chung thẳng từ dòng họ** lúc `G
 | `solarBirthDate` `DD-MM-YYYY` | `birth_solar` (Date) | chung |
 | `lunarDeathDay/Month`, `lunarLeap` | `death_lunar_day/month`, `death_lunar_leap` | chung |
 | `lunarDeathYear`, `solarDeathDate` | suy từ `death_solar` qua `vn_lunar` | chung |
-| `birthTime`, `deathTime`, `relationship`, `note`, `gioEventId`, `birthOrder` | — | **riêng** |
+| `birthTime`, `deathTime`, `relationship`, `note`, `phone`, `education`, `occupation`, `gioEventId`, `birthOrder` | — | **riêng** |
 | — | ảnh, tên huý/tự/hiệu, mộ phần, tiểu sử, đời, chi | chỉ ở họ |
 
 Ánh xạ nằm ở **một** module (`giapha/services/family_clan_field_map.py`), test round-trip mọi field.
@@ -732,7 +736,7 @@ Người đã liên kết **đọc field chung thẳng từ dòng họ** lúc `G
 
 | Method | Path | Việc |
 |---|---|---|
-| `GET` | `/v1/family` | Thêm `links: [{id, personId, clanId, clanPersonId, clanName}]`; người đã liên kết trả field chung đã ghép + `linked: true` |
+| `GET` | `/v1/family` | Thêm `links: [{id, personId, clanId, clanPersonId, clanName}]`; người đã liên kết trả field chung đã ghép + `linked: true`. **Không có** `GET /v1/family/links` — đây là nguồn duy nhất của danh sách liên kết |
 | `POST` | `/v1/family/clans` | `{rootPersonId, tenHo, thuyTo?}` — chép gốc + hậu duệ + vợ/chồng hậu duệ thành họ mới, liên kết tất cả, caller = owner, binding = bản chép của `selfId` (đã xác minh). Atomic |
 | `GET` | `/v1/family/links/suggestions?clanId=` | Cặp gợi ý `{personId, clanPersonId, confidence: high/low, reason}` |
 | `POST` | `/v1/family/links` | `{clanId, pairs:[{personId, clanPersonId}]}` — user xác nhận, tối đa 200 |
@@ -745,7 +749,7 @@ Người đã liên kết **đọc field chung thẳng từ dòng họ** lúc `G
 
 ### 14.4 Vòng đời liên kết
 
-- Rời họ / bị xoá khỏi họ / họ xoá mềm / người trong họ xoá mềm → **tự tách** cho user đó (chép snapshot trước).
+- Rời họ (`DELETE /clans/{id}/members/me`) / bị xoá khỏi họ / họ xoá mềm / người trong họ xoá mềm → **tự tách** cho user đó (chép snapshot trước). Rời họ còn chuyển mọi đề xuất `pending` của người đó trong họ sang `withdrawn`. Owner không tự rời được (400) — phải chuyển quyền trước.
 - Xoá người trong cây cá nhân → chỉ xoá bên cá nhân; người trong họ giữ nguyên.
 - Hard-delete người trong họ (chỉ qua admin) → liên kết cascade; cá nhân rơi về giá trị lưu cũ.
 - Diff chỉ báo ("Họ ghi vợ của Dũng là …; cây của bạn chưa có"); user tự sửa.
@@ -754,11 +758,11 @@ Người đã liên kết **đọc field chung thẳng từ dòng họ** lúc `G
 
 `PATCH /v1/family/persons/{id}` với người đã liên kết:
 
-- Field **riêng** → lưu ở cá nhân ngay.
+- Field **riêng** (kể cả `phone`/`education`/`occupation`/`note`) → lưu ở cá nhân ngay; không bao giờ vào `clanWrites` hay payload đề xuất.
 - Field **chung** → với **từng** họ đã liên kết: có quyền (§15) thì ghi thẳng họ, kiểm `version`; không có quyền thì tạo đề xuất `update_person`.
-- Body thêm `clanVersions: {clanId: n}`; response thêm `clanWrites: [{clanId, result: "applied" | "proposed" | "conflict", changeRequestId?, current?}]`. Một họ lỗi không chặn phần riêng hay họ khác.
+- Body thêm `clanVersions: {clanId: n}` (chỉ `PATCH` đọc; `POST /v1/family/persons` bỏ qua). Response **luôn HTTP 200**, thêm `clanWrites: [...]`, mỗi họ một phần tử: `{clanId, result: "applied", version}` \| `{clanId, result: "proposed", changeRequestId}` \| `{clanId, result: "conflict", current}` (`current` = **toàn bộ** người trong họ, shape `GET /clans/{id}/persons/{pid}`) \| `{clanId, result: "rejected", errors | message}`. `[]` khi không đổi field chung nào. Một họ lỗi không chặn phần riêng hay họ khác.
 - Clan `Person.version` tăng ở **mọi** đường ghi. `PATCH /clans/{id}/persons/{pid}` nhận `version`; lệch → **409 `VERSION_CONFLICT`** kèm giá trị mới nhất. Không gửi `version` → không kiểm (client cũ).
-- Mutation quan hệ cá nhân (`add-relative`, `set-parent`, …) **không** lan sang họ. `add-relative` nhận thêm `contributeTo: [clanId]` để đóng góp ngay sau khi tạo.
+- Mutation quan hệ cá nhân (`add-relative`, `set-parent`, …) **không** lan sang họ. `add-relative` nhận thêm `contributeTo: [clanId]` để đóng góp ngay sau khi tạo; response thêm `contributions: [{clanId, result: "applied", clanPersonId} | {clanId, result: "proposed", changeRequestId} | {clanId, result: "error", error: {code, personId, otherId, message}}]` (người mới trong cây cá nhân đã lưu, không rollback).
 
 ---
 
@@ -778,5 +782,5 @@ API dòng họ `/clans/*` ở `docs/api-reference.md`; mục này gom phần app
 - **Phạm vi gia đình** của người P: P, vợ/chồng, cha mẹ, con cháu + vợ/chồng của con cháu, và anh chị em ruột **chưa được ai xác minh nhận**.
 - **Xác minh "tôi là ai"**: nhận qua lời mời gắn người → xác minh ngay; tự nhận → chờ owner / manager / trưởng chi của chi đó. Chưa xác minh vẫn nhận nhắc giỗ.
 - **UI dựa vào server, không tự tính quyền**: `GET /clans/{id}/persons/{pid}` trả `can_edit: "direct" | "propose"`; `GET /clans/{id}/tree` trả `my_editable_ids` (null = toàn họ) để vẽ viền "gia đình bạn". `PATCH` ngoài phạm vi → 403 kèm gợi ý; app gọi `POST /clans/{id}/change-requests` thay.
-- **Đề xuất** (`ChangeRequest`): kiểm hợp lệ ngay lúc gửi; kèm `proposer_note`; nhắc người duyệt ngày 7, **hết hạn ngày 30**; duyệt khi người đó đã bị sửa sau đó → 409 `stale` trừ khi `override_stale`.
+- **Đề xuất** (`ChangeRequest`): body tạo `{action, target_person_id?, target_marriage_id?, payload: {...}, note?}` (`note` lưu thành `proposer_note`); kiểm hợp lệ ngay lúc gửi; người duyệt = owner/manager/editor **có quyền ghi mọi người đề xuất đụng tới** (trưởng chi chỉ trong chi); nhắc người duyệt ngày 7, **hết hạn ngày 30**; duyệt khi người đó đã bị sửa sau đó → 409 `stale` trừ khi `override_stale`. Người gửi rời họ → đề xuất `pending` thành `withdrawn`.
 - **Mời**: owner, manager, editor và thành viên đã xác minh tạo được. Người trong phạm vi + quyền thành viên → `active`, có mã ngay; ngoài phạm vi / không gắn người → `pending_approval` (owner hoặc manager duyệt); quyền biên tập viên → chỉ owner duyệt. Lời mời chờ duyệt **chưa có mã**.

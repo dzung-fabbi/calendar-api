@@ -59,6 +59,17 @@ class SetParentTests(_RelationTestCase):
         self.assertIsNone(body['person']['fatherId'])
         self.assertIsNone(body['person']['fatherRel'])
 
+    def test_filling_both_slots_marries_the_parents_once(self):
+        dad, mom, kid = self.person('Cha', 'male'), self.person('Mẹ', 'female'), self.person('Con')
+        for slot, parent in (('father', dad), ('mother', mom), ('mother', mom)):
+            body = relation(self.client, 'family-set-parent', {
+                'childId': str(kid.id), 'slot': slot, 'parentId': str(parent.id),
+            }).json()
+            self.assertTrue(body['ok'])
+        self.assertEqual(1, FamilySpouse.objects.count())
+        dad_out = next(p for p in body['persons'] if p['id'] == str(dad.id))
+        self.assertEqual([{'id': str(mom.id), 'type': 'married'}], dad_out['spouses'])
+
     def test_blood_rel_is_stored_as_null(self):
         mom, kid = self.person('Mẹ', 'female'), self.person('Con')
         body = relation(self.client, 'family-set-parent', {
@@ -181,6 +192,12 @@ class LinkChildTests(_RelationTestCase):
         self.assertEqual(body['person']['fatherId'], str(dad.id))
         self.assertEqual(body['person']['motherId'], str(mom.id))
 
+    def test_linking_into_a_filled_other_slot_marries_the_parents(self):
+        dad, mom, kid = self.person('Cha', 'male'), self.person('Mẹ', 'female'), self.person('Con')
+        relation(self.client, 'family-set-parent', {'childId': str(kid.id), 'slot': 'mother', 'parentId': str(mom.id)})
+        self.assertTrue(self.link(dad, kid).json()['ok'])
+        self.assertEqual(1, FamilySpouse.objects.count())
+
     def test_unknown_gender_parent_goes_to_father_slot(self):
         parent, kid = self.person('Người', 'unknown'), self.person('Con')
         body = self.link(parent, kid).json()
@@ -219,14 +236,25 @@ class AddRelativeTests(_RelationTestCase):
             'person': person or {'name': 'Mới'}, 'otherParentId': other and str(other.id),
         })
 
-    def test_father_then_mother_are_co_parents_not_spouses(self):
+    def test_father_then_mother_become_spouses(self):
+        # Matches the app (schema v3): a child's two parents are a married pair on disk.
         me = self.person('Tôi', 'male')
         dad = self.add(me, 'father', {'name': 'Cha', 'gender': 'male'}).json()['person']
         mom = self.add(me, 'mother', {'name': 'Mẹ', 'gender': 'female'}).json()['person']
         me.refresh_from_db()
         self.assertEqual(str(me.father_id), dad['id'])
         self.assertEqual(str(me.mother_id), mom['id'])
-        self.assertEqual(FamilySpouse.objects.count(), 0)
+        self.assertEqual(FamilySpouse.objects.count(), 1)
+        self.assertEqual('married', FamilySpouse.objects.get().type)
+
+    def test_marrying_parents_blocks_first_spouse_fill_from_a_later_partner(self):
+        me = self.person('Tôi', 'male')
+        dad = self.add(me, 'father', {'name': 'Cha', 'gender': 'male'}).json()['person']
+        self.add(me, 'mother', {'name': 'Mẹ', 'gender': 'female'})
+        half = self.person('Con riêng')
+        relation(self.client, 'family-set-parent', {'childId': str(half.id), 'slot': 'father', 'parentId': dad['id']})
+        self.add(FamilyPerson.objects.get(id=dad['id']), 'spouse', {'name': 'Vợ sau', 'gender': 'female'})
+        self.assertIsNone(FamilyPerson.objects.get(id=half.id).mother_id)
 
     def test_second_father_is_rejected_without_creating_an_orphan(self):
         me = self.person('Tôi', 'male')

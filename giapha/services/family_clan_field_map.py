@@ -15,7 +15,7 @@ Shared fields (read from the clan while linked):
     lunar_death_year    -> derived from death_solar through `vn_lunar`
 
 Everything else is private to its side (birth/death time, relationship, note,
-gioEventId, birthOrder on the family side; names huý/tự/hiệu, photo, grave,
+phone, education, occupation, gioEventId, birthOrder on the family side; names huý/tự/hiệu, photo, grave,
 biography, generation, branch on the clan side).
 """
 

@@ -16,7 +16,7 @@ PERSON_KEYS = (
     'solarBirthDate', 'birthTime', 'birthOrder',
     'solarDeathDate', 'deathTime',
     'lunarDeathDay', 'lunarDeathMonth', 'lunarDeathYear', 'lunarLeap',
-    'relationship', 'note', 'gioEventId',
+    'relationship', 'note', 'phone', 'education', 'occupation', 'gioEventId',
     'createdAt', 'updatedAt', 'linked',
 )
 
@@ -63,6 +63,9 @@ def person_to_dict(row, spouses, linked=False):
         'lunarLeap': row['lunar_leap'],
         'relationship': row['relationship'] or None,
         'note': row['note'] or None,
+        'phone': row['phone'] or None,
+        'education': row['education'] or None,
+        'occupation': row['occupation'] or None,
         'gioEventId': row['gio_event_id'] or None,
         'createdAt': epoch_ms(row['created_at']),
         'updatedAt': epoch_ms(row['updated_at']),

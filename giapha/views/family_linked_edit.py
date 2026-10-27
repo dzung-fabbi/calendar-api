@@ -1,8 +1,8 @@
 """Editing a LINKED person from the personal tree (plan 260919 phase 5,
 spec §14.5).
 
-Private fields (time of birth/death, relationship, note, gioEventId, birth
-order) are saved on the family person right away. Shared fields go to EACH
+Private fields (time of birth/death, relationship, note, phone, education,
+occupation, gioEventId, birth order) are saved on the family person right away. Shared fields go to EACH
 linked clan, independently:
 
     caller may write that person (`permissions_scope`) -> write through the
@@ -26,7 +26,7 @@ from giapha.selectors.clan import clan_member_for
 from giapha.selectors.person_version import VersionConflict
 from giapha.selectors.person_write import apply_person_update
 from giapha.serializers.person import PersonReadSerializer, PersonWriteSerializer
-from giapha.services.family_clan_field_map import SHARED_FAMILY_FIELDS, family_to_clan_payload
+from giapha.services.family_clan_field_map import SHARED_FAMILY_FIELDS, family_to_clan, family_to_clan_payload
 from giapha.services.person_rules import PersonValidationError
 from giapha.views.change_request import submit_change_request
 
@@ -92,8 +92,20 @@ def _write_one(user, link, payload, expected_version):
 
 
 def write_shared_to_clans(user, links, shared, clan_versions):
-    """`clanWrites[]` -- one entry per linked clan (empty when no shared field changed)."""
-    payload = family_to_clan_payload(shared)
-    if not payload:
+    """`clanWrites[]` -- one entry per linked clan whose value actually differs.
+
+    The app sends only the fields the user touched, but the server re-derives
+    `solar_death_date` and the form may echo `lunarLeap`; writing those
+    unchanged values would bump the clan version and file a "Sửa từ gia phả cá
+    nhân" proposal on every save of a linked person."""
+    clan_fields = family_to_clan(shared)
+    if not clan_fields:
         return []
-    return [_write_one(user, link, payload, clan_versions.get(str(link.clan_id))) for link in links]
+    payload = family_to_clan_payload(shared)
+    writes = []
+    for link in links:
+        changed = {key: payload[key] for key, value in clan_fields.items()
+                   if getattr(link.clan_person, key) != value}
+        if changed:
+            writes.append(_write_one(user, link, changed, clan_versions.get(str(link.clan_id))))
+    return writes

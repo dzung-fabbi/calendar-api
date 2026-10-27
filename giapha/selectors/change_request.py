@@ -1,4 +1,5 @@
-"""DB reads for ChangeRequest (đề xuất thay đổi)."""
+"""DB access for ChangeRequest (đề xuất thay đổi): reads, plus the bulk
+withdraw a member leaving the clan triggers."""
 
 from giapha.models import ChangeRequest, ClanMember
 from giapha.models.choices import EDITOR_ROLES
@@ -34,6 +35,14 @@ def get_change_request_for_update(clan_id, cr_id):
 
 def pending_count_for(clan_id, proposer_id):
     return ChangeRequest.objects.filter(clan_id=clan_id, proposer_id=proposer_id, status='pending').count()
+
+
+def withdraw_pending_for(clan_id, proposer_id):
+    """Withdraw every pending proposal `proposer_id` has in `clan_id` (they
+    left the clan, so nobody may still approve their edits). Returns the count."""
+    return ChangeRequest.objects.filter(
+        clan_id=clan_id, proposer_id=proposer_id, status='pending',
+    ).update(status='withdrawn')
 
 
 def reviewer_members(clan_id):
